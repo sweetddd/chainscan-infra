@@ -1,0 +1,24 @@
+pipeline {
+  agent {
+    node {
+      label 'maven-jdk11'
+    }
+  }
+
+  stages {
+    stage('Git') {
+      steps {
+        git(url: 'http://git.everylink.ai/paas/chainscan.git', credentialsId: 'gitaccount', changelog: true, poll: false)
+      }
+    }
+    stage('Deploy Snapshot') {
+      steps {
+        dir('chainscan/openapi-plugin-chainscan') {
+            container('maven-jdk11') {
+                sh 'mvn -DskipTests -Drat.skip=true clean deploy'
+            }
+        }
+      }
+    }
+  }
+}
