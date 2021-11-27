@@ -46,7 +46,7 @@ public interface IWatcher {
      * @return 区块对象列表
      * @throws WatcherExecutionException 框架负责处理异常，不影响下一次调度。
      */
-    List<Object> scanBlcok() throws WatcherExecutionException;
+    <T> List<T> scanBlock() throws WatcherExecutionException;
 
     /**
      * watcher调度顺序。

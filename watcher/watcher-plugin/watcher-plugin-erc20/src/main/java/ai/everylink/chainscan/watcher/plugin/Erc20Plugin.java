@@ -18,6 +18,7 @@
 package ai.everylink.chainscan.watcher.plugin;
 
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
+import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 
 /**
  * ERC20 chain data plugin
@@ -26,10 +27,11 @@ import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
  * @since 2021-11-26
  */
 public class Erc20Plugin implements IWatcherPlugin {
-
     @Override
-    public boolean processBlock(Object block) {
-        System.out.println("Erc20Plugin 处理: " + block.toString());
-        return true;
+    public <T> boolean processBlock(T block) throws WatcherExecutionException {
+        Erc20Data blockData = (Erc20Data)block;
+        System.out.println("Erc20Plugin 处理: " + blockData.getBlock().getNumber() + "; tx size=" + blockData.getTxList().size());
+        return false;
     }
+
 }

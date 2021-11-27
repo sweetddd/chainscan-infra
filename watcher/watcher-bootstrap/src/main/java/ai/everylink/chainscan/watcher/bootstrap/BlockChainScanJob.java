@@ -57,7 +57,7 @@ public class BlockChainScanJob implements Job {
         try {
             // 1.扫块
             log.info("[{}]Scan blocks start.watcher=[{}]", id, watcher.getClass().getSimpleName());
-            List<Object> blockList = watcher.scanBlcok();
+            List<Object> blockList = watcher.scanBlock();
             if (CollectionUtils.isEmpty(blockList)) {
                 log.info("[{}]Scan blocks not found.watcher=[{}]", id, watcher.getClass().getSimpleName());
                 return;

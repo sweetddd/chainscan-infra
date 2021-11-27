@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ai.everylink.chainscan.watcher.plugin;
 
 import ai.everylink.chainscan.watcher.core.IErc20WatcherPlugin;
@@ -8,29 +25,18 @@ import ai.everylink.chainscan.watcher.plugin.config.VmSecret;
 import com.google.common.collect.Lists;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
-import org.web3j.abi.EventEncoder;
-import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Event;
-import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
-import org.web3j.protocol.core.Request;
 import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
-
-import java.io.IOException;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
- * ERC20
+ * 以太坊扫块
  *
  * @author david.zhang@everylink.ai
  * @since 2021-11-26
@@ -39,139 +45,130 @@ public class Erc20Watcher implements IWatcher {
 
     private static Logger logger = LoggerFactory.getLogger(Erc20Watcher.class);
 
-    private static Web3j web3j;
+    /** 当前扫描高度 */
+    private Long currentBlockHeight = 9716550L;
 
-    private Long currentBlockHeight = 0L;
-    //每次扫描步数
+    /** 每次扫描步数 */
     private int step = 5;
 
+    private static Web3j web3j;
     static {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.connectTimeout(30 * 1000, TimeUnit.MILLISECONDS);
-        builder.writeTimeout(30 * 1000, TimeUnit.MILLISECONDS);
-        builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
-        OkHttpClient httpClient  = builder.build();
-        String       credential  = Credentials.basic("", SpringApplicationUtils.getBean(VmSecret.class).getRpcSecret());
-        HttpService httpService = new HttpService(SpringApplicationUtils.getBean(VmSecret.class).getRpcApi(), httpClient, false);
-        httpService.addHeader("Authorization", credential);
-        web3j = Web3j.build(httpService);
+        try {
+            // 初始化web3j
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            builder.connectTimeout(30 * 1000, TimeUnit.MILLISECONDS);
+            builder.writeTimeout(30 * 1000, TimeUnit.MILLISECONDS);
+            builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
+            OkHttpClient httpClient = builder.build();
+            HttpService httpService = new HttpService(
+                    SpringApplicationUtils.getBean(VmSecret.class).getRpcApi(), httpClient, false);
+            httpService.addHeader("Authorization",
+                    Credentials.basic("", SpringApplicationUtils.getBean(VmSecret.class).getRpcSecret()));
+            web3j = Web3j.build(httpService);
+        } catch (Exception e) {
+            logger.error("初始化web3j异常", e);
+        }
     }
 
     @Override
-    public List<Object> scanBlcok() {
-        Long networkBlockNumber = getNetworkBlockHeight();
-        logger.info("networkBlockNumber:{} currentBlockHeight:{}", networkBlockNumber, currentBlockHeight);
+    public List<Erc20Data> scanBlock() {
+        long start = System.currentTimeMillis();
+        List<Erc20Data> blockList = Lists.newArrayList();
+
+        Long networkBlockHeight = getNetworkBlockHeight();
+        logger.info("loop scan begin.curNum={},netNum={}", currentBlockHeight, networkBlockHeight);
+        if (networkBlockHeight <= 0) {
+            return Lists.newArrayList();
+        }
 
         long startBlockNumber = 0;
         try {
-            if (currentBlockHeight < networkBlockNumber) {
+            if (currentBlockHeight < networkBlockHeight) {
                 startBlockNumber = currentBlockHeight + 1;
-                currentBlockHeight = (networkBlockNumber - currentBlockHeight > step) ? currentBlockHeight + step : networkBlockNumber;
-                logger.info("replay block from {} to {}", startBlockNumber, currentBlockHeight);
+                currentBlockHeight = (networkBlockHeight - currentBlockHeight > step)
+                                    ? currentBlockHeight + step
+                                    : networkBlockHeight;
+                logger.info("Scan block from {} to {}", startBlockNumber, currentBlockHeight);
 
-                List<Object> blockList = replayBlock(startBlockNumber, currentBlockHeight);
+                blockList = replayBlock(startBlockNumber, currentBlockHeight);
+                logger.info("Scan block from {} to {},resultSize={}", startBlockNumber, currentBlockHeight, blockList.size());
                 if (CollectionUtils.isEmpty(blockList)) {
                     logger.info("扫块失败！！！");
-                    // 未扫描成功
                     currentBlockHeight = startBlockNumber - 1;
                     return Lists.newArrayList();
                 }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             currentBlockHeight = startBlockNumber - 1;
-            e.printStackTrace();
+            logger.error("loop scan error.curNum={"+currentBlockHeight+"},netNum={"+networkBlockHeight+"}", e);
         }
 
-        return Lists.newArrayList("block1", "block2", "block3");
+        logger.info("loop scan end.curNum={},netNum={},consume={}ms",
+                currentBlockHeight, networkBlockHeight, (System.currentTimeMillis()-start));
+
+        return blockList;
     }
 
-    public List<Object> replayBlock(Long startBlockNumber, Long endBlockNumber) {
+    public List<Erc20Data> replayBlock(Long startBlockNumber, Long endBlockNumber) throws Exception {
+        List<Erc20Data> dataList = Lists.newArrayList();
+
         for (Long blockHeight = startBlockNumber; blockHeight <= endBlockNumber; blockHeight++) {
-            EthBlock block = null;
-            try {
-                logger.info("ethGetBlockByNumber {}", blockHeight);
-                block = web3j.ethGetBlockByNumber(new DefaultBlockParameterNumber(blockHeight), true).send();
-                List<EthBlock.TransactionResult> transactionResults = block.getBlock().getTransactions();
-                if (CollectionUtils.isEmpty(transactionResults)) {
+            logger.info("Begin to scan block={}", blockHeight);
+//            try {
+                Erc20Data data = new Erc20Data();
+
+                // 查询block
+                EthBlock block = web3j.ethGetBlockByNumber(
+                        new DefaultBlockParameterNumber(blockHeight), true).send();
+                data.setBlock(block.getBlock());
+                dataList.add(data);
+                if (CollectionUtils.isEmpty(block.getBlock().getTransactions())) {
+                    logger.info("No transactions found. block={}", blockHeight);
                     continue;
                 }
-                logger.info("replayBlock: Height({}) - Transactions count({})", blockHeight, transactionResults.size());
-                for (EthBlock.TransactionResult transactionResult : transactionResults) {
-                    EthBlock.TransactionObject transactionObject = (EthBlock.TransactionObject) transactionResult;
-                    Transaction transaction = transactionObject.get();
-                    logger.info("Transaction Detail: Height({}) - {}", blockHeight, transaction.getHash());
-                    String input = transaction.getInput();
-                    if (StringUtils.isNotEmpty(input) && input.length() >= 138) {
-                        // 获取Logs
-                        EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(transaction.getHash()).send();
-                        System.out.println(receipt);
+
+                // 交易列表
+                logger.info("Found txs.block={},count={}", blockHeight, block.getBlock().getTransactions().size());
+                for (EthBlock.TransactionResult transactionResult : block.getBlock().getTransactions()) {
+                    Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
+                    data.getTxList().add(tx);
+
+                    if (tx.getInput() == null || tx.getInput().length() < 138) {
+                        logger.info("No logs.block={},tx={}", blockHeight, tx.getHash());
+                        continue;
+                    }
+
+                    // 获取Logs
+                    EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(tx.getHash()).send();
+                    if (receipt.getResult() != null && receipt.getResult().getLogs() != null) {
+                        logger.info("Found logs.block={},tx={},count={}",
+                                blockHeight, tx.getHash(), receipt.getResult().getLogs());
+                        data.getTransactionLogMap().put(tx.getHash(), receipt.getResult().getLogs());
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                //why return null: I'm trying to make it scan again
-                return null;
-            }
+//            } catch (Throwable e) {
+//                logger.error("Error occured when scan block=" + blockHeight, e);
+//            }
         }
-        return null;
+
+        return dataList;
     }
 
-
-    private boolean checkLog(Long blockHeight, String contractAddress, String transactionHash) throws IOException {
-        org.web3j.protocol.core.methods.request.EthFilter ethFilter = createFilter(blockHeight, contractAddress);
-        Request<?, EthLog> ethLogRequest = web3j.ethGetLogs(ethFilter);
-        EthLog ethLog = ethLogRequest.send();
-        List<EthLog.LogResult> logResultList = ethLog.getLogs();
-        if (CollectionUtils.isEmpty(logResultList)) {
-            return false;
-        }
-        for (int i = 0; i < logResultList.size(); i++) {
-            if (((EthLog.LogObject) logResultList.get(i).get()).getTransactionHash().equalsIgnoreCase(transactionHash)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private org.web3j.protocol.core.methods.request.EthFilter createFilter(Long blockHeight, String contractAddress) {
-        org.web3j.protocol.core.methods.request.EthFilter filter = new org.web3j.protocol.core.methods.request.EthFilter(
-                DefaultBlockParameter.valueOf(new BigInteger(String.valueOf(blockHeight))),
-                DefaultBlockParameter.valueOf(new BigInteger(String.valueOf(blockHeight))),
-                contractAddress);
-        filter.addSingleTopic(EventEncoder.encode(createEvent()));
-        return filter;
-    }
-
-    private Event createEvent() {
-        Event event = new Event("Transfer", Arrays.asList(
-                new TypeReference<Address>() {
-                },
-                new TypeReference<Address>() {
-                },
-                new TypeReference<Uint256>() {
-                }));
-        return event;
-    }
-
-
-
-
+    /**
+     * 获取最新区块高度
+     *
+     * @return 高度
+     */
     private Long getNetworkBlockHeight() {
         try {
             EthBlockNumber blockNumber = web3j.ethBlockNumber().send();
-            long networkBlockNumber = blockNumber.getBlockNumber().longValue();
-            return networkBlockNumber;
-        } catch (Exception e) {
-            e.printStackTrace();
+            return blockNumber.getBlockNumber().longValue();
+        } catch (Throwable e) {
+            logger.error("Error occured when request web3j.ethBlockNumber.", e);
             return 0L;
         }
     }
 
-
-    @Override
-    public String getCron() {
-        return "*/5 * * * * ?";
-    }
 
     @Override
     public List<IWatcherPlugin> getOrderedPluginList() {
@@ -182,12 +179,7 @@ public class Erc20Watcher implements IWatcher {
         pluginList.addAll(findErc20WatcherPluginBySPI());
 
         // 排序
-        Collections.sort(pluginList, new Comparator<IWatcherPlugin>() {
-            @Override
-            public int compare(IWatcherPlugin o1, IWatcherPlugin o2) {
-                return o2.ordered() - o1.ordered();
-            }
-        });
+        Collections.sort(pluginList, (o1, o2) -> o2.ordered() - o1.ordered());
 
         return  pluginList;
     }
@@ -202,4 +194,10 @@ public class Erc20Watcher implements IWatcher {
         return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
     }
 
+    @Override
+    public String getCron() {
+//        return "*/5 * * * * ?";
+
+        return "*/10 * * * * ?";
+    }
 }
