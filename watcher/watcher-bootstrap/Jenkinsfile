@@ -1,0 +1,41 @@
+pipeline {
+  agent {
+    node {
+      label 'maven-jdk11'
+    }
+  }
+
+  stages {
+    stage('git') {
+      steps {
+        git(url: 'http://git.everylink.ai/paas/chainscan-infra.git', credentialsId: 'gitaccount', changelog: true, poll: false)
+      }
+    }
+    stage('build') {
+      steps {
+        dir('watcher-bootstrap') {
+            container('maven-jdk11') {
+                sh 'mvn -version'
+                sh 'mvn -DskipTests -Drat.skip=true clean package'
+                withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,credentialsId : 'dockerhub' ,usernameVariable : 'DOCKER_USERNAME' ,)]) {
+                    sh 'echo "$DOCKER_PASSWORD" | docker login $REGISTRY -u "$DOCKER_USERNAME" --password-stdin'
+                    sh 'docker build -f Dockerfile -t $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER .'
+                    sh 'docker push $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER'
+                }
+            }
+        }
+      }
+    }
+    stage('deploy to sandbox') {
+      steps {
+        kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, configs: 'watcher-bootstrap/deploy/sandbox/**', kubeconfigId: 'kubeconfig')
+      }
+    }
+    stage('deploy to production') {
+       steps {
+         input(message: 'Waiting for audit @eric  ', submitter: 'eric,admin')
+         kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, configs: 'watcher-bootstrap/deploy/production/**', kubeconfigId: 'kubeconfig-prd')
+       }
+     }
+  }
+}

@@ -1,0 +1,21 @@
+pipeline {
+  agent {
+    node {
+      label 'maven-jdk11'
+    }
+  }
+  stages {
+    stage('Git') {
+      steps {
+        git(url: 'http://git.everylink.ai/paas/chainscan-infra.git', credentialsId: 'gitaccount', changelog: true, poll: false)
+      }
+    }
+    stage('Deploy Snapshot') {
+      steps {
+         container('maven-jdk11') {
+            sh 'mvn -DskipTests -Drat.skip=true clean deploy:deploy-file -DgroupId=ai.everylink.chainscan -DartifactId=watcher-plugin -Dversion=1.0.0-SNAPSHOT -Dpackaging=pom -Dfile=pom.xml -Durl=http://192.168.2.20:30081/repository/maven-snapshots/ -DrepositoryId=maven-snapshots'
+         }
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "inbounds": [
+    {
+      "port": 1080,
+      "protocol": "socks",
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls"]
+      },
+      "settings": {
+        "auth": "noauth"
+      }
+    }
+  ],
+
+  "outbounds": [
+    {
+      "protocol": "vmess",              //协议
+      "settings": {
+        "vnext": [
+          {
+            "address": "kvpn.everylink.ai",    //服务端地址
+            "port": 443,                    //服务端端口
+            "users": [
+              {
+                "id": "3bb82c64-0bc8-11ec-b909-ce6d4482c905",              //服务端uuid
+                "alterId": 50                //服务端ID
+              }
+            ]
+          }
+        ]
+      }
+
+    }
+  ]
+}
