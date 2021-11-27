@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.everylink.chainscan.watcher.plugin;
+package ai.everylink.chainscan.watcher.plugin;
 
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 

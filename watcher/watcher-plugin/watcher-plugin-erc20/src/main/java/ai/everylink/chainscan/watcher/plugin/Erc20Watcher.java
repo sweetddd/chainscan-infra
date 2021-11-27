@@ -1,25 +1,21 @@
-package com.everylink.chainscan.watcher.plugin;
+package ai.everylink.chainscan.watcher.plugin;
 
 import ai.everylink.chainscan.watcher.core.IErc20WatcherPlugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
-import com.everylink.chainscan.watcher.plugin.service.VMSecret;
+import ai.everylink.chainscan.watcher.plugin.config.VmSecret;
 import com.google.common.collect.Lists;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.util.CollectionUtils;
 import org.web3j.abi.EventEncoder;
-import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Event;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
@@ -29,7 +25,6 @@ import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -56,8 +51,8 @@ public class Erc20Watcher implements IWatcher {
         builder.writeTimeout(30 * 1000, TimeUnit.MILLISECONDS);
         builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
         OkHttpClient httpClient  = builder.build();
-        String       credential  = Credentials.basic("", SpringApplicationUtils.getBean(VMSecret.class).getRpcSecret());
-        HttpService httpService = new HttpService(SpringApplicationUtils.getBean(VMSecret.class).getRpcApi(), httpClient, false);
+        String       credential  = Credentials.basic("", SpringApplicationUtils.getBean(VmSecret.class).getRpcSecret());
+        HttpService httpService = new HttpService(SpringApplicationUtils.getBean(VmSecret.class).getRpcApi(), httpClient, false);
         httpService.addHeader("Authorization", credential);
         web3j = Web3j.build(httpService);
     }

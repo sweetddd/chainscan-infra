@@ -15,43 +15,26 @@
  * limitations under the License.
  */
 
-package ai.everylink.chainscan.watcher.core;
+package ai.everylink.chainscan.watcher.plugin;
 
-import java.util.List;
+import ai.everylink.chainscan.watcher.core.IErc20WatcherPlugin;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * 区块链扫块接口
+ * Demo类，演示如何通过SPI机制来成为框架自带的Erc20Watcher的plugin。
+ * 1.继承IErc20WatcherPlugin
+ * 2.在META-INF/services目录下新建一个名为ai.everylink.chainscan.watcher.core.IErc20WatcherPlugin的文件
+ * 3.在文件里面写入每个实现了IErc20WatcherPlugin接口的plugin的全限定名。
  *
  * @author david.zhang@everylink.ai
  * @since 2021-11-26
  */
-public interface IWatcher {
+@Slf4j
+public class Erc20SpiPlugin implements IErc20WatcherPlugin {
 
-    /**
-     * 扫块定时配置
-     *
-     * @return cron expression
-     */
-    String getCron();
-
-    /**
-     * 返回有序plugin列表
-     * @return
-     */
-    List<IWatcherPlugin> getOrderedPluginList();
-
-    /**
-     * 扫块。
-     *
-     * @return 区块对象列表
-     * @throws WatcherExecutionException 框架负责处理异常，不影响下一次调度。
-     */
-    List<Object> scanBlcok() throws WatcherExecutionException;
-
-    /**
-     * watcher调度顺序。
-     *
-     * @return 调度顺序。值越小优先级越高。
-     */
-    default int order() {return 1;};
+    @Override
+    public boolean processBlock(Object block) {
+        log.info("Erc20SpiPlugin处理block：" + block.getClass().getName());
+        return true;
+    }
 }

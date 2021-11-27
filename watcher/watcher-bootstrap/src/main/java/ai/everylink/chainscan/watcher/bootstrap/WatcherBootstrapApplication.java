@@ -35,7 +35,7 @@ import java.util.ServiceLoader;
  * @since 2021-11-26
  */
 @Slf4j
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages="ai.everylink.chainscan.watcher")
 public class WatcherBootstrapApplication {
 
     /**

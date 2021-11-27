@@ -15,26 +15,24 @@
  * limitations under the License.
  */
 
-package com.everylink.chainscan.watcher.plugin;
+package ai.everylink.chainscan.watcher.plugin.config;
 
-import ai.everylink.chainscan.watcher.core.IErc20WatcherPlugin;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
 
 /**
- * Demo类，演示如何通过SPI机制来成为框架自带的Erc20Watcher的plugin。
- * 1.继承IErc20WatcherPlugin
- * 2.在META-INF/services目录下新建一个名为ai.everylink.chainscan.watcher.core.IErc20WatcherPlugin的文件
- * 3.在文件里面写入每个实现了IErc20WatcherPlugin接口的plugin的全限定名。
  *
  * @author david.zhang@everylink.ai
  * @since 2021-11-26
  */
-@Slf4j
-public class Erc20SpiPlugin implements IErc20WatcherPlugin {
+@Configuration
+@ConfigurationProperties(prefix = "secret")
+@Data
+public class VmSecret {
 
-    @Override
-    public boolean processBlock(Object block) {
-        log.info("Erc20SpiPlugin处理block：" + block.getClass().getName());
-        return true;
-    }
+    private String rpcApi;
+
+    private String rpcSecret;
 }
