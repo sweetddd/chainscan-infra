@@ -49,6 +49,12 @@ public interface IWatcher {
     <T> List<T> scanBlock() throws WatcherExecutionException;
 
     /**
+     * 支持的链名称(大写)。如EVM、VM
+     * @return
+     */
+    default String supportedChain() {return "EVM";};
+
+    /**
      * watcher调度顺序。
      *
      * @return 调度顺序。值越小优先级越高。

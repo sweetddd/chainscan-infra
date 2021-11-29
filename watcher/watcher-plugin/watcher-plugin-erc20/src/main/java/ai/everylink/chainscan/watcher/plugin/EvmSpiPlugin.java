@@ -17,7 +17,7 @@
 
 package ai.everylink.chainscan.watcher.plugin;
 
-import ai.everylink.chainscan.watcher.core.IErc20WatcherPlugin;
+import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,12 +31,13 @@ import lombok.extern.slf4j.Slf4j;
  * @since 2021-11-26
  */
 @Slf4j
-public class Erc20SpiPlugin implements IErc20WatcherPlugin {
+public class EvmSpiPlugin implements IEvmWatcherPlugin {
 
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
-        Erc20Data blockData = (Erc20Data)block;
-        System.out.println("Erc20SpiPlugin 处理: " + blockData.getBlock().getNumber() + "; tx size=" + blockData.getTxList().size());
+        EvmData blockData = (EvmData)block;
+        System.out.println("Erc20SpiPlugin 处理: " + blockData.getBlock().getNumber()
+                + "; tx size=" + blockData.getBlock().getTransactions().size());
         return false;
     }
 }

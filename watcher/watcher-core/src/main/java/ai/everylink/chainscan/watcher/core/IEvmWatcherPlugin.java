@@ -15,23 +15,14 @@
  * limitations under the License.
  */
 
-package ai.everylink.chainscan.watcher.plugin;
-
-import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
-import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
+package ai.everylink.chainscan.watcher.core;
 
 /**
- * ERC20 chain data plugin
+ * 对于支持EVM标准的链的块进行处理
  *
  * @author david.zhang@everylink.ai
  * @since 2021-11-26
  */
-public class Erc20Plugin implements IWatcherPlugin {
-    @Override
-    public <T> boolean processBlock(T block) throws WatcherExecutionException {
-        Erc20Data blockData = (Erc20Data)block;
-        System.out.println("Erc20Plugin 处理: " + blockData.getBlock().getNumber() + "; tx size=" + blockData.getTxList().size());
-        return false;
-    }
+public interface IEvmWatcherPlugin extends IWatcherPlugin{
 
 }

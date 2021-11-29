@@ -22,9 +22,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.Log;
-import org.web3j.protocol.core.methods.response.Transaction;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,17 +38,12 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Erc20Data {
+public class EvmData {
 
     /**
      * 区块信息
      */
     private EthBlock.Block block;
-
-    /**
-     * 交易列表
-     */
-    private List<Transaction> txList = new ArrayList<>();
 
     /**
      * 交易对应的log列表

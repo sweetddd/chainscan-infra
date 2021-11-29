@@ -17,7 +17,7 @@
 
 package ai.everylink.chainscan.watcher.plugin;
 
-import ai.everylink.chainscan.watcher.core.IErc20WatcherPlugin;
+import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
@@ -41,12 +41,12 @@ import java.util.concurrent.TimeUnit;
  * @author david.zhang@everylink.ai
  * @since 2021-11-26
  */
-public class Erc20Watcher implements IWatcher {
+public class EvmWatcher implements IWatcher {
 
-    private static Logger logger = LoggerFactory.getLogger(Erc20Watcher.class);
+    private static Logger logger = LoggerFactory.getLogger(EvmWatcher.class);
 
     /** 当前扫描高度 */
-    private Long currentBlockHeight = 9716550L;
+    private Long currentBlockHeight = 0L;
 
     /** 每次扫描步数 */
     private int step = 5;
@@ -71,9 +71,9 @@ public class Erc20Watcher implements IWatcher {
     }
 
     @Override
-    public List<Erc20Data> scanBlock() {
+    public List<EvmData> scanBlock() {
         long start = System.currentTimeMillis();
-        List<Erc20Data> blockList = Lists.newArrayList();
+        List<EvmData> blockList = Lists.newArrayList();
 
         Long networkBlockHeight = getNetworkBlockHeight();
         logger.info("loop scan begin.curNum={},netNum={}", currentBlockHeight, networkBlockHeight);
@@ -109,13 +109,13 @@ public class Erc20Watcher implements IWatcher {
         return blockList;
     }
 
-    public List<Erc20Data> replayBlock(Long startBlockNumber, Long endBlockNumber) throws Exception {
-        List<Erc20Data> dataList = Lists.newArrayList();
+    public List<EvmData> replayBlock(Long startBlockNumber, Long endBlockNumber) throws Exception {
+        List<EvmData> dataList = Lists.newArrayList();
 
         for (Long blockHeight = startBlockNumber; blockHeight <= endBlockNumber; blockHeight++) {
             logger.info("Begin to scan block={}", blockHeight);
 //            try {
-                Erc20Data data = new Erc20Data();
+                EvmData data = new EvmData();
 
                 // 查询block
                 EthBlock block = web3j.ethGetBlockByNumber(
@@ -131,8 +131,6 @@ public class Erc20Watcher implements IWatcher {
                 logger.info("Found txs.block={},count={}", blockHeight, block.getBlock().getTransactions().size());
                 for (EthBlock.TransactionResult transactionResult : block.getBlock().getTransactions()) {
                     Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
-                    data.getTxList().add(tx);
-
                     if (tx.getInput() == null || tx.getInput().length() < 138) {
                         logger.info("No logs.block={},tx={}", blockHeight, tx.getHash());
                         continue;
@@ -142,7 +140,7 @@ public class Erc20Watcher implements IWatcher {
                     EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(tx.getHash()).send();
                     if (receipt.getResult() != null && receipt.getResult().getLogs() != null) {
                         logger.info("Found logs.block={},tx={},count={}",
-                                blockHeight, tx.getHash(), receipt.getResult().getLogs());
+                                blockHeight, tx.getHash(), receipt.getResult().getLogs().size());
                         data.getTransactionLogMap().put(tx.getHash(), receipt.getResult().getLogs());
                     }
                 }
@@ -173,7 +171,7 @@ public class Erc20Watcher implements IWatcher {
     @Override
     public List<IWatcherPlugin> getOrderedPluginList() {
         // 自己创建的
-        List<IWatcherPlugin> pluginList = Lists.newArrayList(new Erc20Plugin());
+        List<IWatcherPlugin> pluginList = Lists.newArrayList(new EvmPlugin());
 
         // 通过SPI发现的
         pluginList.addAll(findErc20WatcherPluginBySPI());
@@ -189,8 +187,8 @@ public class Erc20Watcher implements IWatcher {
      *
      * @return
      */
-    private List<IErc20WatcherPlugin> findErc20WatcherPluginBySPI() {
-        ServiceLoader<IErc20WatcherPlugin> list = ServiceLoader.load(IErc20WatcherPlugin.class);
+    private List<IEvmWatcherPlugin> findErc20WatcherPluginBySPI() {
+        ServiceLoader<IEvmWatcherPlugin> list = ServiceLoader.load(IEvmWatcherPlugin.class);
         return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
     }
 
