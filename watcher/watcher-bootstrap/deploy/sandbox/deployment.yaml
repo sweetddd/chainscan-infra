@@ -34,7 +34,7 @@ spec:
             memory: 0.5Gi
           limits:
             cpu: 2
-            memory: 1Gi
+            memory: 2Gi
         volumeMounts:
         - name: host-time
           mountPath: /etc/localtime
