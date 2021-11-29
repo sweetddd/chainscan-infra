@@ -5,6 +5,11 @@ pipeline {
     }
   }
 
+  environment {
+      REGISTRY = 'registry.cn-beijing.aliyuncs.com/pox'
+      APP_NAME = 'watcher-bootstrap'
+  }
+
   stages {
     stage('git') {
       steps {
