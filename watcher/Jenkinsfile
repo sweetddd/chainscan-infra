@@ -12,9 +12,11 @@ pipeline {
     }
     stage('Deploy Snapshot') {
       steps {
-         container('maven-jdk11') {
+        dir('watcher') {
+          container('maven-jdk11') {
             sh 'mvn -DskipTests -Drat.skip=true clean deploy'
-         }
+          }
+        }
       }
     }
   }
