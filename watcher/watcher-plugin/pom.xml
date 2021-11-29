@@ -30,7 +30,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>watcher-plugin-erc20</module>
+        <module>watcher-plugin-evm</module>
     </modules>
 
 </project>

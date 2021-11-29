@@ -26,7 +26,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>watcher-plugin-erc20</artifactId>
+    <artifactId>watcher-plugin-evm</artifactId>
 
     <dependencies>
         <dependency>

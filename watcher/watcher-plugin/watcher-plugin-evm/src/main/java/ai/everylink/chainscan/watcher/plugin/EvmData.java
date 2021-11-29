@@ -17,12 +17,12 @@
 
 package ai.everylink.chainscan.watcher.plugin;
 
+import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.Log;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +51,11 @@ public class EvmData {
      * key: transaction hash
      * value: log list
      */
-    private Map<String, List<Log>> transactionLogMap = new HashMap<>();
+    private Map<String, List<Log>> transactionLogMap = Maps.newConcurrentMap();
+
+     /**
+      * 扩展数据。watcher根据需要添加，各个plugin根据自身的业务需要进行处理。
+      */
+    private Map<String, Object> extraData = Maps.newConcurrentMap();
 
 }

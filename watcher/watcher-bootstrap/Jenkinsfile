@@ -13,7 +13,7 @@ pipeline {
     }
     stage('build') {
       steps {
-        dir('watcher-bootstrap') {
+        dir('watcher/watcher-bootstrap') {
             container('maven-jdk11') {
                 sh 'mvn -version'
                 sh 'mvn -DskipTests -Drat.skip=true clean package'

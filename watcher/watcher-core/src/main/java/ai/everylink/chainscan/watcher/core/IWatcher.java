@@ -49,10 +49,17 @@ public interface IWatcher {
     <T> List<T> scanBlock() throws WatcherExecutionException;
 
     /**
-     * 支持的链名称(大写)。如EVM、VM
+     * 当前watcher支持扫块的链列表。
+     *
      * @return
      */
-    default String supportedChain() {return "EVM";};
+    List<String> listSupportedChain();
+
+    /**
+     * 设置当前扫块的链url
+     * @param chain
+     */
+    void setCurrentChain(String chain);
 
     /**
      * watcher调度顺序。

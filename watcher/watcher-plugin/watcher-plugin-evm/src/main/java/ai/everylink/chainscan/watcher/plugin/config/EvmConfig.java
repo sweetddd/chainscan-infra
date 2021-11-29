@@ -28,11 +28,14 @@ import org.springframework.context.annotation.Configuration;
  * @since 2021-11-26
  */
 @Configuration
-@ConfigurationProperties(prefix = "secret")
+@ConfigurationProperties(prefix = "evm.chain")
 @Data
-public class VmSecret {
+public class EvmConfig {
 
-    private String rpcApi;
+    private String urls;
 
-    private String rpcSecret;
+    private String rinkebyUrl;
+
+    private String rinkebyRpcSecret;
+
 }

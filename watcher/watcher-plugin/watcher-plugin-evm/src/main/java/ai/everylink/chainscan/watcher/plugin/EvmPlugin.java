@@ -30,7 +30,7 @@ public class EvmPlugin implements IWatcherPlugin {
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
         EvmData blockData = (EvmData)block;
-        System.out.println("Erc20Plugin 处理: " + blockData.getBlock().getNumber()
+        System.out.println("EvmPlugin 处理: " + blockData.getBlock().getNumber()
                 + "; tx size=" + blockData.getBlock().getTransactions().size());
         return false;
     }
