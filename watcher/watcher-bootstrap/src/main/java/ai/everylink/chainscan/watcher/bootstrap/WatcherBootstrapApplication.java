@@ -24,6 +24,8 @@ import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -37,6 +39,8 @@ import java.util.ServiceLoader;
  */
 @Slf4j
 @SpringBootApplication(scanBasePackages="ai.everylink.chainscan.watcher")
+@EnableJpaRepositories(basePackages = "ai.everylink.chainscan.watcher")
+@EntityScan(basePackages = "ai.everylink.chainscan.watcher")
 public class WatcherBootstrapApplication {
 
     /**
