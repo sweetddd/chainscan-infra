@@ -21,6 +21,6 @@ USER java-app
 
 EXPOSE 6003
 
-ARG JAR_FILE=target/watcher-bootstrap.jar
+ARG JAR_FILE=target/chainscan-watcher-bootstrap.jar
 COPY ${JAR_FILE} app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
