@@ -72,14 +72,17 @@ public class BlockChainScanJob implements Job {
             }
 
             // 3.处理块信息
-            for (Object block : blockList) {
-                for (IWatcherPlugin plugin : pluginList) {
+            for (IWatcherPlugin plugin : pluginList) {
+                for (Object block : blockList) {
                     try {
-                        log.info("[{}]Process block begin.watcher=[{}],plugin=[{}]",
-                                id, watcher.getClass().getSimpleName(), plugin.getClass().getSimpleName());
                         boolean result = plugin.processBlock(block);
-                        log.info("[{}]Process block end.watcher=[{}],plugin=[{}],result={}",
+                        log.info("[{}]Processed block.watcher=[{}],plugin=[{}],result={}",
                                 id, watcher.getClass().getSimpleName(), plugin.getClass().getSimpleName(), result);
+
+                        // block需要按顺序处理，一个处理失败，后续不能再继续
+                        if (!result) {
+                            break;
+                        }
                     } catch (Throwable e) {
                         log.error(String.format("[%s]Process block error. watcher=[%s],plugin=[%s]",
                                 id+"", watcher.getClass().getSimpleName(), plugin.getClass().getSimpleName()), e);
