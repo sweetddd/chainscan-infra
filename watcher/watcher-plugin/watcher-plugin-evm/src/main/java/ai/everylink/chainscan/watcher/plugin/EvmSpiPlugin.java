@@ -36,8 +36,8 @@ public class EvmSpiPlugin implements IEvmWatcherPlugin {
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
         EvmData blockData = (EvmData)block;
-        System.out.println("EvmSpiPlugin 处理: " + blockData.getBlock().getNumber()
-                + "; tx size=" + blockData.getBlock().getTransactions().size());
+//        System.out.println("EvmSpiPlugin 处理: " + blockData.getBlock().getNumber()
+//                + "; tx size=" + blockData.getBlock().getTransactions().size());
         return false;
     }
 }

@@ -49,19 +49,6 @@ public interface IWatcher {
     <T> List<T> scanBlock() throws WatcherExecutionException;
 
     /**
-     * 当前watcher支持扫块的链列表。
-     *
-     * @return
-     */
-    List<String> listSupportedChain();
-
-    /**
-     * 设置当前扫块的链url
-     * @param chain
-     */
-    void setCurrentChain(String chain);
-
-    /**
      * watcher调度顺序。
      *
      * @return 调度顺序。值越小优先级越高。

@@ -21,9 +21,7 @@ import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.DateUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
+import org.quartz.*;
 import org.springframework.util.CollectionUtils;
 import java.util.List;
 
@@ -34,6 +32,7 @@ import java.util.List;
  * @since 2021-11-6
  */
 @Slf4j
+@DisallowConcurrentExecution
 public class BlockChainScanJob implements Job {
 
     private IWatcher watcher;
@@ -56,7 +55,6 @@ public class BlockChainScanJob implements Job {
 
         try {
             // 1.扫块
-            log.info("[{}]Scan blocks start.watcher=[{}]", id, watcher.getClass().getSimpleName());
             List<Object> blockList = watcher.scanBlock();
             if (CollectionUtils.isEmpty(blockList)) {
                 log.info("[{}]Scan blocks not found.watcher=[{}]", id, watcher.getClass().getSimpleName());

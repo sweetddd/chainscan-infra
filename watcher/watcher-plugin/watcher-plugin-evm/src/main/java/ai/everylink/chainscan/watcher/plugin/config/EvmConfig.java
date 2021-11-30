@@ -32,7 +32,15 @@ import org.springframework.context.annotation.Configuration;
 @Data
 public class EvmConfig {
 
-    private String urls;
+    /**
+     * 每次扫块步数
+     */
+    private Integer rinkebyStep;
+
+    /**
+     * rinkeby chain id
+     */
+    private Integer rinkebyChainId;
 
     private String rinkebyUrl;
 

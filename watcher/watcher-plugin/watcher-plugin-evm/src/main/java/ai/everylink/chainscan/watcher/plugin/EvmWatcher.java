@@ -22,6 +22,7 @@ import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
+import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
 import com.google.common.collect.Lists;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
@@ -43,24 +44,27 @@ import java.util.concurrent.TimeUnit;
  */
 public class EvmWatcher implements IWatcher {
 
-    private static Logger logger = LoggerFactory.getLogger(EvmWatcher.class);
+    private Logger logger = LoggerFactory.getLogger(EvmWatcher.class);
 
     /** 当前扫描高度。TODO 应该从数据库获取当前最新块高度 */
     private Long currentBlockHeight = 0L;
 
-    /** 每次扫描步数. */
-    private int step = 5;
+    /** 每次扫块最大扫块步数 */
+    private int step;
 
-    /** watcher当前扫块的链url */
-    private String currentChainuRL;
+    /** 当前扫块的链的id */
+    private int chainId;
 
     private Web3j web3j;
+
+    /** 从数据库里面获取处理进度 */
+    private EvmDataService evmDataService;
 
     @Override
     public List<EvmData> scanBlock() {
         long start = System.currentTimeMillis();
 
-        initWeb3j();
+        init();
 
         List<EvmData> blockList = Lists.newArrayList();
 
@@ -77,10 +81,9 @@ public class EvmWatcher implements IWatcher {
                 currentBlockHeight = (networkBlockHeight - currentBlockHeight > step)
                                     ? currentBlockHeight + step
                                     : networkBlockHeight;
-                logger.info("Scan block from {} to {}", startBlockNumber, currentBlockHeight);
 
-//                blockList = replayBlock(startBlockNumber, currentBlockHeight);
-                blockList = replayBlock(9716550L, 9716553L);
+                blockList = replayBlock(startBlockNumber, currentBlockHeight);
+//                blockList = replayBlock(9716550L, 9716553L);
                 logger.info("Scan block from {} to {},resultSize={}", startBlockNumber, currentBlockHeight, blockList.size());
                 if (CollectionUtils.isEmpty(blockList)) {
                     logger.info("扫块失败！！！");
@@ -114,29 +117,25 @@ public class EvmWatcher implements IWatcher {
         return  pluginList;
     }
 
-    @Override
-    public List<String> listSupportedChain() {
-        try {
-            String url = SpringApplicationUtils.getBean(EvmConfig.class).getUrls();
-            logger.info("{} supports chain list: {}", getClass().getSimpleName(), url);
-            return Lists.newArrayList(url.split(","));
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-
-        return Lists.newArrayList();
-    }
-
-    @Override
-    public void setCurrentChain(String chain) {
-        this.currentChainuRL = chain;
-    }
 
     @Override
     public String getCron() {
-//        return "*/5 * * * * ?";
+        return "*/50 * * * * ?";
+    }
 
-        return "*/10 * * * * ?";
+    private void init() {
+        initWeb3j();
+        initService();
+        step = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyStep();
+        chainId = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyChainId();
+        currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
+        logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
+    }
+
+    private void initService() {
+        if (evmDataService == null) {
+            evmDataService = SpringApplicationUtils.getBean(EvmDataService.class);
+        }
     }
 
     /**
@@ -153,11 +152,8 @@ public class EvmWatcher implements IWatcher {
             builder.writeTimeout(30 * 1000, TimeUnit.MILLISECONDS);
             builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
             OkHttpClient httpClient = builder.build();
-            HttpService httpService = new HttpService(currentChainuRL, httpClient, false);
-
-            if (SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyUrl().equals(currentChainuRL)) {
-                httpService.addHeader("Authorization", Credentials.basic("", SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyRpcSecret()));
-            }
+            HttpService httpService = new HttpService(SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyUrl(), httpClient, false);
+            httpService.addHeader("Authorization", Credentials.basic("", SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyRpcSecret()));
             web3j = Web3j.build(httpService);
         } catch (Exception e) {
             logger.error("初始化web3j异常", e);
@@ -184,8 +180,9 @@ public class EvmWatcher implements IWatcher {
 
         for (Long blockHeight = startBlockNumber; blockHeight <= endBlockNumber; blockHeight++) {
             logger.info("Begin to scan block={}", blockHeight);
-//            try {
+
             EvmData data = new EvmData();
+            data.setChainId(chainId);
 
             // 查询block
             EthBlock block = web3j.ethGetBlockByNumber(
@@ -214,9 +211,6 @@ public class EvmWatcher implements IWatcher {
                     data.getTransactionLogMap().put(tx.getHash(), receipt.getResult().getLogs());
                 }
             }
-//            } catch (Throwable e) {
-//                logger.error("Error occured when scan block=" + blockHeight, e);
-//            }
         }
 
         return dataList;
