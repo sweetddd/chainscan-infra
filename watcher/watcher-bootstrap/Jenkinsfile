@@ -21,6 +21,7 @@ pipeline {
         dir('watcher/watcher-bootstrap') {
             container('maven-jdk11') {
                 sh 'mvn -version'
+                sh 'mvn -version'
                 sh 'mvn -DskipTests -Drat.skip=true clean package'
                 withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,credentialsId : 'dockerhub' ,usernameVariable : 'DOCKER_USERNAME' ,)]) {
                     sh 'echo "$DOCKER_PASSWORD" | docker login $REGISTRY -u "$DOCKER_USERNAME" --password-stdin'
