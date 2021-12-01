@@ -22,6 +22,7 @@ import ai.everylink.chainscan.watcher.plugin.dao.*;
 import ai.everylink.chainscan.watcher.plugin.entity.Block;
 import ai.everylink.chainscan.watcher.plugin.entity.Transaction;
 import ai.everylink.chainscan.watcher.plugin.entity.TransactionLog;
+import ai.everylink.chainscan.watcher.plugin.util.DecodUtils;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
@@ -143,6 +144,7 @@ public class EvmDataServiceImpl implements EvmDataService {
             tx.setInput(item.getInput());
             tx.setTxType(1);//TODO
             tx.setCreateTime(new Date());
+            inputParams(tx);
             txList.add(tx);
         }
 
@@ -172,7 +174,6 @@ public class EvmDataServiceImpl implements EvmDataService {
                 log.setCreateTime(new Date());
                 logList.add(log);
             }
-
         }
 
         return logList;
@@ -185,6 +186,20 @@ public class EvmDataServiceImpl implements EvmDataService {
     private String toJsonString(Object obj) {
         Gson gson = new Gson();
         return gson.toJson(obj);
+    }
+
+    private void inputParams(Transaction tx) {
+        String input = tx.getInput();
+        if(input.length()> 10 && input.substring(0,2).equals("0x")){
+            Object function = DecodUtils.getFunction(input.substring(0, 10));
+            if(function != null){
+                tx.setInputMethod(function.toString());
+                tx.setInputParams(DecodUtils.getParams(input));
+            }else{
+                tx.setInputMethod(input);
+                tx.setInputParams(input);
+            }
+        }
     }
 
 }

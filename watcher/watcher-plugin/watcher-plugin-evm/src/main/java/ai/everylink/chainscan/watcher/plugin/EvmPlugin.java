@@ -23,6 +23,22 @@ import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.web3j.abi.DefaultFunctionEncoder;
+import org.web3j.abi.TypeDecoder;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Function;
+import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.protocol.core.methods.response.EthBlock;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import org.web3j.abi.TypeReference;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ERC20 chain data plugin
@@ -39,10 +55,17 @@ public class EvmPlugin implements IWatcherPlugin {
 
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
-        EvmData blockData = (EvmData)block;
+        EvmData blockData = (EvmData) block;
         initService();
         System.out.println("EvmPlugin 处理: " + blockData.getBlock().getNumber()
-                + "; tx size=" + blockData.getBlock().getTransactions().size());
+                                   + "; tx size=" + blockData.getBlock().getTransactions().size());
+
+        EthBlock.Block                   ethBlock     = blockData.getBlock();
+        List<EthBlock.TransactionResult> transactions = ethBlock.getTransactions();
+        for (EthBlock.TransactionResult transaction : transactions) {
+            System.out.println(transaction);
+        }
+
         try {
             evmDataService.saveEvmData(blockData);
         } catch (Exception e) {
@@ -58,5 +81,4 @@ public class EvmPlugin implements IWatcherPlugin {
             evmDataService = SpringApplicationUtils.getBean(EvmDataService.class);
         }
     }
-
 }
