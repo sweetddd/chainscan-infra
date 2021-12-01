@@ -73,7 +73,7 @@ public class Transaction {
     private String value;
 
     @Column(name = "tx_fee")
-    private String txFee;
+    private Integer txFee;
 
     @Column(name = "gas_used")
     private Integer gasUsed;

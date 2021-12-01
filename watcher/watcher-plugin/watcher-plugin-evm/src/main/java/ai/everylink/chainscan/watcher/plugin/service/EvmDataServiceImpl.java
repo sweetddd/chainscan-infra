@@ -17,7 +17,9 @@
 
 package ai.everylink.chainscan.watcher.plugin.service;
 
+import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.plugin.EvmData;
+import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
 import ai.everylink.chainscan.watcher.plugin.dao.*;
 import ai.everylink.chainscan.watcher.plugin.entity.AccountContractBalance;
 import ai.everylink.chainscan.watcher.plugin.entity.Block;
@@ -27,6 +29,7 @@ import ai.everylink.chainscan.watcher.plugin.util.DecodUtils;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,13 +38,22 @@ import org.springframework.util.CollectionUtils;
 import org.web3j.abi.TypeDecoder;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.Log;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.http.HttpService;
 
+import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * EVM数据服务
@@ -52,6 +64,8 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class EvmDataServiceImpl implements EvmDataService {
+
+    private Web3j web3j;
 
     @Autowired
     private BlockDao blockDao;
@@ -70,6 +84,24 @@ public class EvmDataServiceImpl implements EvmDataService {
 
     @Autowired
     private ContractDao contractDao;
+
+    @PostConstruct
+    private void initWeb3j() {
+        if (web3j != null) {
+            return ;
+        }
+        try {
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            builder.connectTimeout(30 * 1000, TimeUnit.MILLISECONDS);
+            builder.writeTimeout(30 * 1000, TimeUnit.MILLISECONDS);
+            builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
+            OkHttpClient httpClient  = builder.build();
+            HttpService  httpService = new HttpService(SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyUrl(), httpClient, false);
+            web3j = Web3j.build(httpService);
+        } catch (Exception e) {
+            log.error("初始化web3j异常", e);
+        }
+    }
 
     @Override
     public Long getMaxBlockNum(int chainId) {
@@ -135,40 +167,44 @@ public class EvmDataServiceImpl implements EvmDataService {
         }
 
         for (EthBlock.TransactionResult result : data.getBlock().getTransactions()) {
-            org.web3j.protocol.core.methods.response.Transaction item = ((EthBlock.TransactionObject) result).get();
             Transaction tx = new Transaction();
+            org.web3j.protocol.core.methods.response.Transaction item                  = ((EthBlock.TransactionObject) result).get();
+            try {
+                TransactionReceipt receipt = web3j.ethGetTransactionReceipt(item.getHash()).send().getResult();
+                if(receipt != null){
+                   tx.setStatus(receipt.getStatus());
+                   tx.setTxFee(receipt.getGasUsed().intValue());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             tx.setTransactionHash(item.getHash());
             tx.setBlockHash(item.getBlockHash());
             tx.setBlockNumber(item.getBlockNumber().longValue());
             tx.setChainId(chainId);
             tx.setTransactionIndex(item.getTransactionIndex().intValue());
-            tx.setStatus("pending");// TODO
-            tx.setFailMsg(""); // TODO
+            tx.setFailMsg(""); // TODOdata = {EvmData@17780} "EvmData(chainId=4, block=org.web3j.protocol.core.methods.response.EthBlock$Block@c3e0a9e9, transactionLogMap={0x97b6ed17a2f463e0efd75fd4214dd5c660da74de466cee3285d836ade7a9cb0f=[Log{removed=false, logIndex='0x12', transactionIndex='0xf', transactionHash='0x97b6ed17a2f463e0efd75fd4214dd5c660da74de466cee3285d836ade7a9cb0f', blockHash='0xc9dc50cdbe476ba65bd06c659511f12833db9c47efe4c1565697790f5a6966c3', blockNumber='0x947e43', address='0xf91c814e4a51eeedac79405fa279351aaa04af5f', data='0x', type='null', topics=[0x9a2a6f18254a6b445277c4ccc7e79b71001a0a585ceb7b2ee101df78e5be36db, 0x00000000000000000000000015b7c5507a40d9cad51aed828b9e889d8d701738, 0x000000000000000000000000000000000000000000000000000000003baea1d0, 0x00000000000000000000000000000000000000000000000000000000000001f4]}, Log{removed=false, logIndex='0x13', transactionIndex='0xf', transactionHash='0x97b6ed17a2f463e0efd75fd4214dd5c660da74de466cee3285d836ade7a9cb0f', blockHash='0xc9dc50cdbe476ba65bd06c659511f12833db9c47efe4c15656977"… View
             tx.setTxTimestamp(convertTime(data.getBlock().getTimestamp().longValue()*1000));
             tx.setFromAddr(item.getFrom());
             if (Objects.nonNull(item.getTo())) {
                 tx.setToAddr(item.getTo());
             }
             tx.setValue(item.getValue().toString());
-            tx.setTxFee("0"); // TODO
-            tx.setGasLimit(21000); // TODO
+            tx.setGasLimit(item.getGasPrice().intValue()*item.getGas().intValue()); // TODO
             tx.setGasUsed(item.getGas().intValue());
             tx.setGasPrice(item.getGasPrice().toString());
             tx.setNonce(item.getNonce().toString());
             tx.setInput(item.getInput());
-            tx.setInputMethod(""); // TODO
-            tx.setInputParams(""); // TODO
             if (StringUtils.equalsIgnoreCase("0x", item.getInput())) {
                 tx.setTxType(0); // 1-合约交易 0-非合约交易
             } else {
                 tx.setTxType(1);
             }
-
             tx.setCreateTime(new Date());
             inputParams(tx);
             txList.add(tx);
         }
-
         return txList;
     }
 
@@ -264,6 +300,8 @@ public class EvmDataServiceImpl implements EvmDataService {
                 tx.setInputMethod(input);
                 tx.setInputParams(input);
             }
+        }else {
+            tx.setInputParams(input);
         }
     }
 

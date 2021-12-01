@@ -20,6 +20,7 @@ import static javax.swing.UIManager.put;
  **/
 public class DecodUtils {
 
+
     private static Map functionMap = new HashMap(){{
         put("0x40c10f19", "Function: mint(address _who, uint256 _value) ***");
         put("0x095ea7b3", "Function: approve(address _spender, uint256 _value) ***");
@@ -30,6 +31,9 @@ public class DecodUtils {
         put("0xa9059cbb", "Function: transfer(address _to, uint256 _value) ***");
         put("0xcb10f215", "Function: adminSetResource(address handlerAddress, bytes32 resourceID, address tokenAddress) ***");
         put("0x42966c68", "Function: burn(uint256 _value) ***");
+        put("0x6a761202", "Function: execTransaction(address to, uint256 value, bytes data, uint8 operation, uint256 safeTxGas, uint256 dataGas, uint256 gasPrice, address gasToken, address refundReceiver, bytes signatures) ***");
+        put("0xfa31de01", "Function: dispatch(uint32 _destinationDomain, bytes32 _recipientAddress, bytes _messageBody) ***");
+        put("0xb31c01fb", "Function: update(bytes32 _committedRoot, bytes32 _newRoot, bytes _signature) ***");
     }};
 
     /**
