@@ -83,7 +83,7 @@ public class EvmWatcher implements IWatcher {
                                     : networkBlockHeight;
 
                 blockList = replayBlock(startBlockNumber, currentBlockHeight);
-//                blockList = replayBlock(9716550L, 9716553L);
+//                blockList = replayBlock(9716550L, 9716850L);
                 logger.info("Scan block from {} to {},resultSize={}", startBlockNumber, currentBlockHeight, blockList.size());
                 if (CollectionUtils.isEmpty(blockList)) {
                     logger.info("扫块失败！！！");

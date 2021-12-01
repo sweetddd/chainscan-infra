@@ -64,6 +64,6 @@ public interface AccountContractBalanceDao extends JpaRepository<AccountContract
      * @param contractAddr token
      * @return
      */
-    @Query(value = "select * from account_contract_balance where account_addr=(?2) and contract_addr=(?3)", nativeQuery = true)
+    @Query(value = "select * from account_contract_balance where account_addr=(?1) and contract_addr=(?2)", nativeQuery = true)
     AccountContractBalance getByAccountAddrAndContractAddr(String accountAddr, String contractAddr);
 }
