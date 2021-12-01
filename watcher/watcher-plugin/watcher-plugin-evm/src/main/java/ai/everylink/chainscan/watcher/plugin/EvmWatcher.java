@@ -120,8 +120,8 @@ public class EvmWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        return "0 0 0/1 * * ? ";
-//        return "*/50 * * * * ?";
+//        return "0 0 0/1 * * ? ";
+        return "*/5 * * * * ?";
     }
 
     private void init() {
@@ -154,7 +154,7 @@ public class EvmWatcher implements IWatcher {
             builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
             OkHttpClient httpClient = builder.build();
             HttpService httpService = new HttpService(SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyUrl(), httpClient, false);
-            httpService.addHeader("Authorization", Credentials.basic("", SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyRpcSecret()));
+//            httpService.addHeader("Authorization", Credentials.basic("", SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyRpcSecret()));
             web3j = Web3j.build(httpService);
         } catch (Exception e) {
             logger.error("初始化web3j异常", e);

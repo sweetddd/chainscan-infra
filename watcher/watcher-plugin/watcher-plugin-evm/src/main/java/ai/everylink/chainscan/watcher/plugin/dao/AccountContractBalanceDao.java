@@ -32,16 +32,38 @@ import org.springframework.transaction.annotation.Transactional;
 public interface AccountContractBalanceDao extends JpaRepository<AccountContractBalance, Long> {
 
     /**
-     * 更新余额
+     * 增加余额
      *
-     * @param balance
+     * @param amount
      * @param accountAddr
      * @param contractAddr
      * @return
      */
-    @Query(value = "update account_contract_balance set balance=(?1) where account_addr=(?2) and contract_addr=(?3)", nativeQuery = true)
+    @Query(value = "update account_contract_balance set balance=balance+(?1) where account_addr=(?2) and contract_addr=(?3)", nativeQuery = true)
     @Modifying
     @Transactional
-    int updateBalance(String balance, String accountAddr, String contractAddr);
+    int increaseBalance(Long amount, String accountAddr, String contractAddr);
 
+    /**
+     * 减少余额
+     *
+     * @param amount
+     * @param accountAddr
+     * @param contractAddr
+     * @return
+     */
+    @Query(value = "update account_contract_balance set balance=balance-(?1) where account_addr=(?2) and contract_addr=(?3)", nativeQuery = true)
+    @Modifying
+    @Transactional
+    int decreaseBalance(Long amount, String accountAddr, String contractAddr);
+
+    /**
+     * 获取用户账户下某个token的余额
+     *
+     * @param accountAddr 用户账户
+     * @param contractAddr token
+     * @return
+     */
+    @Query(value = "select * from account_contract_balance where account_addr=(?2) and contract_addr=(?3)", nativeQuery = true)
+    AccountContractBalance getByAccountAddrAndContractAddr(String accountAddr, String contractAddr);
 }

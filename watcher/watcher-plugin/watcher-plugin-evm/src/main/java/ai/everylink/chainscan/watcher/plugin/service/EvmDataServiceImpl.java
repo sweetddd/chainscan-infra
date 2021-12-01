@@ -19,6 +19,7 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 import ai.everylink.chainscan.watcher.plugin.EvmData;
 import ai.everylink.chainscan.watcher.plugin.dao.*;
+import ai.everylink.chainscan.watcher.plugin.entity.AccountContractBalance;
 import ai.everylink.chainscan.watcher.plugin.entity.Block;
 import ai.everylink.chainscan.watcher.plugin.entity.Transaction;
 import ai.everylink.chainscan.watcher.plugin.entity.TransactionLog;
@@ -30,9 +31,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.web3j.abi.TypeDecoder;
+import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.Log;
 
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -74,7 +79,7 @@ public class EvmDataServiceImpl implements EvmDataService {
     @Transactional
     @Override
     public void saveEvmData(EvmData data) {
-        int chainId = 4;
+        int chainId = data.getChainId();
 
         Block block = buildBlock(data, chainId);
         blockDao.save(block);
@@ -87,6 +92,10 @@ public class EvmDataServiceImpl implements EvmDataService {
         List<TransactionLog> logList = buildTransactionLogList(data, chainId);
         if (!CollectionUtils.isEmpty(logList)) {
             transactionLogDao.saveAll(logList);
+        }
+
+        if (!CollectionUtils.isEmpty(txList)) {
+            updateContractBalance(txList);
         }
     }
 
@@ -199,4 +208,97 @@ public class EvmDataServiceImpl implements EvmDataService {
         return gson.toJson(obj);
     }
 
+    private void updateContractBalance(List<Transaction> txList) {
+        for (Transaction tx : txList) {
+            if (StringUtils.equalsIgnoreCase("0x", tx.getInput())) {
+                log.info("not contract.blockNum={},tx_hash={}", tx.getBlockNumber(), tx.getTransactionHash());
+                continue;
+            }
+
+            String method = tx.getInputMethod();
+            String params = tx.getInputParams();
+            if (StringUtils.isEmpty(method) || StringUtils.isEmpty(params)) {
+                log.info("method or params is null.block={},tx_hash={}", tx.getBlockNumber(), tx.getTransactionHash());
+                continue;
+            }
+
+            InputParam inputParam = parseInputParam(tx.getInput());
+
+            if (StringUtils.containsIgnoreCase(method, "transfer")) {
+                String fromAddr = tx.getFromAddr();
+                String contractAddr = tx.getToAddr();
+                String toAddr = inputParam.addr;
+                Long amount = inputParam.amount;
+                boolean decFlag = decreaseAccountAmount(fromAddr, contractAddr, amount);
+                boolean incFlag = increaseAccountAmount(toAddr, contractAddr, amount);
+                log.info("transfer called.block={},tx={},dec={},inc={}",
+                        tx.getBlockNumber(), tx.getTransactionHash(), decFlag, incFlag);
+            } else if (StringUtils.containsIgnoreCase(method, "mint")) {
+                String contractAddr = tx.getToAddr();
+                String addr = inputParam.addr;
+                Long amount = inputParam.amount;
+                boolean incFlag = increaseAccountAmount(addr, contractAddr, amount);
+                log.info("mint called.block={},tx={},inc={}",
+                        tx.getBlockNumber(), tx.getTransactionHash(), incFlag);
+            } else if (StringUtils.containsIgnoreCase(method, "burn")) {
+                String contractAddr = tx.getToAddr();
+                String addr = inputParam.addr;
+                Long amount = inputParam.amount;
+                boolean decFlag = decreaseAccountAmount(addr, contractAddr, amount);
+                log.info("burn called.block={},tx={},dec={}",
+                        tx.getBlockNumber(), tx.getTransactionHash(), decFlag);
+            }
+        }
+    }
+
+
+    private boolean increaseAccountAmount(String addr, String contractAddr, Long amount) {
+        AccountContractBalance old = accountContractBalanceDao.getByAccountAddrAndContractAddr(addr, contractAddr);
+        if (old == null) {
+            old = new AccountContractBalance();
+            old.setAccountAddr(addr);
+            old.setContractAddr(contractAddr);
+            old.setBalance(amount);
+            old.setCreateTime(new Date());
+            accountContractBalanceDao.saveAndFlush(old);
+
+            return true;
+        }
+
+        int rows = accountContractBalanceDao.increaseBalance(amount, addr, contractAddr);
+        return rows > 0;
+    }
+
+    private boolean decreaseAccountAmount(String addr, String contractAddr, Long amount) {
+        AccountContractBalance old = accountContractBalanceDao.getByAccountAddrAndContractAddr(addr, contractAddr);
+        if (old == null) {
+            log.error("decrease failure,no record found.addr={},contractAddr={}", addr, contractAddr);
+            return false;
+        }
+
+        int rows = accountContractBalanceDao.decreaseBalance(amount, addr, contractAddr);
+        return rows > 0;
+    }
+
+
+    private InputParam parseInputParam(String inputData) {
+        // String method = inputData.substring(0, 10);
+        String to    = inputData.substring(10, 74);
+        String value = inputData.substring(74);
+        Method refMethod;
+        try {
+            refMethod = TypeDecoder.class.getDeclaredMethod("decode", String.class, int.class, Class.class);
+            refMethod.setAccessible(true);
+            Address address = (Address) refMethod.invoke(null, to, 0, Address.class);
+            Uint256 amount = (Uint256) refMethod.invoke(null, value, 0, Uint256.class);
+
+            return new InputParam(address.toString(), amount.getValue().longValue());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        return null;
+    }
+
 }
+

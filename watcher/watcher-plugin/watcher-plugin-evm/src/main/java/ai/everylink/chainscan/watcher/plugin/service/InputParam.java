@@ -15,45 +15,23 @@
  * limitations under the License.
  */
 
-package ai.everylink.chainscan.watcher.plugin.entity;
+package ai.everylink.chainscan.watcher.plugin.service;
 
-
-import lombok.Data;
-
-import javax.persistence.*;
-import java.util.Date;
 
 /**
- * 账户在各个token上面的余额
+ * Transaction交易中input字段里面的参数列表
  *
  * @author david.zhang@everylink.ai
- * @since 2021-11-30
+ * @since 2021-12-01
  */
-@Data
-@Entity
-@Table(name="account_contract_balance")
-public class AccountContractBalance {
+public class InputParam {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public InputParam(String addr, Long amount) {
+        this.addr = addr;
+        this.amount = amount;
+    }
 
-    @Column(name = "account_addr")
-    private String accountAddr;
+    public String addr;
 
-    @Column(name = "contract_addr")
-    private String contractAddr;
-
-    @Column(name = "contract_symbol")
-    private String contractSymbol;
-
-    @Column(name = "contract_name")
-    private Integer contractName;
-
-    @Column(name = "balance")
-    private Long balance;
-
-    @Column(name = "create_time")
-    private Date createTime;
-
+    public Long amount;
 }
