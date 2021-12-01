@@ -109,27 +109,31 @@ public class EvmDataServiceImpl implements EvmDataService {
         return maxBlockNum == null ? 0L : maxBlockNum;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveEvmData(EvmData data) {
         int chainId = data.getChainId();
 
         Block block = buildBlock(data, chainId);
         blockDao.save(block);
+        log.info("[save]block={},block saved", data.getBlock().getNumber());
 
         List<Transaction> txList = buildTransactionList(data, chainId);
         if (!CollectionUtils.isEmpty(txList)) {
             transactionDao.saveAll(txList);
+            log.info("[save]block={},txs saved.size={}", data.getBlock().getNumber(), txList.size());
         }
 
         List<TransactionLog> logList = buildTransactionLogList(data, chainId);
         if (!CollectionUtils.isEmpty(logList)) {
             transactionLogDao.saveAll(logList);
+            log.info("[save]block={},logs saved,size={}", data.getBlock().getNumber(), logList.size());
         }
 
-        if (!CollectionUtils.isEmpty(txList)) {
-            updateContractBalance(txList);
-        }
+//        if (!CollectionUtils.isEmpty(txList)) {
+//            updateContractBalance(txList);
+//            log.info("[save]block={},balanced saved.", data.getBlock().getNumber());
+//        }
     }
 
     private Block buildBlock(EvmData data, int chainId) {
@@ -246,6 +250,10 @@ public class EvmDataServiceImpl implements EvmDataService {
     }
 
 
+    /**
+     * 更新账户余额
+     * @param txList
+     */
     private void updateContractBalance(List<Transaction> txList) {
         for (Transaction tx : txList) {
             if (StringUtils.equalsIgnoreCase("0x", tx.getInput())) {
@@ -317,7 +325,6 @@ public class EvmDataServiceImpl implements EvmDataService {
 
             return true;
         }
-
         int rows = accountContractBalanceDao.increaseBalance(amount, addr, contractAddr);
         return rows > 0;
     }
