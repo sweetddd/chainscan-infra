@@ -17,7 +17,7 @@
 
 package ai.everylink.chainscan.watcher.plugin;
 
-import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
+import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
@@ -46,10 +46,9 @@ import java.util.List;
  * @author david.zhang@everylink.ai
  * @since 2021-11-26
  */
-public class EvmPlugin implements IWatcherPlugin {
+public class EvmPlugin implements IEvmWatcherPlugin {
 
-    private static Logger logger = LoggerFactory.getLogger(EvmPlugin.class);
-
+    private Logger logger = LoggerFactory.getLogger(EvmPlugin.class);
 
     private EvmDataService evmDataService;
 

@@ -26,7 +26,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.ServiceLoader;
@@ -61,32 +60,22 @@ public class WatcherBootstrapApplication {
             // 把每个watcher封装为一个job，交由Quartz框架进行调度
             Iterable<IWatcher> watcherList = listWatcher();
             for (IWatcher watcher : watcherList) {
-                List<String> chainList = watcher.listSupportedChain();
-                if (CollectionUtils.isEmpty(chainList)) {
-                    log.error("Chain config not found for watcher: " + watcher.getClass().getName());
-                }
+                JobDataMap map = new JobDataMap();
+                map.put("watcher", watcher);
 
-                for (String chain : chainList) {
-                    // watcher当前扫块的链
-                    watcher.setCurrentChain(chain);
+                JobDetail jobDetail = JobBuilder
+                        .newJob(BlockChainScanJob.class)
+                        .withIdentity(watcher.getClass().getName() + "_Job")
+                        .setJobData(map)
+                        .build();
 
-                    JobDataMap map = new JobDataMap();
-                    map.put("watcher", watcher);
+                CronTrigger trigger = TriggerBuilder
+                        .newTrigger()
+                        .withIdentity(watcher.getClass().getSimpleName() + "_Trigger")
+                        .withSchedule(CronScheduleBuilder.cronSchedule(watcher.getCron()))
+                        .build();
 
-                    JobDetail jobDetail = JobBuilder
-                            .newJob(BlockChainScanJob.class)
-                            .withIdentity(watcher.getClass().getName() + "_Job")
-                            .setJobData(map)
-                            .build();
-
-                    CronTrigger trigger = TriggerBuilder
-                            .newTrigger()
-                            .withIdentity(watcher.getClass().getSimpleName() + "_Trigger")
-                            .withSchedule(CronScheduleBuilder.cronSchedule(watcher.getCron()))
-                            .build();
-
-                    scheduler.scheduleJob(jobDetail, trigger);
-                }
+                scheduler.scheduleJob(jobDetail, trigger);
             }
 
             scheduler.start();

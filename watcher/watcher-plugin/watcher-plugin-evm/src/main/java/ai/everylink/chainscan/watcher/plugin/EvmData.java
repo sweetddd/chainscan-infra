@@ -40,6 +40,11 @@ import java.util.Map;
 @NoArgsConstructor
 public class EvmData {
 
+     /**
+      * 链id
+      */
+    private int chainId;
+
     /**
      * 区块信息
      */
