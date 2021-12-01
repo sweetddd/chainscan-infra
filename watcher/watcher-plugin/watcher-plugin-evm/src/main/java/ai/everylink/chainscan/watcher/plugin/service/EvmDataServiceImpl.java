@@ -25,6 +25,7 @@ import ai.everylink.chainscan.watcher.plugin.entity.TransactionLog;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,10 +95,14 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setBlockNumber(data.getBlock().getNumber().longValue());
         block.setBlockHash(data.getBlock().getHash());
         block.setChainId(chainId);
-        block.setBlockTimestamp(convertTime(data.getBlock().getTimestamp().longValue()));
+        block.setBlockTimestamp(convertTime(data.getBlock().getTimestamp().longValue()*1000));
         block.setParentHash(data.getBlock().getParentHash());
         block.setMiner(data.getBlock().getMiner());
-        block.setNonce(data.getBlock().getNonce().toString());
+        try {
+            block.setNonce(data.getBlock().getNonce().toString());
+        } catch (Exception e) {
+            block.setNonce(data.getBlock().getNonceRaw());
+        }
         block.setTxSize(data.getBlock().getTransactions().size());
         block.setDifficulty(data.getBlock().getDifficulty().toString());
         block.setTotalDifficulty(data.getBlock().getTotalDifficulty().toString());
@@ -108,7 +113,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setCreateTime(new Date());
         block.setBurnt("");
         block.setReward("");
-        block.setValidator("");
+        block.setValidator(data.getBlock().getMiner());
         return block;
     }
 
@@ -129,7 +134,7 @@ public class EvmDataServiceImpl implements EvmDataService {
             tx.setTransactionIndex(item.getTransactionIndex().intValue());
             tx.setStatus("pending");// TODO
             tx.setFailMsg(""); // TODO
-            tx.setTxTimestamp(new Date()); // TODO
+            tx.setTxTimestamp(convertTime(data.getBlock().getTimestamp().longValue()*1000));
             tx.setFromAddr(item.getFrom());
             if (Objects.nonNull(item.getTo())) {
                 tx.setToAddr(item.getTo());
@@ -141,7 +146,14 @@ public class EvmDataServiceImpl implements EvmDataService {
             tx.setGasPrice(item.getGasPrice().toString());
             tx.setNonce(item.getNonce().toString());
             tx.setInput(item.getInput());
-            tx.setTxType(1);//TODO
+            tx.setInputMethod(""); // TODO
+            tx.setInputParams(""); // TODO
+            if (StringUtils.equalsIgnoreCase("0x", item.getInput())) {
+                tx.setTxType(0); // 1-合约交易 0-非合约交易
+            } else {
+                tx.setTxType(1);
+            }
+
             tx.setCreateTime(new Date());
             txList.add(tx);
         }
