@@ -24,7 +24,6 @@ import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
 import com.google.common.collect.Lists;
-import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +32,10 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
+
+import javax.net.ssl.*;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -46,18 +49,26 @@ public class EvmWatcher implements IWatcher {
 
     private Logger logger = LoggerFactory.getLogger(EvmWatcher.class);
 
-    /** 当前扫描高度。TODO 应该从数据库获取当前最新块高度 */
+    /**
+     * 当前扫描高度(扫描时从数据库实时获取当前高度)
+     */
     private Long currentBlockHeight = 0L;
 
-    /** 每次扫块最大扫块步数 */
+    /**
+     * 每次扫块最大扫块步数
+     */
     private int step;
 
-    /** 当前扫块的链的id */
+    /**
+     * 当前扫块的链的id
+     */
     private int chainId;
 
     private Web3j web3j;
 
-    /** 从数据库里面获取处理进度 */
+    /**
+     * 从数据库里面获取处理进度
+     */
     private EvmDataService evmDataService;
 
     @Override
@@ -79,8 +90,8 @@ public class EvmWatcher implements IWatcher {
             if (currentBlockHeight < networkBlockHeight) {
                 startBlockNumber = currentBlockHeight + 1;
                 currentBlockHeight = (networkBlockHeight - currentBlockHeight > step)
-                                    ? currentBlockHeight + step
-                                    : networkBlockHeight;
+                        ? currentBlockHeight + step
+                        : networkBlockHeight;
 
                 blockList = replayBlock(startBlockNumber, currentBlockHeight);
 //                blockList = replayBlock(9716550L, 9716850L);
@@ -93,11 +104,11 @@ public class EvmWatcher implements IWatcher {
             }
         } catch (Throwable e) {
             currentBlockHeight = startBlockNumber - 1;
-            logger.error("loop scan error.curNum={"+currentBlockHeight+"},netNum={"+networkBlockHeight+"}", e);
+            logger.error("loop scan error.curNum={" + currentBlockHeight + "},netNum={" + networkBlockHeight + "}", e);
         }
 
         logger.info("loop scan end.curNum={},netNum={},consume={}ms",
-                currentBlockHeight, networkBlockHeight, (System.currentTimeMillis()-start));
+                currentBlockHeight, networkBlockHeight, (System.currentTimeMillis() - start));
 
         return blockList;
     }
@@ -114,7 +125,7 @@ public class EvmWatcher implements IWatcher {
         // 排序
         Collections.sort(pluginList, (o1, o2) -> o2.ordered() - o1.ordered());
 
-        return  pluginList;
+        return pluginList;
     }
 
 
@@ -144,7 +155,7 @@ public class EvmWatcher implements IWatcher {
      */
     private void initWeb3j() {
         if (web3j != null) {
-            return ;
+            return;
         }
 
         try {
@@ -152,7 +163,10 @@ public class EvmWatcher implements IWatcher {
             builder.connectTimeout(30 * 1000, TimeUnit.MILLISECONDS);
             builder.writeTimeout(30 * 1000, TimeUnit.MILLISECONDS);
             builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
-            OkHttpClient httpClient = builder.build();
+            OkHttpClient httpClient = builder
+                    .sslSocketFactory(createSSLSocketFactory(), new TrustAllCerts())
+                    .hostnameVerifier(new TrustAllHostnameVerifier())
+                    .build();
             HttpService httpService = new HttpService(SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyUrl(), httpClient, false);
 //            httpService.addHeader("Authorization", Credentials.basic("", SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyRpcSecret()));
             web3j = Web3j.build(httpService);
@@ -160,6 +174,47 @@ public class EvmWatcher implements IWatcher {
             logger.error("初始化web3j异常", e);
         }
     }
+
+
+    /**
+     * HTTPS  begin
+     */
+    private static SSLSocketFactory createSSLSocketFactory() {
+        SSLSocketFactory ssfFactory = null;
+        try {
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, new TrustManager[]{new TrustAllCerts()}, new SecureRandom());
+            ssfFactory = sc.getSocketFactory();
+        } catch (Exception e) {
+        }
+
+        return ssfFactory;
+    }
+
+    static class TrustAllHostnameVerifier implements HostnameVerifier {
+        @Override
+        public boolean verify(String hostname, SSLSession session) {
+            return true;//trust All的写法就是在这里写的，直接无视hostName，直接返回true，表示信任所有主机
+        }
+    }
+
+    static class TrustAllCerts implements X509TrustManager {
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) {
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) {
+
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    }
+    // HTTPS  end
 
     /**
      * 获取最新区块高度
