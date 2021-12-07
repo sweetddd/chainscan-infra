@@ -52,9 +52,6 @@ public class Block {
     @Column(name = "parent_hash")
     private String parentHash;
 
-    @Column(name = "miner")
-    private String miner;
-
     @Column(name = "nonce")
     private String nonce;
 

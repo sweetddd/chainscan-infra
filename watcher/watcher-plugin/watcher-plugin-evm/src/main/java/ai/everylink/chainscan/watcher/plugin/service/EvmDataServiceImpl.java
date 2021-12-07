@@ -111,7 +111,6 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setChainId(chainId);
         block.setBlockTimestamp(convertTime(data.getBlock().getTimestamp().longValue()*1000));
         block.setParentHash(data.getBlock().getParentHash());
-        block.setMiner(data.getBlock().getMiner());
         try {
             block.setNonce(data.getBlock().getNonce().toString());
         } catch (Exception e) {
