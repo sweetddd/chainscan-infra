@@ -37,3 +37,7 @@ logging:
         ai.everylink.openapi.lottery: info
         ai.everylink.openapi: info
 
+cion:
+  chainIds: "1,99"
+  web3Urls: "http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf,http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
+
