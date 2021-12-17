@@ -68,7 +68,8 @@ public class SummaryWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        return "0 0 * * * ?";
+        //return "0 0 * * * ?";
+        return "*/5 * * * * ?";
     }
 
     private void initService() {

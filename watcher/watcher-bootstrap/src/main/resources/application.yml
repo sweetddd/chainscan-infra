@@ -18,9 +18,11 @@ server:
   address: 0.0.0.0
 
 spring:
-   main:
-     allow-bean-definition-overriding: true
-   application:
+  profiles:
+    active: local
+  main:
+    allow-bean-definition-overriding: true
+  application:
     name: watcher-bootstrap
 
 management:
@@ -37,7 +39,4 @@ logging:
         ai.everylink.openapi.lottery: info
         ai.everylink.openapi: info
 
-cion:
-  chainIds: "4,97"
-  web3Urls: "http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf,http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
 
