@@ -90,5 +90,12 @@ public class BlockChainScanJob implements Job {
         } catch (Throwable e) {
             log.error("["+id+"]Execute watcher error.watcher=["+watcher.getClass().getSimpleName()+"]", e);
         }
+
+        //最后确认区块数据更新;
+        try {
+            watcher.finalizedBlockStatus();
+        } catch (Throwable e) {
+            log.error("["+id+"]Execute watcher error.watcher=["+watcher.getClass().getSimpleName()+"]", e);
+        }
     }
 }

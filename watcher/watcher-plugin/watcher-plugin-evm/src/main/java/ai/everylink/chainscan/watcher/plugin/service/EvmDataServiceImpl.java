@@ -109,6 +109,11 @@ public class EvmDataServiceImpl implements EvmDataService {
         return maxBlockNum == null ? 0L : maxBlockNum;
     }
 
+    @Override
+    public void updateBlockByHash(String finalizedHash) {
+        blockDao.updateBlockByHash(finalizedHash);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveEvmData(EvmData data) {

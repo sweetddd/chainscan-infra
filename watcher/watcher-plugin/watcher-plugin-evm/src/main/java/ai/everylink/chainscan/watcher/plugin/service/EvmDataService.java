@@ -41,4 +41,10 @@ public interface EvmDataService {
      * @return
      */
     Long getMaxBlockNum(int chainId);
+
+    /**
+     * 根据最后确认hash更新block状态;
+     * @param finalizedHash
+     */
+    public void updateBlockByHash(String finalizedHash);
 }

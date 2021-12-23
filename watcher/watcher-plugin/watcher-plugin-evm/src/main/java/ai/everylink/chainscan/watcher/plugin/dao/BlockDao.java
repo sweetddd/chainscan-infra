@@ -19,8 +19,10 @@ package ai.everylink.chainscan.watcher.plugin.dao;
 
 import ai.everylink.chainscan.watcher.plugin.entity.Block;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * BlockDao
@@ -55,4 +57,14 @@ public interface BlockDao extends JpaRepository<Block, Long> {
      */
     @Query(value = "select max(block_number) from block where chain_id=?1", nativeQuery = true)
     Long getMaxBlockNum(int chainId);
+
+
+    /**
+     * 更新 区块状态
+     * @param finalizedHash
+     */
+    @Query(value = "update  block set status = 1 where   block_number  < (select  max_number from  (select block_number as  max_number from block where block_hash = ?1) as b);\n", nativeQuery = true)
+    @Modifying
+    @Transactional
+    void updateBlockByHash(String finalizedHash);
 }

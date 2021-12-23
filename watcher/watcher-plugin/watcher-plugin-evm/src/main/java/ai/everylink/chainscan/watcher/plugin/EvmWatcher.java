@@ -23,10 +23,14 @@ import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
+import ai.everylink.chainscan.watcher.plugin.util.VmChainUtil;
 import com.google.common.collect.Lists;
 import okhttp3.OkHttpClient;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
@@ -45,9 +49,13 @@ import java.util.concurrent.TimeUnit;
  * @author david.zhang@everylink.ai
  * @since 2021-11-26
  */
+@Component
 public class EvmWatcher implements IWatcher {
 
     private Logger logger = LoggerFactory.getLogger(EvmWatcher.class);
+
+    private VmChainUtil vmChainUtil;
+
 
     /**
      * 当前扫描高度(扫描时从数据库实时获取当前高度)
@@ -128,11 +136,21 @@ public class EvmWatcher implements IWatcher {
         return pluginList;
     }
 
+    /**
+     * 获取最后区块状态更新;
+     */
+    @Override
+    public void finalizedBlockStatus() {
+        //获取最新确认hash;
+        String finalizedHash = vmChainUtil.getFinalizedHead();
+        evmDataService.updateBlockByHash(finalizedHash);
+    }
+
 
     @Override
     public String getCron() {
-//        return "0 0 0/1 * * ? ";
-        return "*/5 * * * * ?";
+        return "0 0 0/1 * * ? ";
+      //  return "*/5 * * * * ?";
     }
 
     private void init() {
@@ -148,6 +166,10 @@ public class EvmWatcher implements IWatcher {
         if (evmDataService == null) {
             evmDataService = SpringApplicationUtils.getBean(EvmDataService.class);
         }
+        if (vmChainUtil == null) {
+            vmChainUtil = SpringApplicationUtils.getBean(VmChainUtil.class);
+        }
+
     }
 
     /**

@@ -67,6 +67,11 @@ public class SummaryWatcher implements IWatcher {
     }
 
     @Override
+    public void finalizedBlockStatus() {
+
+    }
+
+    @Override
     public String getCron() {
         //return "0 0 * * * ?";
         return "*/5 * * * * ?";

@@ -54,4 +54,9 @@ public interface IWatcher {
      * @return 调度顺序。值越小优先级越高。
      */
     default int order() {return 1;};
+
+    /**
+     * 最后区块状态数据更新;
+     */
+     public void finalizedBlockStatus();
 }
