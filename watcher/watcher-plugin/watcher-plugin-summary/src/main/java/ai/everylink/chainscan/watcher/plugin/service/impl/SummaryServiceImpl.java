@@ -18,6 +18,7 @@
 package ai.everylink.chainscan.watcher.plugin.service.impl;
 
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
+import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
 import ai.everylink.chainscan.watcher.plugin.config.SummaryConfig;
 import ai.everylink.chainscan.watcher.plugin.dao.*;
 import ai.everylink.chainscan.watcher.plugin.entity.CoinContract;
@@ -32,7 +33,6 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +52,9 @@ public class SummaryServiceImpl implements SummaryService {
     @Value("#{'${cion.chainIds}'.split(',')}")
     private List<Long> chainIds;
 
+    @Value("#{'${cion.coinNams}'.split(',')}")
+    private List<String> coinNams;
+
     @Value("#{'${cion.web3Urls}'.split(',')}")
     private List<String> web3Urls;
 
@@ -62,6 +65,10 @@ public class SummaryServiceImpl implements SummaryService {
 
     @Autowired
     private VM30Utils vm30Utils;
+
+    @Autowired
+    private VmChainUtil vmChainUtil;
+
 
     @Autowired
     private CoinContractDao coinContractDao;
@@ -118,6 +125,40 @@ public class SummaryServiceImpl implements SummaryService {
         }
         for (String  cionName: totalSupplyMap.keySet()) {
             coinDao.updateTotalSupply(totalSupplyMap.get(cionName),cionName);
+        }
+    }
+
+    @Override
+    public void TotalRewards() {
+        String storage = vmChainUtil.getStorage("0xaf9e78df124ddb9027c2573e5fb15e127322f546e497e413366c0e4faa8974c3", "state_subscribeStorage");
+    }
+
+    @Override
+    public void TotalStake() {
+
+    }
+
+    @Override
+    public void totalLockAmount() {
+        if(web3jMap.isEmpty()){
+            initWeb3j();
+        }
+        HashMap<String, BigInteger> totalLockAmountMap = new HashMap<>();
+        for (String coinNam : coinNams) {
+            List<CoinContract> coinContracts = coinContractDao.selectByName(coinNam);
+            for (CoinContract coinContract : coinContracts) {
+                Web3j    web3j   = web3jMap.get(97L);
+                BigInteger totalLockAmount = vm30Utils.totalLockAmount(web3j, coinContract.getContractAddress());
+                if(totalLockAmountMap.get(coinContract.getName())== null){
+                    totalLockAmountMap.put(coinContract.getName(),totalLockAmount);
+                }else {
+                    BigInteger value = totalLockAmountMap.get(coinContract.getName());
+                    totalLockAmountMap.put(coinContract.getName(),totalLockAmount.add(value));
+                }
+            }
+        }
+        for (String  cionName: totalLockAmountMap.keySet()) {
+            coinDao.updateTotalLockAmount(totalLockAmountMap.get(cionName),cionName);
         }
     }
 }

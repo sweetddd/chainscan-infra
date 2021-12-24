@@ -52,7 +52,8 @@ public class SummaryWatcher implements IWatcher {
         // 定时统计circulationSuppl
         long start = System.currentTimeMillis();
         log.info("SummaryWatcher-start:" + start);
-        summaryService.circulationSuppl();
+        summaryService.circulationSuppl();  //统计合约发行量
+        summaryService.totalLockAmount();  //统计合约锁定量
         log.info("SummaryWatcher-end:" + System.currentTimeMillis());
         List<EvmData> blockList = Lists.newArrayList();
         return blockList;
@@ -73,8 +74,8 @@ public class SummaryWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        //return "0 0 * * * ?";
-        return "*/5 * * * * ?";
+        return "0 0 * * * ?";
+        //return "*/5 * * * * ?";
     }
 
     private void initService() {

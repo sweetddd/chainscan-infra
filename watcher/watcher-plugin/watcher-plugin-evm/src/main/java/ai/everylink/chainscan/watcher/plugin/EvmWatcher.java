@@ -21,15 +21,13 @@ import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
+import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
 import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
-import ai.everylink.chainscan.watcher.plugin.util.VmChainUtil;
 import com.google.common.collect.Lists;
 import okhttp3.OkHttpClient;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.web3j.protocol.Web3j;
@@ -150,7 +148,7 @@ public class EvmWatcher implements IWatcher {
     @Override
     public String getCron() {
         return "0 0 0/1 * * ? ";
-      //  return "*/5 * * * * ?";
+       //return "*/5 * * * * ?";
     }
 
     private void init() {

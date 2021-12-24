@@ -1,4 +1,4 @@
-package ai.everylink.chainscan.watcher.plugin.util;
+package ai.everylink.chainscan.watcher.core.util;
 
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -39,7 +39,7 @@ public class VmChainUtil {
      * @param method
      * @return
      */
-    private  String getStorage(String input, String method) {
+    public   String getStorage(String input, String method) {
         HttpService httpService = new HttpService(vmUrl, new OkHttpClient(), false);
         Request state_getStorage = null;
         log.info("getStorage.method:" + method);
@@ -69,4 +69,11 @@ public class VmChainUtil {
         return "";
     }
 
+    public static void main(String[] args) {
+
+        VmChainUtil vmChainUtil       = new VmChainUtil();
+        vmChainUtil.vmUrl = "http://10.233.65.245:9934";
+        String state_subscribeStorage = vmChainUtil.getStorage("0xaf9e78df124ddb9027c2573e5fb15e127322f546e497e413366c0e4faa8974c3", "state_subscribeStorage");
+        System.out.println(state_subscribeStorage);
+    }
 }

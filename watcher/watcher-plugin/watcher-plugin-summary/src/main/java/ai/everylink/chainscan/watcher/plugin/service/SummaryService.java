@@ -29,7 +29,27 @@ import ai.everylink.chainscan.watcher.plugin.vo.EvmData;
 public interface SummaryService {
 
     /**
-     *
+     *统计合约发行量
      */
     public void circulationSuppl();
+
+    /**
+     *总奖励的MOBI数量
+     */
+    public void TotalRewards();
+
+    /**
+     *总质押MOS数量
+     */
+    public void TotalStake();
+
+
+    /**
+     *总质押MOS数量
+     */
+    public void totalLockAmount();
+
+
+
+
 }

@@ -78,6 +78,14 @@ public class VM30 extends Contract {
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
+    public RemoteCall<BigInteger> totalLockAmount() {
+        Function function = new Function("totalLockAmount",
+                Arrays.<Type>asList(),
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
+                }));
+        return executeRemoteCallSingleValueReturn(function, BigInteger.class);
+    }
+
     public RemoteCall<BigInteger> burnt() {
         Function function = new Function("burnt",
                 Arrays.<Type>asList(),

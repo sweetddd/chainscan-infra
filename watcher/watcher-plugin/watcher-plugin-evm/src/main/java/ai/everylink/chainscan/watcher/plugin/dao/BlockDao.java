@@ -63,7 +63,7 @@ public interface BlockDao extends JpaRepository<Block, Long> {
      * 更新 区块状态
      * @param finalizedHash
      */
-    @Query(value = "update  block set status = 1 where   block_number  < (select  max_number from  (select block_number as  max_number from block where block_hash = ?1) as b);\n", nativeQuery = true)
+    @Query(value = "update  block set status = 1 where   id  < (select  max_id from  (select id as  max_id from block where block_hash = ?1) as b)", nativeQuery = true)
     @Modifying
     @Transactional
     void updateBlockByHash(String finalizedHash);

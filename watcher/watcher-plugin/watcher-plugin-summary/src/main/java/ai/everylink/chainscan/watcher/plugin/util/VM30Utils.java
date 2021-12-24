@@ -44,4 +44,17 @@ public class VM30Utils {
         }
         return totalSupply;
     }
+
+    @SneakyThrows
+    public BigInteger totalLockAmount(Web3j web3j,String contractAddress) {
+        VM30       contract = getContranct(web3j,contractAddress);
+        BigInteger totalSupply    = new BigInteger("0");
+        try {
+            totalSupply = contract.totalLockAmount().send();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.error("获取totalSupply失败:"+contractAddress);
+        }
+        return totalSupply;
+    }
 }
