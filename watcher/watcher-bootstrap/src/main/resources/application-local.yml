@@ -38,8 +38,9 @@ logging:
         ai.everylink.openapi: info
 
 cion:
-  coinNams: "MOBI option,MOBI"
-  chainIds: "1,97"
-  web3Urls: "https://mainnet.infura.io/v3/72f3a83ea86b41b191264bd16cbac2bf,http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
+  lockCoinNams: "MOBI option,MOBI"
+  burntCoinNams: "MOBI"
+  chainIds: "4,97"
+  web3Urls: "https://mainnet.infura.io/v3/72f3a83ea86b41b191264bd16cbac2bf,http://10.233.65.245:9934"
 evm:
   vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf

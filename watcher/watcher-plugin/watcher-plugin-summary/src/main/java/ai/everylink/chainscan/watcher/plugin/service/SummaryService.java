@@ -43,6 +43,11 @@ public interface SummaryService {
      */
     public void TotalStake();
 
+    /**
+     *总质押MOS数量
+     */
+    public void burnt();
+
 
     /**
      *总质押MOS数量

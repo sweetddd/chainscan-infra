@@ -1,0 +1,10 @@
+{
+  "id": 57,
+  "jsonrpc": "2.0",
+  "method": "state_subscribeStorage",
+  "params": [
+    [
+      "0xaf9e78df124ddb9027c2573e5fb15e124593af431cfc848b7bd77b3450f25d004a6bb7c01d316509f24ff3a9cf04c71dbc94d0b566f7a27b94566cac"
+    ]
+  ]
+}

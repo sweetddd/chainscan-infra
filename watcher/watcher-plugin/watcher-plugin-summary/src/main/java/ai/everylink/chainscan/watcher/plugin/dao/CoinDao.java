@@ -53,4 +53,14 @@ public interface CoinDao extends JpaRepository<Coin, String> {
     @Modifying
     @Transactional
     public void updateTotalLockAmount(BigInteger totalLockAmount, String name);
+
+    /**
+     * 更新burntAmount
+     * @param totalBurntAmount
+     * @param name
+     */
+    @Query(value = "update coin set total_burnt_amount =(?1) where name=(?2)", nativeQuery = true)
+    @Modifying
+    @Transactional
+    public void burntAmount(BigInteger totalBurntAmount, String name);
 }

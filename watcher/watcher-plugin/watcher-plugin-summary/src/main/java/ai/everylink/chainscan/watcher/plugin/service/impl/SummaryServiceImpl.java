@@ -52,8 +52,11 @@ public class SummaryServiceImpl implements SummaryService {
     @Value("#{'${cion.chainIds}'.split(',')}")
     private List<Long> chainIds;
 
-    @Value("#{'${cion.coinNams}'.split(',')}")
-    private List<String> coinNams;
+    @Value("#{'${cion.lockCoinNams}'.split(',')}")
+    private List<String> lockCoinNams;
+
+    @Value("#{'${cion.burntCoinNams}'.split(',')}")
+    private List<String> burntCoinNams;
 
     @Value("#{'${cion.web3Urls}'.split(',')}")
     private List<String> web3Urls;
@@ -138,16 +141,41 @@ public class SummaryServiceImpl implements SummaryService {
 
     }
 
+
+    @Override
+    public void burnt() {
+        if(web3jMap.isEmpty()){
+            initWeb3j();
+        }
+        HashMap<String, BigInteger> totalLockAmountMap = new HashMap<>();
+        for (String coinNam : burntCoinNams) {
+            List<CoinContract> coinContracts = coinContractDao.selectByName(coinNam);
+            for (CoinContract coinContract : coinContracts) {
+                Web3j    web3j   = web3jMap.get(coinContract.getChainId());
+                BigInteger totalLockAmount = vm30Utils.burnt(web3j, coinContract.getContractAddress());
+                if(totalLockAmountMap.get(coinContract.getName())== null){
+                    totalLockAmountMap.put(coinContract.getName(),totalLockAmount);
+                }else {
+                    BigInteger value = totalLockAmountMap.get(coinContract.getName());
+                    totalLockAmountMap.put(coinContract.getName(),totalLockAmount.add(value));
+                }
+            }
+        }
+        for (String  cionName: totalLockAmountMap.keySet()) {
+            coinDao.burntAmount(totalLockAmountMap.get(cionName),cionName);
+        }
+    }
+
     @Override
     public void totalLockAmount() {
         if(web3jMap.isEmpty()){
             initWeb3j();
         }
         HashMap<String, BigInteger> totalLockAmountMap = new HashMap<>();
-        for (String coinNam : coinNams) {
+        for (String coinNam : lockCoinNams) {
             List<CoinContract> coinContracts = coinContractDao.selectByName(coinNam);
             for (CoinContract coinContract : coinContracts) {
-                Web3j    web3j   = web3jMap.get(97L);
+                Web3j    web3j   = web3jMap.get(coinContract.getChainId());
                 BigInteger totalLockAmount = vm30Utils.totalLockAmount(web3j, coinContract.getContractAddress());
                 if(totalLockAmountMap.get(coinContract.getName())== null){
                     totalLockAmountMap.put(coinContract.getName(),totalLockAmount);

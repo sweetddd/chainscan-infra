@@ -53,7 +53,19 @@ public class VM30Utils {
             totalSupply = contract.totalLockAmount().send();
         } catch (Exception ex) {
             ex.printStackTrace();
-            log.error("获取totalSupply失败:"+contractAddress);
+            log.error("获取totalLockAmount失败:"+contractAddress);
+        }
+        return totalSupply;
+    }
+    @SneakyThrows
+    public BigInteger burnt(Web3j web3j,String contractAddress) {
+        VM30       contract = getContranct(web3j,contractAddress);
+        BigInteger totalSupply    = new BigInteger("0");
+        try {
+            totalSupply = contract.burnt().send();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.error("获取burnt失败:"+contractAddress);
         }
         return totalSupply;
     }
