@@ -37,7 +37,9 @@ logging:
         ai.everylink.openapi.lottery: info
         ai.everylink.openapi: info
 cion:
-  coinNams: "MOBI option,MOBI"
+  lockCoinNams: "MOBI option,MOBI"
+  burntCoinNams: "MOBI"
+  rewardCoinNams: "MOBI"
   chainIds: "4,97"
   web3Urls: "https://mainnet.infura.io/v3/72f3a83ea86b41b191264bd16cbac2bf,http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
 

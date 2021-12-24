@@ -58,6 +58,9 @@ public class SummaryServiceImpl implements SummaryService {
     @Value("#{'${cion.burntCoinNams}'.split(',')}")
     private List<String> burntCoinNams;
 
+    @Value("#{'${cion.rewardCoinNams}'.split(',')}")
+    private List<String> rewardCoinNams;
+
     @Value("#{'${cion.web3Urls}'.split(',')}")
     private List<String> web3Urls;
 
@@ -132,13 +135,37 @@ public class SummaryServiceImpl implements SummaryService {
     }
 
     @Override
-    public void TotalRewards() {
+    public void totalRewards() {
         String storage = vmChainUtil.getStorage("0xaf9e78df124ddb9027c2573e5fb15e127322f546e497e413366c0e4faa8974c3", "state_subscribeStorage");
     }
 
     @Override
-    public void TotalStake() {
+    public void totalStake() {
 
+    }
+
+    @Override
+    public void rewardPool() {
+        if(web3jMap.isEmpty()){
+            initWeb3j();
+        }
+        HashMap<String, BigInteger> totalLockAmountMap = new HashMap<>();
+        for (String coinNam : rewardCoinNams) {
+            List<CoinContract> coinContracts = coinContractDao.selectByName(coinNam);
+            for (CoinContract coinContract : coinContracts) {
+                Web3j    web3j   = web3jMap.get(coinContract.getChainId());
+                BigInteger totalLockAmount = vm30Utils.burnt(web3j, coinContract.getContractAddress());
+                if(totalLockAmountMap.get(coinContract.getName())== null){
+                    totalLockAmountMap.put(coinContract.getName(),totalLockAmount);
+                }else {
+                    BigInteger value = totalLockAmountMap.get(coinContract.getName());
+                    totalLockAmountMap.put(coinContract.getName(),totalLockAmount.add(value));
+                }
+            }
+        }
+        for (String  cionName: totalLockAmountMap.keySet()) {
+            coinDao.burntAmount(totalLockAmountMap.get(cionName),cionName);
+        }
     }
 
 

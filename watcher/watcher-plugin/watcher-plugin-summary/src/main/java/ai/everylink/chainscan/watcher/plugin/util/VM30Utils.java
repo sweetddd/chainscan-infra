@@ -69,4 +69,26 @@ public class VM30Utils {
         }
         return totalSupply;
     }
+
+    /**
+     * 查询指定合约,某个地址的余额
+     * @param web3j
+     * @param contractAddress
+     * @param address
+     * @return
+     */
+    @SneakyThrows
+    public BigInteger balanceOf(Web3j web3j,String contractAddress,String address) {
+        VM30       contract = getContranct(web3j,contractAddress);
+        BigInteger balance    = new BigInteger("0");
+        try {
+            balance = contract.balanceOf(address).send();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.error("获取totalLockAmount失败:"+contractAddress);
+        }
+        return balance;
+    }
+
+
 }
