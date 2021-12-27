@@ -20,6 +20,8 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 import ai.everylink.chainscan.watcher.plugin.EvmData;
 
+import java.util.Date;
+
 /**
  * EVM数据服务
  *
@@ -41,6 +43,12 @@ public interface EvmDataService {
      * @return
      */
     Long getMaxBlockNum(int chainId);
+
+    /**
+     * 获取最后一个区块的创建时间
+     * @return
+     */
+    Date getMaxBlockCreationTime(int chainId);
 
     /**
      * 根据最后确认hash更新block状态;

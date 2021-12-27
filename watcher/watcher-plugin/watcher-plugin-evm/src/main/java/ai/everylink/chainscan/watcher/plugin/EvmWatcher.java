@@ -20,12 +20,14 @@ package ai.everylink.chainscan.watcher.plugin;
 import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
+import ai.everylink.chainscan.watcher.core.util.OkHttpUtil;
+import ai.everylink.chainscan.watcher.core.util.SlackNotifyUtils;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
 import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
 import com.google.common.collect.Lists;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -34,12 +36,7 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
-
-import javax.net.ssl.*;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 以太坊扫块
@@ -50,10 +47,9 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class EvmWatcher implements IWatcher {
 
-    private Logger logger = LoggerFactory.getLogger(EvmWatcher.class);
+    private static Logger logger = LoggerFactory.getLogger(EvmWatcher.class);
 
     private VmChainUtil vmChainUtil;
-
 
     /**
      * 当前扫描高度(扫描时从数据库实时获取当前高度)
@@ -76,6 +72,11 @@ public class EvmWatcher implements IWatcher {
      * 从数据库里面获取处理进度
      */
     private EvmDataService evmDataService;
+
+    /**
+     * 区块生产超时时间
+     */
+    private static final Long BLOCK_PRODUCE_TIMEOUT = 5*60*1000L;
 
     @Override
     public List<EvmData> scanBlock() {
@@ -105,6 +106,10 @@ public class EvmWatcher implements IWatcher {
                 if (CollectionUtils.isEmpty(blockList)) {
                     logger.info("扫块失败！！！");
                     currentBlockHeight = startBlockNumber - 1;
+
+                    // 发送slack通知
+                    sendVmAlertMsgToSlack();
+
                     return Lists.newArrayList();
                 }
             }
@@ -147,8 +152,9 @@ public class EvmWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        return "0 0 0/1 * * ? ";
-       //return "*/5 * * * * ?";
+//        return "0 0 0/1 * * ? ";
+//       return "*/5 * * * * ?";
+        return "0 0/10 * * * ? ";
     }
 
     private void init() {
@@ -158,6 +164,8 @@ public class EvmWatcher implements IWatcher {
         chainId = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyChainId();
         currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
         logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
+
+        sendVmAlertMsgToSlack();
     }
 
     private void initService() {
@@ -179,14 +187,7 @@ public class EvmWatcher implements IWatcher {
         }
 
         try {
-            OkHttpClient.Builder builder = new OkHttpClient.Builder();
-            builder.connectTimeout(30 * 1000, TimeUnit.MILLISECONDS);
-            builder.writeTimeout(30 * 1000, TimeUnit.MILLISECONDS);
-            builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
-            OkHttpClient httpClient = builder
-                    .sslSocketFactory(createSSLSocketFactory(), new TrustAllCerts())
-                    .hostnameVerifier(new TrustAllHostnameVerifier())
-                    .build();
+            OkHttpClient httpClient = OkHttpUtil.buildOkHttpClient();
             HttpService httpService = new HttpService(SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyUrl(), httpClient, false);
 //            httpService.addHeader("Authorization", Credentials.basic("", SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyRpcSecret()));
             web3j = Web3j.build(httpService);
@@ -195,46 +196,6 @@ public class EvmWatcher implements IWatcher {
         }
     }
 
-
-    /**
-     * HTTPS  begin
-     */
-    private static SSLSocketFactory createSSLSocketFactory() {
-        SSLSocketFactory ssfFactory = null;
-        try {
-            SSLContext sc = SSLContext.getInstance("TLS");
-            sc.init(null, new TrustManager[]{new TrustAllCerts()}, new SecureRandom());
-            ssfFactory = sc.getSocketFactory();
-        } catch (Exception e) {
-        }
-
-        return ssfFactory;
-    }
-
-    static class TrustAllHostnameVerifier implements HostnameVerifier {
-        @Override
-        public boolean verify(String hostname, SSLSession session) {
-            return true;//trust All的写法就是在这里写的，直接无视hostName，直接返回true，表示信任所有主机
-        }
-    }
-
-    static class TrustAllCerts implements X509TrustManager {
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) {
-        }
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) {
-
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[0];
-        }
-    }
-    // HTTPS  end
 
     /**
      * 获取最新区块高度
@@ -300,5 +261,27 @@ public class EvmWatcher implements IWatcher {
     private List<IEvmWatcherPlugin> findErc20WatcherPluginBySPI() {
         ServiceLoader<IEvmWatcherPlugin> list = ServiceLoader.load(IEvmWatcherPlugin.class);
         return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
+    }
+
+    private static final String SLACK_WEBHOOK = "https://hooks.slack.com/services/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";
+    private void sendVmAlertMsgToSlack() {
+        Date lastBlockCreateTime = evmDataService.getMaxBlockCreationTime(chainId);
+        if (lastBlockCreateTime == null) {
+            return;
+        }
+
+        long diff = System.currentTimeMillis() - lastBlockCreateTime.getTime();
+        if (diff < BLOCK_PRODUCE_TIMEOUT) {
+            return;
+        }
+
+        // 发送slack通知
+        logger.info("long time that no block produce: {} seconds", diff/1000);
+        String json = "{\"text\":\"VM链长时间未出块，请关注！最后出块于(" + diff/1000 + ")分钟前\"}";
+        SlackNotifyUtils.SlackNotifyResult result = SlackNotifyUtils.sendSlackNotification(SLACK_WEBHOOK, json);
+        logger.info("send slack notification result: {}", result.success);
+        if (!result.success && result.e != null) {
+            logger.error("send slack notification fail: " + result.e.getMessage(), result.e);
+        }
     }
 }
