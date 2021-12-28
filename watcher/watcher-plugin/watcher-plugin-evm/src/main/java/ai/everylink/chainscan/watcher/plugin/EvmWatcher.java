@@ -164,8 +164,6 @@ public class EvmWatcher implements IWatcher {
         chainId = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyChainId();
         currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
         logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
-
-        sendVmAlertMsgToSlack();
     }
 
     private void initService() {
