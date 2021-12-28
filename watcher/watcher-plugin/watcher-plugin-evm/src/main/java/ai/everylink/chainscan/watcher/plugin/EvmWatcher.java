@@ -147,8 +147,8 @@ public class EvmWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        return "0 0 0/1 * * ? ";
-       //return "*/5 * * * * ?";
+        //return "0 0 0/1 * * ? ";
+       return "*/5 * * * * ?";
     }
 
     private void init() {

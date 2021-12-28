@@ -60,6 +60,8 @@ public interface SummaryService {
     public void totalLockAmount();
 
 
-
-
+    /**
+     * 2层锁定量
+     */
+    public void l2LockAmount();
 }

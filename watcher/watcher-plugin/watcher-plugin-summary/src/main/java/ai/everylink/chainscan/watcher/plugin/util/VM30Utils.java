@@ -26,7 +26,7 @@ public class VM30Utils {
         EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
         BigInteger gasPrice = ethGasPrice.getGasPrice().multiply(new BigInteger("105")).divide(new BigInteger("100"));
         //调用合约
-        credentials = Credentials.create("0x992ae9bb2319a1c67274f1f2dcdefdeb2e0e62533b591dfc2a49c58104d70a98");
+        credentials = Credentials.create(contractAddress);
         ContractGasProvider gasProvider = new StaticGasProvider(gasPrice, gasLimit);
         VM30 contract = VM30.load(contractAddress, web3j, credentials, gasProvider);
         return contract;
@@ -89,6 +89,5 @@ public class VM30Utils {
         }
         return balance;
     }
-
 
 }
