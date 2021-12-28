@@ -76,7 +76,7 @@ public class EvmWatcher implements IWatcher {
     /**
      * 区块生产超时时间
      */
-    private static final Long BLOCK_PRODUCE_TIMEOUT = 5*60*1000L;
+    private static final Long BLOCK_PRODUCE_TIMEOUT = 11*60*1000L;
 
     @Override
     public List<EvmData> scanBlock() {
