@@ -24,6 +24,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+
 /**
  * BlockDao
  *
@@ -67,4 +69,11 @@ public interface BlockDao extends JpaRepository<Block, Long> {
     @Modifying
     @Transactional
     void updateBlockByHash(String finalizedHash);
+
+    /**
+     * get max block num
+     * @return
+     */
+    @Query(value = "select block_timestamp from block where chain_id=?1 order by block_number desc limit 1", nativeQuery = true)
+    Date getMaxBlockCreationTime(int chainId);
 }
