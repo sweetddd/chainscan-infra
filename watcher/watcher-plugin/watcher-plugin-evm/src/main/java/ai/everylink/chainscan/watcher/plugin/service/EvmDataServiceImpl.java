@@ -40,7 +40,6 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.EthBlock;
-import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
@@ -48,11 +47,9 @@ import org.web3j.protocol.http.HttpService;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -107,6 +104,11 @@ public class EvmDataServiceImpl implements EvmDataService {
     public Long getMaxBlockNum(int chainId) {
         Long maxBlockNum = blockDao.getMaxBlockNum(chainId);
         return maxBlockNum == null ? 0L : maxBlockNum;
+    }
+
+    @Override
+    public Date getMaxBlockCreationTime(int chainId) {
+        return blockDao.getMaxBlockCreationTime(chainId);
     }
 
     @Override

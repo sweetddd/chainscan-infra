@@ -36,12 +36,17 @@ public interface SummaryService {
     /**
      *总奖励的MOBI数量
      */
-    public void TotalRewards();
+    public void totalRewards();
 
     /**
      *总质押MOS数量
      */
-    public void TotalStake();
+    public void totalStake();
+
+    /**
+     *查询莫比的储备金
+     */
+    public void rewardPool();
 
     /**
      *总质押MOS数量
@@ -55,6 +60,8 @@ public interface SummaryService {
     public void totalLockAmount();
 
 
-
-
+    /**
+     * 2层锁定量
+     */
+    public void l2LockAmount();
 }

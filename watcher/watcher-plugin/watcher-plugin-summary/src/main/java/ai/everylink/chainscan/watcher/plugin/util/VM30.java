@@ -1,5 +1,7 @@
 package ai.everylink.chainscan.watcher.plugin.util;
 
+import lombok.SneakyThrows;
+import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.Bytes32;
@@ -7,7 +9,10 @@ import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.RemoteCall;
+import org.web3j.protocol.core.methods.request.Transaction;
+import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tx.Contract;
 import org.web3j.tx.TransactionManager;
@@ -144,6 +149,28 @@ public class VM30 extends Contract {
                 }));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
+
+    /**
+     * 获取ERC-20 token指定地址余额
+     *
+     * @param address         查询地址
+     * @param contractAddress 合约地址
+     * @return
+     * @throws InterruptedException
+     */
+    @SneakyThrows
+    public String getERC20Balance(String address, String contractAddress){
+        Function function = new Function("balanceOf",
+                                         Arrays.asList(new Address(address)),
+                                         Arrays.asList(new TypeReference<Address>() {
+                                         }));
+
+        String      encode             = FunctionEncoder.encode(function);
+        Transaction ethCallTransaction = Transaction.createEthCallTransaction(address, contractAddress, encode);
+        EthCall     ethCall            = web3j.ethCall(ethCallTransaction, DefaultBlockParameterName.LATEST).sendAsync().get();
+        return ethCall.getResult();
+    }
+
 
     public RemoteCall<TransactionReceipt> transfer(String _to, BigInteger _value) {
         Function function = new Function(

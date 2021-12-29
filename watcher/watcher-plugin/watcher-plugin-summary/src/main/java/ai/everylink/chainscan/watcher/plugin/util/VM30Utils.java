@@ -26,7 +26,7 @@ public class VM30Utils {
         EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
         BigInteger gasPrice = ethGasPrice.getGasPrice().multiply(new BigInteger("105")).divide(new BigInteger("100"));
         //调用合约
-        credentials = Credentials.create("0x992ae9bb2319a1c67274f1f2dcdefdeb2e0e62533b591dfc2a49c58104d70a98");
+        credentials = Credentials.create(contractAddress);
         ContractGasProvider gasProvider = new StaticGasProvider(gasPrice, gasLimit);
         VM30 contract = VM30.load(contractAddress, web3j, credentials, gasProvider);
         return contract;
@@ -69,4 +69,25 @@ public class VM30Utils {
         }
         return totalSupply;
     }
+
+    /**
+     * 查询指定合约,某个地址的余额
+     * @param web3j
+     * @param contractAddress
+     * @param address
+     * @return
+     */
+    @SneakyThrows
+    public BigInteger balanceOf(Web3j web3j,String contractAddress,String address) {
+        VM30       contract = getContranct(web3j,contractAddress);
+        BigInteger balance    = new BigInteger("0");
+        try {
+            balance = contract.balanceOf(address).send();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.error("获取totalLockAmount失败:"+contractAddress);
+        }
+        return balance;
+    }
+
 }

@@ -21,15 +21,9 @@ import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.plugin.service.SummaryService;
-import ai.everylink.chainscan.watcher.plugin.service.impl.SummaryServiceImpl;
 import ai.everylink.chainscan.watcher.plugin.vo.EvmData;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.PostConstruct;
 import java.util.*;
 
 /**
@@ -54,6 +48,7 @@ public class SummaryWatcher implements IWatcher {
         log.info("SummaryWatcher-start:" + start);
         summaryService.circulationSuppl();  //统计合约发行量
         summaryService.totalLockAmount();  //统计合约锁定量
+        summaryService.l2LockAmount();     //2层锁定量统计
         summaryService.burnt();  //统计合约销毁量
         log.info("SummaryWatcher-end:" + System.currentTimeMillis());
         List<EvmData> blockList = Lists.newArrayList();
@@ -76,7 +71,7 @@ public class SummaryWatcher implements IWatcher {
     @Override
     public String getCron() {
         return "0 0 * * * ?";
-       // return "*/10 * * * * ?";
+        //return "*/10 * * * * ?";
     }
 
     private void initService() {

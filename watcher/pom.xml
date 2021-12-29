@@ -60,6 +60,10 @@
         <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
         <frontend-maven-plugin.version>1.6</frontend-maven-plugin.version>
         <frontend-maven-plugin.node.version>v12.14.1</frontend-maven-plugin.node.version>
+        <fastjson.version>1.2.58</fastjson.version>
+        <httpcore.version>4.4.12</httpcore.version>
+        <httpclient.version>4.5.6</httpclient.version>
+        <etherscan-api.version>1.2.0</etherscan-api.version>
 
         <mysql.version>8.0.11</mysql.version>
         <druid.version>1.0.29</druid.version>
@@ -72,6 +76,26 @@
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>${gson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${httpcore.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpclient.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.goodforgod</groupId>
+                <artifactId>java-etherscan-api</artifactId>
+                <version>${etherscan-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
