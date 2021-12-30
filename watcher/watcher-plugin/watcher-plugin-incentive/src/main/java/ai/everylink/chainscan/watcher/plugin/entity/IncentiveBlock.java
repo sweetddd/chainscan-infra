@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -14,41 +15,14 @@ import java.util.List;
  * @date 2021-10-09
  */
 @Data
-public class IncentiveBlock extends BaseEntity {
+public class IncentiveBlock {
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * 当前记录起始索引
-     */
-    private Integer pageNum;
-
-    /**
-     * 每页显示记录数
-     */
-    private Integer pageSize;
-
-
-    /**
-     * id
-     */
-    private Long id;
 
     /**
      * 区块高度
      */
     private Long blockHeight;
-
-    /**
-     * 区块高度
-     */
-    private Long blockNumber;
-
-
-    /**
-     * 最高区块高度；
-     */
-    private Long max_number;
 
     /**
      * 难度
@@ -63,8 +37,7 @@ public class IncentiveBlock extends BaseEntity {
     /**
      * 区块时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date startTime;
+    private Long startTime;
 
     /**
      * hash
@@ -75,11 +48,6 @@ public class IncentiveBlock extends BaseEntity {
      * parentHash
      */
     private String parentHash;
-
-    /**
-     * finalized
-     */
-    private boolean finalized;
 
     /**
      * 交易数量

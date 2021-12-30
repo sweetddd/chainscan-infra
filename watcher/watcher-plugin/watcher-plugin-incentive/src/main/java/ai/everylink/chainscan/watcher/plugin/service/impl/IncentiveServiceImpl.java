@@ -68,7 +68,7 @@ public class IncentiveServiceImpl implements IncentiveService {
         block.setBlockNumber(incentiveBlock.getBlockHeight());
         block.setBlockHash(incentiveBlock.getBlockHash());
         block.setChainId(97);
-        block.setBlockTimestamp(incentiveBlock.getStartTime());
+        block.setBlockTimestamp(new Date(incentiveBlock.getStartTime()));
         block.setParentHash(incentiveBlock.getParentHash());
         block.setTxSize(incentiveBlock.getTransactionCount());
         block.setDifficulty(incentiveBlock.getDifficulty().toString());

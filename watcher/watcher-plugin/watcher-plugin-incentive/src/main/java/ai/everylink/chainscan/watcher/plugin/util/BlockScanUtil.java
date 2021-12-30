@@ -2,6 +2,7 @@ package ai.everylink.chainscan.watcher.plugin.util;
 
 import ai.everylink.chainscan.watcher.plugin.entity.IncentiveBlock;
 import ai.everylink.chainscan.watcher.plugin.entity.IncentiveTransaction;
+import io.emeraldpay.polkaj.scale.ScaleCodecReader;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.commons.codec.DecoderException;
@@ -29,7 +30,7 @@ import java.util.List;
 public class BlockScanUtil {
 
     // @Value("${evm.chain.vmUrl:}")
-     private String vmUrl = "http://vmchain-dev-node-0-sandbox.chain-sandbox.svc.cluster.local:9934";
+     private static final String vmUrl = "http://vmchain-dev-node-0-sandbox.chain-sandbox.svc.cluster.local:9934";
 //    private String vmUrl = "http://10.233.65.33:9934";
 
 
@@ -54,10 +55,10 @@ public class BlockScanUtil {
             return null;
         }
         IncentiveBlock block = new IncentiveBlock();
-        block.setBlockNumber((long) BlockAnalysisUtil.getBlockHeight(storage));
+        block.setBlockHeight(BlockAnalysisUtil.getBlockHeight(storage));
         block.setDifficulty(BlockAnalysisUtil.getDifficulty(storage));
         block.setBlockedFee(new BigDecimal(BlockAnalysisUtil.getBlockedFee(storage)));
-        block.setStartTime(new Date(BlockAnalysisUtil.getStartTime(storage)));
+        block.setStartTime(BlockAnalysisUtil.getStartTime(storage));
         block.setBlockHash(BlockAnalysisUtil.getBlockHash(storage));
         block.setTransactionCount(BlockAnalysisUtil.getTransactionCount(storage));
         IncentiveTransaction transaction = new IncentiveTransaction();
@@ -88,30 +89,18 @@ public class BlockScanUtil {
         return storage;
     }
 
-    public  String test() {
-        byte[] keyHash = UtilsCrypto.xxhashAsU8a(("StakingToken").getBytes(), 128);
-        String s = Hex.encodeHexString(keyHash);
-        byte[] lastBlock = UtilsCrypto.xxhashAsU8a(("TotalRewards").getBytes(), 128);
-        String hexString = Hex.encodeHexString(lastBlock);
-        String storage = getStorage("0x" + s + hexString, "state_getStorage");
-        if (StringUtils.isEmpty(storage)) {
-            return null;
-        }
-        return storage;
-    }
-
-    public  List<String> getBlocksStorage(Integer pageSize) {
+    public static List<String> getBlocksStorage(Integer pageSize) {
         List<String> result = new ArrayList<>();
-        byte[] keyHash = UtilsCrypto.xxhashAsU8a(("Incentive").getBytes(), 128);
+        byte[] keyHash = UtilsCrypto.xxhashAsU8a(("CposContribution").getBytes(), 128);
         String stateStr = Hex.encodeHexString(keyHash);
-        byte[] queryStr = UtilsCrypto.xxhashAsU8a(("IncentiveBlocks").getBytes(), 128);
+        byte[] queryStr = UtilsCrypto.xxhashAsU8a(("ContributionBlocks").getBytes(), 128);
         String hexString = Hex.encodeHexString(queryStr);
         String paramStr = "0x" + stateStr + hexString;
         List<Object> paramList = Arrays.asList(paramStr, pageSize, paramStr);
         List<String> storageKeys = (List<String>) getStorage("state_getKeysPaged", paramList);
         for (String storageKey : storageKeys) {
             try {
-                String storage = (String) getStorage("c", List.of(storageKey));
+                String storage = (String) getStorage("state_getStorage", List.of(storageKey));
                 if (!StringUtils.isEmpty(storage) && !result.contains(storage)){
                     result.add(storage);
                 }
@@ -125,19 +114,43 @@ public class BlockScanUtil {
     public  List<IncentiveBlock> incentiveBlocksScan(Integer pageSize){
         List<IncentiveBlock> result = new ArrayList<>();
         List<String> storages = getBlocksStorage(pageSize);
+        System.out.println("%%%%%: " + storages);
         for (String storage : storages) {
             IncentiveBlock block = getBlock(storage);
+            System.out.println("########:  " + block);
             ArrayList<IncentiveTransaction> transactions = getBlockTxs(storage);
-            for (IncentiveTransaction transaction : transactions) {
-                transaction.setBlockNumber(block.getBlockHeight());
-            }
-            block.setExtrinsics(transactions);
-            result.add(block);
+//            for (IncentiveTransaction transaction : transactions) {
+//                transaction.setBlockNumber(block.getBlockHeight());
+//            }
+//            block.setExtrinsics(transactions);
+//            result.add(block);
         }
         return result;
     }
 
     public static void main(String[] args) {
+
+        List<String> result = new ArrayList<>();
+        byte[] keyHash = UtilsCrypto.xxhashAsU8a(("CposContribution").getBytes(), 128);
+        String stateStr = Hex.encodeHexString(keyHash);
+        byte[] queryStr = UtilsCrypto.xxhashAsU8a(("ContributionBlocks").getBytes(), 128);
+        String hexString = Hex.encodeHexString(queryStr);
+        String paramStr = "0x" + stateStr + hexString;
+        List<Object> paramList = Arrays.asList(paramStr, 500, paramStr);
+        List<String> storageKeys = (List<String>) getStorage("state_getKeysPaged", paramList);
+        System.out.println(storageKeys);
+        for (String storageKey : storageKeys) {
+            try {
+                String storage = (String) getStorage("state_getStorage", List.of(storageKey));
+                System.out.println("###: " + storage);
+                IncentiveBlock incentiveBlock = getBlock(storage);
+                System.out.println(incentiveBlock);
+                ArrayList<IncentiveTransaction> transactions = getBlockTxs(storage);
+                System.out.println(transactions);
+            } catch (Exception err){
+                log.warn("获取Storage异常：{}", err.getMessage());
+            }
+        }
 
     }
 
@@ -146,12 +159,12 @@ public class BlockScanUtil {
      *
      * @return
      */
-    public IncentiveBlock getBlock(String storage) {
+    public static IncentiveBlock getBlock(String storage) {
         IncentiveBlock block = new IncentiveBlock();
         block.setBlockHeight((long) BlockAnalysisUtil.getBlockHeight(storage));
         block.setDifficulty(BlockAnalysisUtil.getDifficulty(storage));
         block.setBlockedFee(new BigDecimal(BlockAnalysisUtil.getBlockedFee(storage)));
-        block.setStartTime(new Date(BlockAnalysisUtil.getStartTime(storage)*1000));
+        block.setStartTime(BlockAnalysisUtil.getStartTime(storage)*1000);
         block.setBlockHash(BlockAnalysisUtil.getBlockHash(storage));
         block.setTransactionCount(BlockAnalysisUtil.getTransactionCount(storage));
         return block;
@@ -166,12 +179,17 @@ public class BlockScanUtil {
         //解析交易明细
         int count = BlockAnalysisUtil.getTransactionCount(storage);
         ArrayList<IncentiveTransaction> list  = new ArrayList<>();
-        int index = 150;
+        int index = 182;
         for (int i = 0; i < count; i++) {
-            String str = storage.substring(index, index + 248);
+            String str = storage.substring(index);
+
             IncentiveTransaction transaction = getTransaction(str);
+            if (count == 8) {
+                System.out.println("@@@@@@@: " +str);
+                System.out.println("#######: " +transaction);
+            }
             list.add(transaction);
-            index = index + 248 + 2;
+            index = index + 313;
         }
         return list;
     }
@@ -231,7 +249,7 @@ public class BlockScanUtil {
      * @param params
      * @return
      */
-    private Object getStorage(String method, List<Object> params) {
+    private static Object getStorage(String method, List<Object> params) {
         log.info("getStorage.method:" + method);
         log.info("getStorage.params:" + params);
         Object result = null;

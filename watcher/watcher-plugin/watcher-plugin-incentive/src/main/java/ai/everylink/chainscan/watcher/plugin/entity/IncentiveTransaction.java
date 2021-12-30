@@ -11,28 +11,9 @@ import java.math.BigDecimal;
  * @date 2021-10-09
  */
 @Data
-public class IncentiveTransaction extends BaseEntity {
+public class IncentiveTransaction {
+
     private static final long serialVersionUID = 1L;
-
-    /**
-     * 当前记录起始索引
-     */
-    private Integer pageNum;
-
-    /**
-     * 每页显示记录数
-     */
-    private Integer pageSize;
-
-    /**
-     * id
-     */
-    private Long id;
-
-    /**
-     * 交易区块数据id
-     */
-    private Long blockDataId;
 
     /**
      * 交易对
@@ -53,17 +34,6 @@ public class IncentiveTransaction extends BaseEntity {
      * 卖方地址
      */
     private String sellerAddress;
-
-    /**
-     * finalized
-     */
-    private boolean finalized;
-
-    /**
-     * finalized
-     */
-    private boolean status;
-
 
     /**
      * 成交数量
@@ -89,11 +59,5 @@ public class IncentiveTransaction extends BaseEntity {
      * 交易hash
      */
     private String transactionHash;
-
-
-    /**
-     * 区块高度
-     */
-    private Long blockNumber;
 
 }

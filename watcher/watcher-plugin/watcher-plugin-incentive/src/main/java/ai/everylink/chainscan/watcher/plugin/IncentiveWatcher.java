@@ -33,7 +33,6 @@ public class IncentiveWatcher implements IWatcher {
     public List<IncentiveBlock> scanBlock() {
         List<IncentiveBlock> result = new ArrayList<>();
         init();
-        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@");
         List<IncentiveBlock> incentiveBlocks = incentiveService.incentiveBlocksScan(pageSize);
         System.out.println("@@@@@@@@@@@@@@@@@@@@@@@: " + incentiveBlocks);
         incentiveBlocks = incentiveBlocks.stream().sorted(Comparator.comparing(IncentiveBlock::getBlockHeight)).collect(Collectors.toList());

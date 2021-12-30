@@ -12,89 +12,89 @@ import org.apache.commons.codec.binary.Hex;
  **/
 public class BlockAnalysisUtil {
 
-    public static int getBlockHeight(String storage){
-        String sub = storage.substring(2, 2 + 16);
+    public static long getBlockHeight(String storage){
+        String sub = storage.substring(2);
         ScaleCodecReader rdr  = new ScaleCodecReader(readMessage(sub));
-        return rdr.readUint16();
+        return rdr.readUint32();
     }
 
     public static long getDifficulty(String storage){
-        String sub = storage.substring(2 + 16, 2 + 16 * 2);
+        String sub = storage.substring(2 + 16);
         ScaleCodecReader rdr = new ScaleCodecReader(readMessage(sub));
         return rdr.readUint32();
     }
 
     public static long getBlockedFee(String storage){
-        String sub = storage.substring(2 + 16 * 2, 2 + 16 * 3);
+        String sub = storage.substring(2 + 16 * 3);
         ScaleCodecReader rdr = new ScaleCodecReader(readMessage(sub));
         return rdr.readUint32();
     }
 
     public static long getStartTime(String storage){
-        String sub = storage.substring(2 + 16 * 3, 2 + 16 * 4);
+        String sub = storage.substring(2 + 16 * 5);
         ScaleCodecReader rdr = new ScaleCodecReader(readMessage(sub));
         return rdr.readUint32();
     }
 
     public static String getBlockHash(String storage){
-        String sub = storage.substring(2 + 16 * 4, 2 + 16 * 8);
+        String sub = storage.substring(2 + 16 * 6);
         ScaleCodecReader rdr = new ScaleCodecReader(readMessage(sub));
         return new Hash256(rdr.readUint256()).toString();
     }
 
     public static int getTransactionCount(String storage){
-        String sub = storage.substring(2 + 16 * 8, 2 + 16 * 9);
+        String sub = storage.substring(2 + 16 * 10);
         ScaleCodecReader rdr = new ScaleCodecReader(readMessage(sub));
         return rdr.readUint16();
     }
 
     public static String getTransactionHash(String storage){
-        String sub = storage.substring(104 + 16 * 5, 104 + 16 * 5 + 64);
+        String sub = storage.substring(storage.length() - 64);
         ScaleCodecReader rdr = new ScaleCodecReader(readMessage(sub));
         return new Hash256(rdr.readUint256()).toString();
     }
 
     public static long getSellerFee(String storage){
-        String sub = storage.substring(104 + 16 * 4, 104 + 16 * 5);
+        String sub = storage.substring(storage.length() - 64 - 32);
         ScaleCodecReader rdr = new ScaleCodecReader(readMessage(sub));
         return rdr.readUint32();
     }
 
     public static long getBuyerFee(String storage){
-        String sub = storage.substring(104 + 16 * 3, 104 + 16 * 4);
+        String sub = storage.substring(storage.length() - 64 - 64);
         ScaleCodecReader rdr = new ScaleCodecReader(readMessage(sub));
         return rdr.readUint32();
     }
 
     public static int getPrice(String storage){
-        String sub = storage.substring(104 + 16 * 2, 104 + 16 * 3);
+        String sub = storage.substring(storage.length() - 64 - 96);
         ScaleCodecReader rdr = new ScaleCodecReader(readMessage(sub));
         return rdr.readUint16();
     }
 
     public static int getAmount(String storage){
-        String sub = storage.substring(104 + 16 ,104 + 16 * 2);
+        String sub = storage.substring(storage.length() - 64 - 128);
         ScaleCodecReader rdr = new ScaleCodecReader(readMessage(sub));
         return rdr.readUint16();
     }
 
     public static String getSellerAddress(String storage){
-        String sub = storage.substring(16 + 24 + 40, 16 + 24 + 80);
+        String sub = storage.substring(storage.length() - 64 - 168, storage.length() - 64 - 128);
         return "0x" + sub;
     }
 
     public static String getBuyerAddress(String storage){
-        String sub = storage.substring(16 + 24, 16 + 24 + 40);
+        String sub = storage.substring(storage.length() - 64 - 208, storage.length() - 64 - 168);
         return "0x" + sub;
     }
 
     public static String getTransactionType(String storage){
-        String sub = storage.substring(16 +2 , 16 + 24);
+        String sub = storage.substring(storage.length() - 64 - 230, storage.length() - 64 - 208);
         return hexStringToString(sub);
     }
 
     public static String getCoinSymbol(String storage){
-        String sub = storage.substring(0, 16);
+        String sub = storage.substring(0, storage.length() - 64 - 230);
         return hexStringToString(sub);
     }
 
