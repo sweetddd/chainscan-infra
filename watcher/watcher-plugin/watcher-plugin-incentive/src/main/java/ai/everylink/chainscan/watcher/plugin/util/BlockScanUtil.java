@@ -15,6 +15,7 @@ import org.web3j.protocol.http.HttpService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -77,10 +78,10 @@ public class BlockScanUtil {
         return block;
     }
 
-    public  String getLastBlocStorage() {
-        byte[] keyHash = UtilsCrypto.xxhashAsU8a(("Incentive").getBytes(), 128);
+    public static String getLastBlocStorage() {
+        byte[] keyHash = UtilsCrypto.xxhashAsU8a(("CposContribution").getBytes(), 128);
         String s = Hex.encodeHexString(keyHash);
-        byte[] lastBlock = UtilsCrypto.xxhashAsU8a(("LastIncentiveBlock").getBytes(), 128);
+        byte[] lastBlock = UtilsCrypto.xxhashAsU8a(("LastContributionBlock").getBytes(), 128);
         String hexString = Hex.encodeHexString(lastBlock);
         String storage = getStorage("0x" + s + hexString, "state_getStorage");
         if (StringUtils.isEmpty(storage)) {
@@ -114,10 +115,8 @@ public class BlockScanUtil {
     public  List<IncentiveBlock> incentiveBlocksScan(Integer pageSize){
         List<IncentiveBlock> result = new ArrayList<>();
         List<String> storages = getBlocksStorage(pageSize);
-        System.out.println("%%%%%: " + storages);
         for (String storage : storages) {
             IncentiveBlock block = getBlock(storage);
-            System.out.println("########:  " + block);
             ArrayList<IncentiveTransaction> transactions = getBlockTxs(storage);
 //            for (IncentiveTransaction transaction : transactions) {
 //                transaction.setBlockNumber(block.getBlockHeight());
@@ -152,6 +151,13 @@ public class BlockScanUtil {
             }
         }
 
+
+//        String storage = getLastBlocStorage();
+//        System.out.println(storage);
+//        IncentiveBlock incentiveBlock = getBlock(storage);
+//        System.out.println(incentiveBlock);
+//        ArrayList<IncentiveTransaction> transactions = getBlockTxs(storage);
+//        System.out.println(transactions);
     }
 
     /**
@@ -161,10 +167,11 @@ public class BlockScanUtil {
      */
     public static IncentiveBlock getBlock(String storage) {
         IncentiveBlock block = new IncentiveBlock();
-        block.setBlockHeight((long) BlockAnalysisUtil.getBlockHeight(storage));
+
+        block.setBlockHeight(BlockAnalysisUtil.getBlockHeight(storage));
         block.setDifficulty(BlockAnalysisUtil.getDifficulty(storage));
-        block.setBlockedFee(new BigDecimal(BlockAnalysisUtil.getBlockedFee(storage)));
-        block.setStartTime(BlockAnalysisUtil.getStartTime(storage)*1000);
+        block.setBlockedFee(new BigDecimal(BlockAnalysisUtil.getBlockedFee(storage).longValue()));
+        block.setStartTime(BlockAnalysisUtil.getStartTime(storage));
         block.setBlockHash(BlockAnalysisUtil.getBlockHash(storage));
         block.setTransactionCount(BlockAnalysisUtil.getTransactionCount(storage));
         return block;
@@ -177,19 +184,19 @@ public class BlockScanUtil {
      */
     public static ArrayList<IncentiveTransaction> getBlockTxs(String storage) {
         //解析交易明细
-        int count = BlockAnalysisUtil.getTransactionCount(storage);
-        ArrayList<IncentiveTransaction> list  = new ArrayList<>();
-        int index = 182;
-        for (int i = 0; i < count; i++) {
-            String str = storage.substring(index);
 
+        int count = (int) BlockAnalysisUtil.getTransactionCount(storage);
+        ArrayList<IncentiveTransaction> list  = new ArrayList<>();
+        int index = 178;
+        System.out.println(storage.substring(0, 180));
+        for (int i = 0; i < count; i++) {
+            String str = storage.substring(index, index + 314);
+            System.out.println();
             IncentiveTransaction transaction = getTransaction(str);
-            if (count == 8) {
-                System.out.println("@@@@@@@: " +str);
-                System.out.println("#######: " +transaction);
-            }
+            System.out.println("==========: " + str);
+            System.out.println(transaction);
             list.add(transaction);
-            index = index + 313;
+            index = index + 312;
         }
         return list;
     }
@@ -221,7 +228,7 @@ public class BlockScanUtil {
      * @param method
      * @return
      */
-    private String getStorage(String input, String method) {
+    private static String getStorage(String input, String method) {
         log.info("getStorage.method:" + method);
         log.info("getStorage.input:" + input);
         HttpService httpService = new HttpService(vmUrl, new OkHttpClient(), false);

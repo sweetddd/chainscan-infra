@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -27,7 +28,7 @@ public class IncentiveBlock {
     /**
      * 难度
      */
-    private Long difficulty;
+    private BigInteger difficulty;
 
     /**
      * 手续费
@@ -52,7 +53,7 @@ public class IncentiveBlock {
     /**
      * 交易数量
      */
-    private Integer transactionCount;
+    private Long transactionCount;
 
     /**
      * 本次分红

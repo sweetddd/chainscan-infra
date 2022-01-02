@@ -65,12 +65,12 @@ public class IncentiveServiceImpl implements IncentiveService {
     @Override
     public Block incentiveBlockConvert(IncentiveBlock incentiveBlock) {
         Block block = new Block();
-        block.setBlockNumber(incentiveBlock.getBlockHeight());
+        block.setBlockNumber(incentiveBlock.getBlockHeight().longValue());
         block.setBlockHash(incentiveBlock.getBlockHash());
         block.setChainId(97);
-        block.setBlockTimestamp(new Date(incentiveBlock.getStartTime()));
+        block.setBlockTimestamp(new Date(incentiveBlock.getStartTime().longValue()));
         block.setParentHash(incentiveBlock.getParentHash());
-        block.setTxSize(incentiveBlock.getTransactionCount());
+        block.setTxSize(incentiveBlock.getTransactionCount().intValue());
         block.setDifficulty(incentiveBlock.getDifficulty().toString());
         block.setBlockFee(incentiveBlock.getBlockedFee());
         block.setSource(resource);
