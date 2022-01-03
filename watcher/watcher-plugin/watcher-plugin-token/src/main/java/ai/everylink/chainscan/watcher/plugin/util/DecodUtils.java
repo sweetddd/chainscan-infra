@@ -21,7 +21,7 @@ import static javax.swing.UIManager.put;
 public class DecodUtils {
 
 
-    private static Map functionMap = new HashMap() {{
+    private static Map functionMap = new HashMap(){{
         put("0x40c10f19", "Function: mint(address _who, uint256 _value) ***");
         put("0x095ea7b3", "Function: approve(address _spender, uint256 _value) ***");
         put("0x05e2ca17", "Function: deposit(uint8 destinationChainID, bytes32 resourceID, bytes data) ***");
@@ -38,31 +38,27 @@ public class DecodUtils {
 
     /**
      * 获取Function
-     *
      * @param input
      * @return
      */
-    public static Object getFunction(String input) {
+    public static  Object getFunction(String input){
         return functionMap.get(input.substring(0, 10));
-    }
-
-    ;
+    };
 
     /**
      * 解码params
-     *
      * @param input
      * @return
      */
     public static String getParams(String input) {
-        String                  methodID  = input.substring(0, 10);
-        String                  sub       = input.substring(10, input.length());
+        String methodID = input.substring(0, 10);
+        String sub = input.substring(10, input.length());
         HashMap<String, String> paramsMap = new HashMap<>();
-        paramsMap.put("MethodID", methodID);
+        paramsMap.put("MethodID",methodID);
         int start = 0;
-        for (int i = 1; i <= sub.length() / 64; i++) {
-            paramsMap.put("[" + i + "]", sub.substring(start, start + 64));
-            start = start + 64;
+        for(int i = 1; i  <= sub.length()/64; i ++) {
+            paramsMap.put("["+i+"]",sub.substring(start,start+64));
+            start = start+64;
         }
         Gson gson = new Gson();
         return gson.toJson(paramsMap);
@@ -70,7 +66,6 @@ public class DecodUtils {
 
     /**
      * 解析地址信息
-     *
      * @param data
      * @return
      */
@@ -81,7 +76,7 @@ public class DecodUtils {
             refMethod = TypeDecoder.class.getDeclaredMethod("decode", String.class, int.class, Class.class);
             refMethod.setAccessible(true);
             Address address = (Address) refMethod.invoke(null, data, 0, Address.class);
-            if (StringUtils.isNotBlank(address.toString())) {
+            if(StringUtils.isNotBlank(address.toString())){
                 decodAddress = address.toString();
             }
         } catch (Exception e) {
@@ -92,13 +87,12 @@ public class DecodUtils {
 
     /**
      * 解析账户数字
-     *
      * @param data
      * @return
      */
     public static BigInteger decodAmount(String data) {
         BigInteger deAmount = new BigInteger("0");
-        Method     refMethod;
+        Method refMethod;
         try {
             refMethod = TypeDecoder.class.getDeclaredMethod("decode", String.class, int.class, Class.class);
             refMethod.setAccessible(true);
@@ -108,25 +102,5 @@ public class DecodUtils {
             e.printStackTrace();
         }
         return deAmount;
-    }
-
-
-    public static void main(String[] args) {
-        try {
-            String inputData = "0xa9059cbb0000000000000000000000005c5212ed85cc957c6b656d209a7be8812ab00e330000000000000000000000000000000000000000000000008d8dadf544fc0000";
-            String method    = inputData.substring(0, 10);
-            System.out.println(method);
-            String to        = inputData.substring(10, 74);
-            String value     = inputData.substring(74);
-            Method refMethod = null;
-            refMethod = TypeDecoder.class.getDeclaredMethod("decode", String.class, int.class, Class.class);
-            refMethod.setAccessible(true);
-            Address address = (Address) refMethod.invoke(null, to, 0, Address.class);
-            System.out.println(address.toString());
-            Uint256 amount = (Uint256) refMethod.invoke(null, value, 0, Uint256.class);
-            System.out.println(amount.getValue());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

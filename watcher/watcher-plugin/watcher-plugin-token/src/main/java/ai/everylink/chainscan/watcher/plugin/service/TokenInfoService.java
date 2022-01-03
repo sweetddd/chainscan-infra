@@ -21,52 +21,18 @@ package ai.everylink.chainscan.watcher.plugin.service;
 import ai.everylink.chainscan.watcher.plugin.vo.EvmData;
 
 /**
- * EVM数据服务
+ * token数据统计service
  *
- * @author david.zhang@everylink.ai
- * @since 2021-11-30
+ * @author brett
+ * @since 2021-12-30
  */
-public interface SummaryService {
+public interface TokenInfoService {
 
     /**
-     *统计合约发行量
+     *token 信息扫描
      */
-    public void circulationSuppl();
-
-    /**
-     *总奖励的MOBI数量
-     */
-    public void totalRewards();
-
-    /**
-     *总质押MOS数量
-     */
-    public void totalStake();
-
-    /**
-     *查询莫比的储备金
-     */
-    public void rewardPool();
-
-    /**
-     *总质押MOS数量
-     */
-    public void burnt();
+    public void tokenScan();
 
 
-    /**
-     *总质押MOS数量
-     */
-    public void totalLockAmount();
 
-
-    /**
-     * 2层锁定量
-     */
-    public void l2LockAmount();
-
-    /**
-     * L1层质押量统计
-     */
-    public void l1LockAmount();
 }

@@ -27,6 +27,7 @@
     <name>watcher</name>
     <modules>
         <module>watcher-core</module>
+        <module>watcher-dao</module>
         <module>watcher-plugin</module>
         <module>watcher-bootstrap</module>
     </modules>
@@ -92,6 +93,12 @@
                 <artifactId>java-etherscan-api</artifactId>
                 <version>${etherscan-api.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.lz4</groupId>
+                <artifactId>lz4-java</artifactId>
+                <version>1.8.0</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>

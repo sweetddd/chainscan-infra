@@ -18,25 +18,21 @@
 package ai.everylink.chainscan.watcher.plugin.service.impl;
 
 import ai.everylink.chainscan.watcher.core.util.DecimalUtil;
-import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
+import ai.everylink.chainscan.watcher.core.util.VM30Utils;
 import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
-import ai.everylink.chainscan.watcher.core.util.httpUtil.HttpClient;
 import ai.everylink.chainscan.watcher.core.util.httpUtil.HttpHeader;
 import ai.everylink.chainscan.watcher.core.util.httpUtil.HttpParamers;
 import ai.everylink.chainscan.watcher.core.util.httpUtil.HttpUtilService;
-import ai.everylink.chainscan.watcher.plugin.config.SummaryConfig;
-import ai.everylink.chainscan.watcher.plugin.dao.*;
-import ai.everylink.chainscan.watcher.plugin.entity.CoinContract;
+import ai.everylink.chainscan.watcher.dao.CoinContractDao;
+import ai.everylink.chainscan.watcher.dao.CoinDao;
+import ai.everylink.chainscan.watcher.entity.CoinContract;
 import ai.everylink.chainscan.watcher.plugin.service.SummaryService;
-import ai.everylink.chainscan.watcher.plugin.util.VM30Utils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import io.api.etherscan.core.impl.EtherScanApi;
 import io.api.etherscan.executor.IHttpExecutor;
 import io.api.etherscan.executor.impl.HttpExecutor;
-import io.api.etherscan.model.Balance;
 import io.api.etherscan.model.EthNetwork;
-import io.api.etherscan.model.TokenBalance;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +43,6 @@ import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -174,7 +169,7 @@ public class SummaryServiceImpl implements SummaryService {
 
     @Override
     public void totalRewards() {
-        String storage = vmChainUtil.getStorage("0xaf9e78df124ddb9027c2573e5fb15e127322f546e497e413366c0e4faa8974c3", "state_subscribeStorage");
+        String storage = vmChainUtil.getStorage(null, "state_subscribeStorage");
     }
 
     @Override
@@ -294,6 +289,12 @@ public class SummaryServiceImpl implements SummaryService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void l1LockAmount() {
+        String vMpledge = vmChainUtil.getVMpledge();
+        System.out.println(vmChainUtil);
     }
 
     private String getL2Contract() {

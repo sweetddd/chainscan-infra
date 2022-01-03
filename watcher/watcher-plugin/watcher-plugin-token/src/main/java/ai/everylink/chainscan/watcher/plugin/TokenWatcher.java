@@ -20,11 +20,10 @@ package ai.everylink.chainscan.watcher.plugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
-import ai.everylink.chainscan.watcher.plugin.service.SummaryService;
+import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
 import ai.everylink.chainscan.watcher.plugin.vo.EvmData;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-
 import java.util.*;
 
 /**
@@ -34,25 +33,19 @@ import java.util.*;
  * @since 2021-11-26
  */
 @Slf4j
-public class SummaryWatcher implements IWatcher {
+public class TokenWatcher implements IWatcher {
 
-    private SummaryService summaryService;
+    private TokenInfoService tokenService;
 
     private String chainIds;
-
 
     @Override
     public List<EvmData> scanBlock() {
         initService();
-        // 定时统计circulationSuppl
         long start = System.currentTimeMillis();
-        log.info("SummaryWatcher-start:" + start);
-        summaryService.circulationSuppl();  //统计合约发行量
-        summaryService.totalLockAmount();  //统计合约锁定量
-        summaryService.l2LockAmount();     //2层锁定量统计
-        summaryService.l1LockAmount();     //2层锁定量统计
-        summaryService.burnt();  //统计合约销毁量
-        log.info("SummaryWatcher-end:" + System.currentTimeMillis());
+        log.info("TokenWatcher-start:" + start);
+        tokenService.tokenScan();  //统计合约数据;
+        log.info("TokenWatcher-end:" + System.currentTimeMillis());
         List<EvmData> blockList = Lists.newArrayList();
         return blockList;
     }
@@ -61,7 +54,7 @@ public class SummaryWatcher implements IWatcher {
     @Override
     public List<IWatcherPlugin> getOrderedPluginList() {
         // 自己创建的
-        List<IWatcherPlugin> pluginList = Lists.newArrayList(new SummaryPlugin());
+        List<IWatcherPlugin> pluginList = Lists.newArrayList(new TokenPlugin());
         return pluginList;
     }
 
@@ -72,13 +65,13 @@ public class SummaryWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        return "0 0 * * * ?";
-       // return "*/5 * * * * ?";
+       // return "0 0 * * * ?";
+        return "*/5 * * * * ?";
     }
 
     private void initService() {
-        if (summaryService == null) {
-            summaryService = SpringApplicationUtils.getBean(SummaryService.class);
+        if (tokenService == null) {
+            tokenService = SpringApplicationUtils.getBean(TokenInfoService.class);
         }
     }
 
