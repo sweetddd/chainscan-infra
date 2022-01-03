@@ -112,9 +112,11 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 addToken(toAddr, fromAddr); //增加合约信息;
             }
             //账户信息余额更新;
-            if (method!= null && (method.equals("mint(") || method.equals("transfer(") || method.equals("transferFrom("))
-                    || method.equals("burn(") || method.equals("burnFrom(")) {
-                saveOrUpdateBalance(fromAddr, toAddr); //监控此方法更新用户余额信息;
+            if(method != null){
+                if (method.equals("mint(") || method.equals("transfer(") || method.equals("transferFrom(")
+                        || method.equals("burn(") || method.equals("burnFrom(")) {
+                    saveOrUpdateBalance(fromAddr, toAddr); //监控此方法更新用户余额信息;
+                }
             }
             transactionDao.updateTokenTag(transaction.getId());
         }
