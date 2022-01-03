@@ -266,7 +266,6 @@ public class VM30Utils {
                 return false;
             }
         } catch (Exception e) {
-            e.printStackTrace();
             e.getMessage();
             return false;
         }

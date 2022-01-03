@@ -34,11 +34,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Type;
-import org.web3j.abi.datatypes.Utf8String;
-import org.web3j.abi.datatypes.generated.Uint256;
-import org.web3j.abi.datatypes.generated.Uint8;
+import org.web3j.abi.datatypes.*;
+import org.web3j.abi.datatypes.generated.*;
+import org.web3j.abi.datatypes.primitive.Byte;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.Request;
@@ -114,7 +112,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 addToken(toAddr, fromAddr); //增加合约信息;
             }
             //账户信息余额更新;
-            if (method.equals("mint(") || method.equals("transfer(") || method.equals("transferFrom(")
+            if (method!= null && (method.equals("mint(") || method.equals("transfer(") || method.equals("transferFrom("))
                     || method.equals("burn(") || method.equals("burnFrom(")) {
                 saveOrUpdateBalance(fromAddr, toAddr); //监控此方法更新用户余额信息;
             }
@@ -129,7 +127,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * @param toAddr
      */
     private void addToken(String toAddr, String fromAddr) {
-        checkTokenType(toAddr, fromAddr);
         String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
         String     name     = vm30Utils.name(web3j, toAddr).toString();
         BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
@@ -142,7 +139,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             List<TokenInfo>    tokens = tokenInfoDao.findAll(exp);
             if (tokens.size() < 1) {
                 //判断合约类型
-                checkTokenType(toAddr, fromAddr);
+                checkTokenType(toAddr, fromAddr,tokenQuery);
                 //增加账户与token关系数据;
                 saveOrUpdateBalance(fromAddr, toAddr);
                 tokenQuery.setTokenType(1);
@@ -186,11 +183,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      *
      * @param contract
      */
-    private void checkTokenType(String contract, String fromAddr) {
-        String from        = "0x6Da573EEc80f63c98b88cED15D32CA270787FB5a";
-        String to          = "0x6Da573EEc80f63c98b88cED15D32CA270787FB51";
-        String contract1   = "0xcD99ad44621fa67Ea313AD5E336574eFF1641f11";
-        String contract721 = "0x3bea1B16b5343472D1FE12d941771ff0141b07CC";
+    private void checkTokenType(String contract, String fromAddr,TokenInfo tokenInfo) {
         try {
             List<Type> parames = new ArrayList<>();
             //ERC20:
@@ -202,49 +195,74 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             //function allowance(address _owner, address _spender) constant returns (uint remaining);
             parames.add(new Address(fromAddr));
             parames.add(new Uint256(1));
-            boolean transfer = vm30Utils.querryFunction(web3j, parames, "transfer", fromAddr, contract1);
+            boolean transfer = vm30Utils.querryFunction(web3j, parames, "transfer", fromAddr, contract);
             parames.clear();
             parames.add(new Address(fromAddr));
             parames.add(new Address(fromAddr));
-            boolean allowance = vm30Utils.querryFunction(web3j, parames, "allowance", fromAddr, contract1);
+            boolean allowance = vm30Utils.querryFunction(web3j, parames, "allowance", fromAddr, contract);
             parames.clear();
-            boolean totalSupply = vm30Utils.querryFunction(web3j, parames, "totalSupply", fromAddr, contract1);
+            boolean totalSupply = vm30Utils.querryFunction(web3j, parames, "totalSupply", fromAddr, contract);
             parames.clear();
             parames.add(new Address(fromAddr));
-            boolean balanceOf = vm30Utils.querryFunction(web3j, parames, "balanceOf", fromAddr, contract1);
+            boolean balanceOf = vm30Utils.querryFunction(web3j, parames, "balanceOf", fromAddr, contract);
             parames.clear();
             parames.add(new Address(fromAddr));
             parames.add(new Address(fromAddr));
             parames.add(new Uint256(1));
-            boolean transferFrom = vm30Utils.querryFunction(web3j, parames, "transferFrom", fromAddr, contract1);
+            boolean transferFrom = vm30Utils.querryFunction(web3j, parames, "transferFrom", fromAddr, contract);
 
             //ERC721
             //function balanceOf(address _owner) external view returns (uint256);
             //function ownerOf(uint256 _tokenId) external view returns (address);
-            //function ownerOf(uint256 _tokenId) external view returns (address);
             //function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) external payable;
-            //function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable;
             //function transferFrom(address _from, address _to, uint256 _tokenId) external payable;
             //function approve(address _approved, uint256 _tokenId) external payable;
             //function setApprovalForAll(address _operator, bool _approved) external;
             //function getApproved(uint256 _tokenId) external view returns (address);
             //function isApprovedForAll(address _owner, address _operator) external view returns (bool);
-
-            //判断为ERC20合约:
-            parames.add(new Address(to));
-            parames.add(new Uint256(1));
-            //ERC721
             parames.clear();
-            parames.add(new Address(from));
-            // parames.add(new Address(to));
             parames.add(new Uint256(1));
-            boolean f = vm30Utils.querryFunction(web3j, parames, "approve", from, contract721);
-            System.out.println(f);
+            boolean ownerOf = vm30Utils.querryFunction(web3j, parames, "ownerOf", fromAddr, contract);
+            parames.clear();
+            parames.add(new Address(fromAddr));
+            parames.add(new Address(fromAddr));
+            parames.add(new Uint256(1));
+            //parames.add(new Bytes31("".getBytes()));
+            boolean safeTransferFrom = vm30Utils.querryFunction(web3j, parames, "safeTransferFrom", fromAddr, contract);
+            parames.clear();
+            parames.add(new Address(fromAddr));
+            parames.add(new Address(fromAddr));
+            parames.add(new Uint256(1));
+            boolean transferFrom721 = vm30Utils.querryFunction(web3j, parames, "transferFrom", fromAddr, contract);
+            parames.clear();
+            parames.add(new Address(fromAddr));
+            parames.add(new Uint256(1));
+            boolean approve = vm30Utils.querryFunction(web3j, parames, "approve", fromAddr, contract);
+            parames.clear();
+            parames.add(new Address(fromAddr));
+            parames.add(new Bool(true));
+            boolean setApprovalForAll = vm30Utils.querryFunction(web3j, parames, "setApprovalForAll", fromAddr, contract);
+            parames.clear();
+            parames.add(new Uint256(1));
+            boolean getApproved = vm30Utils.querryFunction(web3j, parames, "getApproved", fromAddr, contract);
+            parames.clear();
+            parames.add(new Address(fromAddr));
+            parames.add(new Address(fromAddr));
+            boolean isApprovedForAll = vm30Utils.querryFunction(web3j, parames, "isApprovedForAll", fromAddr, contract);
+
+            if(transfer && allowance && totalSupply && balanceOf && transferFrom){
+                tokenInfo.setTokenType(1);
+            }else if(balanceOf && ownerOf && safeTransferFrom && transferFrom
+                    && approve && setApprovalForAll && getApproved && isApprovedForAll){
+                tokenInfo.setTokenType(2);
+            }else {
+                tokenInfo.setTokenType(0);
+            }
         } catch (Exception e) {
+            log.error("识别合约类型异常:"+ e.getMessage());
             e.printStackTrace();
+            tokenInfo.setTokenType(0);
         }
-
     }
-
 }
 
