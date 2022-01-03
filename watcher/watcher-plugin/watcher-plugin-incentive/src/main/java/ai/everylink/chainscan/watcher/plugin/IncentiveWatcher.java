@@ -3,8 +3,8 @@ package ai.everylink.chainscan.watcher.plugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
-import ai.everylink.chainscan.watcher.plugin.entity.Block;
-import ai.everylink.chainscan.watcher.plugin.entity.IncentiveBlock;
+import ai.everylink.chainscan.watcher.entity.Block;
+import ai.everylink.chainscan.watcher.entity.IncentiveBlock;
 import ai.everylink.chainscan.watcher.plugin.service.IncentiveService;
 import com.google.common.collect.Lists;
 
@@ -39,8 +39,8 @@ public class IncentiveWatcher implements IWatcher {
         if (!incentiveBlocks.isEmpty()) {
             incentiveBlocks.remove(incentiveBlocks.size() - 1);
             for (IncentiveBlock incentiveBlock : incentiveBlocks) {
-                String blockHash = incentiveBlock.getBlockHash();
-                Block existBlock = incentiveService.selectBlockByBlockHash(blockHash);
+                String blockHash  = incentiveBlock.getBlockHash();
+                Block  existBlock = incentiveService.selectBlockByBlockHash(blockHash);
                 if (existBlock == null){
                     result.add(incentiveBlock);
                 }

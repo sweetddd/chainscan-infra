@@ -1,7 +1,7 @@
 package ai.everylink.chainscan.watcher.plugin.service.impl;
 
-import ai.everylink.chainscan.watcher.plugin.dao.DividendRecordDao;
-import ai.everylink.chainscan.watcher.plugin.entity.DividendRecord;
+import ai.everylink.chainscan.watcher.dao.DividendRecordDao;
+import ai.everylink.chainscan.watcher.entity.DividendRecord;
 import ai.everylink.chainscan.watcher.plugin.service.DividendRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

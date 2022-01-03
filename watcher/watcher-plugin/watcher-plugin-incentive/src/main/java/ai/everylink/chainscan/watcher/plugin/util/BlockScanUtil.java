@@ -1,7 +1,8 @@
 package ai.everylink.chainscan.watcher.plugin.util;
 
-import ai.everylink.chainscan.watcher.plugin.entity.IncentiveBlock;
-import ai.everylink.chainscan.watcher.plugin.entity.IncentiveTransaction;
+import ai.everylink.chainscan.watcher.core.util.UtilsCrypto;
+import ai.everylink.chainscan.watcher.entity.IncentiveBlock;
+import ai.everylink.chainscan.watcher.entity.IncentiveTransaction;
 import io.emeraldpay.polkaj.scale.ScaleCodecReader;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;

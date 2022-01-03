@@ -1,9 +1,10 @@
 package ai.everylink.chainscan.watcher.plugin.service;
 
-import ai.everylink.chainscan.watcher.plugin.entity.IncentiveBlock;
-import ai.everylink.chainscan.watcher.plugin.entity.Block;
-import ai.everylink.chainscan.watcher.plugin.entity.IncentiveTransaction;
-import ai.everylink.chainscan.watcher.plugin.entity.Transaction;
+
+import ai.everylink.chainscan.watcher.entity.Block;
+import ai.everylink.chainscan.watcher.entity.IncentiveBlock;
+import ai.everylink.chainscan.watcher.entity.IncentiveTransaction;
+import ai.everylink.chainscan.watcher.entity.Transaction;
 
 import java.util.List;
 

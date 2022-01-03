@@ -1,8 +1,7 @@
-package ai.everylink.chainscan.watcher.plugin.dao;
+package ai.everylink.chainscan.watcher.dao;
 
 
-import ai.everylink.chainscan.watcher.plugin.entity.DividendRecord;
-//import org.apache.ibatis.annotations.Mapper;
+import ai.everylink.chainscan.watcher.entity.DividendRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

@@ -1,11 +1,11 @@
 package ai.everylink.chainscan.watcher.plugin.service.impl;
 
-import ai.everylink.chainscan.watcher.plugin.dao.BlockDao;
-import ai.everylink.chainscan.watcher.plugin.dao.TransactionDao;
-import ai.everylink.chainscan.watcher.plugin.entity.Block;
-import ai.everylink.chainscan.watcher.plugin.entity.IncentiveBlock;
-import ai.everylink.chainscan.watcher.plugin.entity.IncentiveTransaction;
-import ai.everylink.chainscan.watcher.plugin.entity.Transaction;
+import ai.everylink.chainscan.watcher.dao.BlockDao;
+import ai.everylink.chainscan.watcher.dao.TransactionDao;
+import ai.everylink.chainscan.watcher.entity.Block;
+import ai.everylink.chainscan.watcher.entity.IncentiveBlock;
+import ai.everylink.chainscan.watcher.entity.IncentiveTransaction;
+import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.plugin.service.IncentiveService;
 import ai.everylink.chainscan.watcher.plugin.util.BlockScanUtil;
 import lombok.extern.slf4j.Slf4j;

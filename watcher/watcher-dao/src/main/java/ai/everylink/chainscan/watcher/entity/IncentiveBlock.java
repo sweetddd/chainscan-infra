@@ -1,12 +1,9 @@
-package ai.everylink.chainscan.watcher.plugin.entity;
+package ai.everylink.chainscan.watcher.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 
 /**

@@ -1,4 +1,4 @@
-package ai.everylink.chainscan.watcher.plugin.entity;
+package ai.everylink.chainscan.watcher.entity;
 
 import lombok.Data;
 

@@ -2,7 +2,7 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 
 
-import ai.everylink.chainscan.watcher.plugin.entity.DividendRecord;
+import ai.everylink.chainscan.watcher.entity.DividendRecord;
 
 import java.util.List;
 

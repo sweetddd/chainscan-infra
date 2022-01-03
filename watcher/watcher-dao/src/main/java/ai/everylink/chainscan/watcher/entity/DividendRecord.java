@@ -1,7 +1,5 @@
-package ai.everylink.chainscan.watcher.plugin.entity;
+package ai.everylink.chainscan.watcher.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import javax.persistence.*;

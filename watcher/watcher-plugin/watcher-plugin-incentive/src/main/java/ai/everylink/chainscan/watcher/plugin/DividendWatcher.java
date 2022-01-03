@@ -4,21 +4,15 @@ import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
-import ai.everylink.chainscan.watcher.plugin.entity.Block;
-import ai.everylink.chainscan.watcher.plugin.entity.DividendRecord;
-import ai.everylink.chainscan.watcher.plugin.entity.IncentiveBlock;
-import ai.everylink.chainscan.watcher.plugin.service.DividendRecordService;
+import ai.everylink.chainscan.watcher.entity.IncentiveBlock;
+
 import ai.everylink.chainscan.watcher.plugin.service.IncentiveService;
-import ai.everylink.chainscan.watcher.plugin.util.VM30Utils;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class DividendWatcher implements IWatcher {
 

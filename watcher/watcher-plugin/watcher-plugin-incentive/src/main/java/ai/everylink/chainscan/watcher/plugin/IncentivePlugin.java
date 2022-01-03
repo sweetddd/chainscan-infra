@@ -20,10 +20,10 @@ package ai.everylink.chainscan.watcher.plugin;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
-import ai.everylink.chainscan.watcher.plugin.entity.Block;
-import ai.everylink.chainscan.watcher.plugin.entity.IncentiveBlock;
-import ai.everylink.chainscan.watcher.plugin.entity.IncentiveTransaction;
-import ai.everylink.chainscan.watcher.plugin.entity.Transaction;
+import ai.everylink.chainscan.watcher.entity.Block;
+import ai.everylink.chainscan.watcher.entity.IncentiveBlock;
+import ai.everylink.chainscan.watcher.entity.IncentiveTransaction;
+import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.plugin.service.IncentiveService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,12 +54,12 @@ public class IncentivePlugin implements IWatcherPlugin {
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
         init();
         IncentiveBlock incentiveBlock = (IncentiveBlock) block;
-        Block _block = incentiveService.incentiveBlockConvert(incentiveBlock);
+        Block          _block         = incentiveService.incentiveBlockConvert(incentiveBlock);
         _block.setBurnt(null);
         _block.setReward(null);
-        Block savedBlock = incentiveService.saveBlock(_block);
+        Block                      savedBlock            = incentiveService.saveBlock(_block);
         List<IncentiveTransaction> incentiveTransactions = incentiveBlock.getExtrinsics();
-        Integer index = 0;
+        Integer                    index                 = 0;
         for (IncentiveTransaction incentiveTransaction : incentiveTransactions) {
             Transaction transaction = incentiveService.incentiveTransactionConvert(savedBlock, incentiveTransaction, index);
             incentiveService.saveTransaction(transaction);
