@@ -83,7 +83,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
     @PostConstruct
     private void initWeb3j() {
         if (web3j != null) {
-            return ;
+            return;
         }
         try {
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -105,18 +105,18 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         Example<Transaction> example = Example.of(txQuery);
         List<Transaction>    all     = transactionDao.findAll(example);
         for (Transaction transaction : all) {
-            String method = transaction.getInputMethod();
-            String value = transaction.getValue();
-            String toAddr = transaction.getToAddr();
+            String method   = transaction.getInputMethod();
+            String value    = transaction.getValue();
+            String toAddr   = transaction.getToAddr();
             String fromAddr = transaction.getFromAddr();
             //交易value为0则为 合约方法调用;
-            if(value.equals("0") && StringUtils.isNotBlank(toAddr)){
-                addToken(toAddr,fromAddr); //增加合约信息;
+            if (value.equals("0") && StringUtils.isNotBlank(toAddr)) {
+                addToken(toAddr, fromAddr); //增加合约信息;
             }
             //账户信息余额更新;
-            if(method.equals("mint(") || method.equals("transfer(") || method.equals("transferFrom(")
-                    || method.equals("burn(") || method.equals("burnFrom(")){
-                saveOrUpdateBalance(fromAddr,toAddr); //监控此方法更新用户余额信息;
+            if (method.equals("mint(") || method.equals("transfer(") || method.equals("transferFrom(")
+                    || method.equals("burn(") || method.equals("burnFrom(")) {
+                saveOrUpdateBalance(fromAddr, toAddr); //监控此方法更新用户余额信息;
             }
             transactionDao.updateTokenTag(transaction.getId());
         }
@@ -125,25 +125,26 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
     /**
      * 触发是否 增加token信息;
+     *
      * @param toAddr
      */
-    private void addToken(String toAddr,String fromAddr) {
-        checkTokenType(toAddr);
-        String symbol = vm30Utils.symbol(web3j, toAddr).toString();
-        String name = vm30Utils.name(web3j, toAddr).toString();
+    private void addToken(String toAddr, String fromAddr) {
+        checkTokenType(toAddr, fromAddr);
+        String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
+        String     name     = vm30Utils.name(web3j, toAddr).toString();
         BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
-        if(symbol != null && name != null){
+        if (symbol != null && name != null) {
             TokenInfo tokenQuery = new TokenInfo();
             tokenQuery.setTokenName(name);
             tokenQuery.setTokenSymbol(symbol);
             tokenQuery.setDecimals(decimals);
-            Example<TokenInfo> exp = Example.of(tokenQuery);
+            Example<TokenInfo> exp    = Example.of(tokenQuery);
             List<TokenInfo>    tokens = tokenInfoDao.findAll(exp);
-            if(tokens.size() < 1){
+            if (tokens.size() < 1) {
                 //判断合约类型
-                checkTokenType(toAddr);
+                checkTokenType(toAddr, fromAddr);
                 //增加账户与token关系数据;
-                saveOrUpdateBalance(fromAddr,toAddr);
+                saveOrUpdateBalance(fromAddr, toAddr);
                 tokenQuery.setTokenType(1);
                 tokenQuery.setAddress(toAddr);
                 tokenQuery.setCreateTime(new Date());
@@ -154,91 +155,91 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
     /**
      * 增加账户与token关联关系;
+     *
      * @param fromAddr
      * @param contract
      */
-    private void saveOrUpdateBalance(String fromAddr,String contract) {
+    private void saveOrUpdateBalance(String fromAddr, String contract) {
         String symbol = vm30Utils.symbol(web3j, contract).toString();
         //查询账户余额
-        BigInteger amount = vm30Utils.balanceOf(web3j, contract, fromAddr);
+        BigInteger          amount  = vm30Utils.balanceOf(web3j, contract, fromAddr);
         TokenAccountBalance balance = new TokenAccountBalance();
         balance.setAccount(fromAddr);
         balance.setToken(symbol);
-        Example<TokenAccountBalance> exp = Example.of(balance);
+        Example<TokenAccountBalance> exp      = Example.of(balance);
         List<TokenAccountBalance>    balances = tokenAccountBalanceDao.findAll(exp);
-        if(balances.size() < 1){
+        if (balances.size() < 1) {
             balance.setContract(contract);
             balance.setBalance(amount.longValue());
             tokenAccountBalanceDao.save(balance);
-        }else if(balances.size() == 1){
+        } else if (balances.size() == 1) {
             TokenAccountBalance tokenAccountBalance = balances.get(0);
             tokenAccountBalance.setBalance(amount.longValue());
             //更新账户余额
-            tokenAccountBalanceDao.updateBalance(tokenAccountBalance.getId(),amount.longValue());
+            tokenAccountBalanceDao.updateBalance(tokenAccountBalance.getId(), amount.longValue());
         }
 
     }
 
     /**
      * 校验tokenType
+     *
      * @param contract
      */
-    private void checkTokenType( String contract) {
-        //ERC20:
-        //function totalSupply() constant returns (uint totalSupply);
-        //function balanceOf(address _owner) constant returns (uint balance);
-        //function transfer(address _to, uint _value) returns (bool success);
-        //function transferFrom(address _from, address _to, uint _value) returns (bool success);
-        //function approve(address _spender, uint _value) returns (bool success);
-        //function allowance(address _owner, address _spender) constant returns (uint remaining);
-
-        //ERC721
-        //function balanceOf(address _owner) external view returns (uint256);
-        //function ownerOf(uint256 _tokenId) external view returns (address);
-        //function ownerOf(uint256 _tokenId) external view returns (address);
-        //function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) external payable;
-        //function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable;
-        //function transferFrom(address _from, address _to, uint256 _tokenId) external payable;
-        //function approve(address _approved, uint256 _tokenId) external payable;
-        //function setApprovalForAll(address _operator, bool _approved) external;
-        //function getApproved(uint256 _tokenId) external view returns (address);
-        //function isApprovedForAll(address _owner, address _operator) external view returns (bool);
-
-
-
-        //判断为ERC20合约:
-        String from =  "0x6Da573EEc80f63c98b88cED15D32CA270787FB5a";
-        String to =  "0x6Da573EEc80f63c98b88cED15D32CA270787FB5a";
-        String contract1 =  "0xcD99ad44621fa67Ea313AD5E336574eFF1641f11";
-        String contract721 =  "0x3bea1B16b5343472D1FE12d941771ff0141b07CC";
-        List<Type> parames = new ArrayList<>();
-        parames.add(new Address(to));
-        parames.add(new Uint256(1));
+    private void checkTokenType(String contract, String fromAddr) {
+        String from        = "0x6Da573EEc80f63c98b88cED15D32CA270787FB5a";
+        String to          = "0x6Da573EEc80f63c98b88cED15D32CA270787FB51";
+        String contract1   = "0xcD99ad44621fa67Ea313AD5E336574eFF1641f11";
+        String contract721 = "0x3bea1B16b5343472D1FE12d941771ff0141b07CC";
         try {
-            boolean b = vm30Utils.querryFunction(web3j, parames, "transfer", from, contract1);
+            List<Type> parames = new ArrayList<>();
+            //ERC20:
+            //function totalSupply() constant returns (uint totalSupply);
+            //function balanceOf(address _owner) constant returns (uint balance);
+            //function transfer(address _to, uint _value) returns (bool success);
+            //function transferFrom(address _from, address _to, uint _value) returns (bool success);
+            //function approve(address _spender, uint _value) returns (bool success);
+            //function allowance(address _owner, address _spender) constant returns (uint remaining);
+            parames.add(new Address(fromAddr));
+            parames.add(new Uint256(1));
+            boolean transfer = vm30Utils.querryFunction(web3j, parames, "transfer", fromAddr, contract1);
             parames.clear();
-            parames.add(new Address(from));
-            parames.add(new Address(to));
-           // parames.add(new Uint256(1));
-            boolean a = vm30Utils.querryFunction(web3j, parames, "allowance", from, contract1);
+            parames.add(new Address(fromAddr));
+            parames.add(new Address(fromAddr));
+            boolean allowance = vm30Utils.querryFunction(web3j, parames, "allowance", fromAddr, contract1);
             parames.clear();
-            boolean c = vm30Utils.querryFunction(web3j, parames, "totalSupply", from, contract1);
-            parames.add(new Address(from));
-            boolean d = vm30Utils.querryFunction(web3j, parames, "balanceOf", from, contract1);
+            boolean totalSupply = vm30Utils.querryFunction(web3j, parames, "totalSupply", fromAddr, contract1);
             parames.clear();
-            parames.add(new Address(from));
-            parames.add(new Address(to));
-             parames.add(new Uint256(1));
-            //boolean e = vm30Utils.querryFunction(web3j, parames, "transferFrom", from, contract1);
-            BigInteger bigInteger = vm30Utils.totalSupply(web3j, contract1);
+            parames.add(new Address(fromAddr));
+            boolean balanceOf = vm30Utils.querryFunction(web3j, parames, "balanceOf", fromAddr, contract1);
+            parames.clear();
+            parames.add(new Address(fromAddr));
+            parames.add(new Address(fromAddr));
+            parames.add(new Uint256(1));
+            boolean transferFrom = vm30Utils.querryFunction(web3j, parames, "transferFrom", fromAddr, contract1);
 
+            //ERC721
+            //function balanceOf(address _owner) external view returns (uint256);
+            //function ownerOf(uint256 _tokenId) external view returns (address);
+            //function ownerOf(uint256 _tokenId) external view returns (address);
+            //function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) external payable;
+            //function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable;
+            //function transferFrom(address _from, address _to, uint256 _tokenId) external payable;
+            //function approve(address _approved, uint256 _tokenId) external payable;
+            //function setApprovalForAll(address _operator, bool _approved) external;
+            //function getApproved(uint256 _tokenId) external view returns (address);
+            //function isApprovedForAll(address _owner, address _operator) external view returns (bool);
+
+            //判断为ERC20合约:
+            parames.add(new Address(to));
+            parames.add(new Uint256(1));
             //ERC721
             parames.clear();
             parames.add(new Address(from));
-            parames.add(new Address(to));
+            // parames.add(new Address(to));
             parames.add(new Uint256(1));
-            boolean f = vm30Utils.querryFunction(web3j, parames, "transferFrom", from, contract721);
-            System.out.println(b);
+            boolean f = vm30Utils.querryFunction(web3j, parames, "approve", from, contract721);
+            System.out.println(f);
         } catch (Exception e) {
             e.printStackTrace();
         }

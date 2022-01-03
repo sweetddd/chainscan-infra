@@ -3,6 +3,7 @@ package ai.everylink.chainscan.watcher.core.util;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
@@ -12,6 +13,7 @@ import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.Response;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthGasPrice;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -259,11 +261,12 @@ public class VM30Utils {
                                 Transaction.createEthCallTransaction(from, contract, encodedFunction),
                                 DefaultBlockParameterName.LATEST)
                         .sendAsync().get();
-
-            if (response.getValue().equals("0x")){
+            Response.Error error = response.getError();
+            if(error != null && StringUtils.isNotBlank(error.getMessage()) && error.getMessage().equals("VM Exception while processing transaction: revert") ){
                 return false;
             }
         } catch (Exception e) {
+            e.printStackTrace();
             e.getMessage();
             return false;
         }

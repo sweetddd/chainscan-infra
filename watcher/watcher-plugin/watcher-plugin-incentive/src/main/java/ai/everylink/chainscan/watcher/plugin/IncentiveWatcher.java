@@ -62,7 +62,8 @@ public class IncentiveWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        return "0/4 * * * * ? ";
+        return "0 0 * * * ?";
+        //return "0/4 * * * * ? ";
     }
 
 }
