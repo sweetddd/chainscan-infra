@@ -1,22 +1,15 @@
 package ai.everylink.chainscan.watcher.core.util;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import io.emeraldpay.polkaj.api.*;
-import io.emeraldpay.polkaj.apiws.JavaHttpSubscriptionAdapter;
+import io.emeraldpay.polkaj.apihttp.JavaHttpAdapter;
 import io.emeraldpay.polkaj.json.BlockResponseJson;
-import io.emeraldpay.polkaj.json.MethodsJson;
 import io.emeraldpay.polkaj.json.SystemHealthJson;
 import io.emeraldpay.polkaj.scale.ScaleCodecReader;
 import io.emeraldpay.polkaj.scale.ScaleExtract;
-import io.emeraldpay.polkaj.scaletypes.AccountInfo;
 import io.emeraldpay.polkaj.scaletypes.Metadata;
 import io.emeraldpay.polkaj.scaletypes.MetadataReader;
-import io.emeraldpay.polkaj.schnorrkel.Schnorrkel;
-import io.emeraldpay.polkaj.ss58.SS58Type;
-import io.emeraldpay.polkaj.tx.AccountRequests;
-import io.emeraldpay.polkaj.tx.ExtrinsicContext;
-import io.emeraldpay.polkaj.types.*;
+import io.emeraldpay.polkaj.types.ByteData;
+import io.emeraldpay.polkaj.types.Hash256;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -30,15 +23,9 @@ import org.web3j.protocol.core.Response;
 import org.web3j.protocol.http.HttpService;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.time.Duration;
+import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.*;
 
 /**
  * @Author Brett
@@ -66,6 +53,7 @@ public class VmChainUtil {
      * @return
      */
     public String getVMpledge() {
+        String l1LockAmount = "";
         String currentEra = getCurrentEra();
         ArrayList<Object> params  = new ArrayList<>();
         String            key     = Hex.encodeHexString(UtilsCrypto.xxhashAsU8a(("Staking").getBytes(), 128));
@@ -76,27 +64,32 @@ public class VmChainUtil {
         params.add("0x" + key + modelue);
         String storage = getStorage(params, "state_getKeysPaged");
         ArrayList<String> queryParam  = new ArrayList<>();
-        //  queryParam.add("0x" + key + modelue + currentEra.substring(2));
-        // queryParam.add("0x5f3e4907f716ac89b6347d15ececedcaa141c4fe67c2d11f4a10c6aca7a79a04b4def25cfda6ef3a00000000");
-        queryParam.add("0x5f3e4907f716ac89b6347d15ececedcaa141c4fe67c2d11f4a10c6aca7a79a0400000000");
-
         if(StringUtils.isNotBlank(storage)){
             storage = storage.replace("[","");
             storage = storage.replace("]","");
             storage = storage.replace(" ","");
             String[]  split      = storage.split(",");
             for (String item : split) {
-                queryParam.add(item);
+                String eraIedex = item.substring(item.length() - 8, item.length());
+                String currentIndex = currentEra.substring(2);
+               if(eraIedex.equals(currentIndex)){
+                   ArrayList<Object> param = new ArrayList<>();
+                   ArrayList<Object> index = new ArrayList<>();
+                   index.add(item);
+                   param.add(index);
+                   String amount = getStorage(index, "state_getStorage");
+                    if(StringUtils.isNotBlank(amount)){
+                        ScaleCodecReader rdr = new ScaleCodecReader(readMessage(amount.substring(2)));
+                        BigInteger bigInteger = rdr.readUint128();
+                        l1LockAmount = bigInteger.toString();
+                    }
+               }
             }
         }
-        ArrayList<Object> param = new ArrayList<>();
-        param.add(queryParam);
-        String queryStorageA = getStorage(param, "state_queryStorageAt");
-        System.out.println(queryStorageA);
-        if (StringUtils.isEmpty(queryStorageA)) {
+        if (StringUtils.isEmpty(l1LockAmount)) {
             return null;
         }
-        return queryStorageA;
+        return l1LockAmount;
     }
 
 
@@ -126,7 +119,7 @@ public class VmChainUtil {
      * @return
      */
     public String getStorage(ArrayList<Object> params, String method) {
-        HttpService httpService      = new HttpService(vmUrl, new OkHttpClient(), false);
+        HttpService httpService      = new HttpService("http://10.233.75.29:9934", new OkHttpClient(), false);
         Request     state_getStorage = null;
         log.info("method:" + method);
         if (params == null || params.size() < 1) {
@@ -156,7 +149,6 @@ public class VmChainUtil {
         return "";
     }
 
-
     public static byte[] readMessage(String input) {
         byte[] msg = new byte[0];
         try {
@@ -171,127 +163,33 @@ public class VmChainUtil {
 
     @SneakyThrows
     public static void main(String[] args) {
-        DotAmountFormatter AMOUNT_FORMAT = DotAmountFormatter.autoFormatter();
+        JavaHttpAdapter client = JavaHttpAdapter.newBuilder()
+                //.connectTo("http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf")
+                .connectTo("http://10.233.75.29:9934")
+                .basicAuth("", "")
+                .build();
 
-        String api = "ws://10.233.87.45:9944";
-        if (args.length >= 1) {
-            api = args[0];
-        }
-        System.out.println("Connect to: " + api);
+        ArrayList<Object> params  = new ArrayList<>();
+        String            key     = Hex.encodeHexString(UtilsCrypto.xxhashAsU8a(("Staking").getBytes(), 128));
+        String            modelue = Hex.encodeHexString(UtilsCrypto.xxhashAsU8a(("ErasTotalStake").getBytes(), 128));
+        params.clear();
+        params.add("0x" + key + modelue);
+        params.add(1000);
+        params.add("0x" + key + modelue);
 
-        Schnorrkel.KeyPair aliceKey;
-        Address            alice;
-        Address            bob;
-        if (args.length >= 3) {
-            System.out.println("Use provided addresses");
-            aliceKey = Schnorrkel.getInstance().generateKeyPairFromSeed(Hex.decodeHex(args[1]));
-            bob =  Address.from(args[2]);
-        } else {
-            System.out.println("Use standard accounts for Alice and Bob, expected to run against development network");
-            aliceKey = Schnorrkel.getInstance().generateKeyPairFromSeed(
-                    Hex.decodeHex("e5be9a5092b81bca64be81d212e7f2f9eba183bb7a90954f7b76361f6edb5c0a")
-            );
-           // bob =  Address.from("0x6Da573EEc80f63c98b88cED15D32CA270787FB5a");
-        }
-        alice = new Address(SS58Type.Network.CANARY, aliceKey.getPublicKey());
+//        CompletableFuture<SystemHealthJson> future = client.produceRpcFuture(
+//                StandardCommands.getInstance().systemHealth()
+//        );
+//
+//        CompletableFuture<SystemHealthJson> systemHealthJsonCompletableFuture = client.produceRpcFuture(
+//                StandardCommands.getInstance().systemHealth()
+//        );
+//        System.out.println(systemHealthJsonCompletableFuture);
 
-        Random random = new Random();
-        DotAmount amount = DotAmount.fromPlancks(
-                Math.abs(random.nextLong()) % DotAmount.fromDots(0.002).getValue().longValue()
-        );
 
-        final JavaHttpSubscriptionAdapter adapter = JavaHttpSubscriptionAdapter.newBuilder().connectTo(api).build();
-        try (PolkadotApi client = PolkadotApi.newBuilder().subscriptionAdapter(adapter).build()) {
-            System.out.println("Connected: " + adapter.connect().get());
-
-            // Subscribe to block heights
-            AtomicLong              height        = new AtomicLong(0);
-            CompletableFuture<Long> waitForBlocks = new CompletableFuture<>();
-            client.subscribe(
-                    StandardSubscriptions.getInstance().newHeads()
-            ).get().handler((event) -> {
-                long current = event.getResult().getNumber();
-                System.out.println("Current height: " + current);
-                if (height.get() == 0) {
-                    height.set(current);
-                } else {
-                    long blocks = current - height.get();
-                    if (blocks > 3) {
-                        waitForBlocks.complete(current);
-                    }
-                }
-            });
-
-            // Subscribe to balance updates
-            AccountRequests.AddressBalance aliceAccountRequest = AccountRequests.balanceOf(alice);
-           // AccountRequests.AddressBalance bobAccountRequest   = AccountRequests.balanceOf(bob);
-//            client.subscribe(
-//                    StandardSubscriptions.getInstance()
-//                            .storage(Arrays.asList(
-//                                    // need to provide actual encoded requests
-//                                    aliceAccountRequest.encodeRequest(),
-//                                    bobAccountRequest.encodeRequest())
-//                            )
-//            ).get().handler((event) -> {
-//                event.getResult().getChanges().forEach((change) -> {
-//                    AccountInfo value = null;
-//                    Address target = null;
-//                    if (aliceAccountRequest.isKeyEqualTo(change.getKey())) {
-//                        value = aliceAccountRequest.apply(change.getData());
-//                        target = alice;
-//                    } else if (bobAccountRequest.isKeyEqualTo(change.getKey())) {
-//                        value = bobAccountRequest.apply(change.getData());
-//                        target = bob;
-//                    } else {
-//                        System.err.println("Invalid key: " + change.getKey());
-//                    }
-//                    if (value != null) {
-//                        System.out.println("Balance update. User: " + target + ", new balance: " + AMOUNT_FORMAT.format(value.getData().getFree()));
-//                    }
-//                });
-//            });
-
-            // get current runtime metadata to correctly build the extrinsic
-            Metadata metadata = client.execute(
-                            StandardCommands.getInstance().stateMetadata()
-                    )
-                    .thenApply(ScaleExtract.fromBytesData(new MetadataReader()))
-                    .get();
-
-            // prepare context for execution
-            ExtrinsicContext context = ExtrinsicContext.newAutoBuilder(alice, client)
-                    .get()
-                    .build();
-
-            // get current balance to show, optional
-            AccountInfo aliceAccount = aliceAccountRequest.execute(client).get();
-
-            System.out.println("Using genesis : " + context.getGenesis());
-            System.out.println("Using runtime : " + context.getTxVersion() + ", " + context.getRuntimeVersion());
-            System.out.println("Using nonce   : " + context.getNonce());
-            System.out.println("------");
-            System.out.println("Currently available: " + AMOUNT_FORMAT.format(aliceAccount.getData().getFree()));
-         //   System.out.println("Transfer           : " + AMOUNT_FORMAT.format(amount) + " from " + alice + " to " + bob);
-
-            // prepare call, and sign with sender Secret Key within the context
-//            AccountRequests.Transfer transfer = AccountRequests.transfer()
-//                    .runtime(metadata)
-//                    .from(alice)
-//                    .to(bob)
-//                    .amount(amount)
-//                    .sign(aliceKey, context)
-//                    .build();
-
-//            ByteData req = transfer.encodeRequest();
-//            System.out.println("RPC Request Payload: " + req);
-//            Hash256 txid = client.execute(
-//                    StandardCommands.getInstance().authorSubmitExtrinsic(req)
-//            ).get();
-//            System.out.println("Tx Hash: " + txid);
-
-            // wait for a few blocks, to show how subscription to storage changes works, which will
-            // notify about relevant updates during those blocks
-            waitForBlocks.get();
-        }
+        ScaleCodecReader rdr = new ScaleCodecReader(readMessage("ea229bbcf3fcd5d20d00000000000000"));
+        BigInteger bigInteger = rdr.readUint128();
+        System.out.println(bigInteger);
+        System.out.println("0x5f3e4907f716ac89b6347d15ececedcaa141c4fe67c2d11f4a10c6aca7a79a040e0d969b0e48cab707000000".length());
     }
 }

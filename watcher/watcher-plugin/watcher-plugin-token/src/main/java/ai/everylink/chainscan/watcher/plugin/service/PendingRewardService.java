@@ -18,19 +18,17 @@
 package ai.everylink.chainscan.watcher.plugin.service;
 
 
-import ai.everylink.chainscan.watcher.plugin.vo.EvmData;
-
 /**
- * token数据统计service
+ * PendingReward
  *
  * @author brett
- * @since 2021-12-30
+ * @since 2022-01-03
  */
-public interface TokenInfoService {
+public interface PendingRewardService {
 
     /**
-     *token 信息扫描
+     *pendingReward 计算
      */
-    public void tokenScan();
+    public void pendingReward();
 
 }

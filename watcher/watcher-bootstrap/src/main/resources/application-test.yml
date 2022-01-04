@@ -37,6 +37,7 @@ logging:
         ai.everylink.openapi.lottery: info
         ai.everylink.openapi: info
 cion:
+  L1Symbol: "VMT"
   lockCoinNams: "MOBI option,MOBI,VMT"
   burntCoinNams: "MOBI"
   rewardCoinNams: "MOBI"

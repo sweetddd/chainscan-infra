@@ -15,22 +15,17 @@
  * limitations under the License.
  */
 
-package ai.everylink.chainscan.watcher.plugin.service;
+package ai.everylink.chainscan.watcher.dao;
 
-
-import ai.everylink.chainscan.watcher.plugin.vo.EvmData;
+import ai.everylink.chainscan.watcher.entity.PendingReward;
+import ai.everylink.chainscan.watcher.entity.TokenInfo;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * token数据统计service
+ * PendingReward
  *
  * @author brett
  * @since 2021-12-30
  */
-public interface TokenInfoService {
-
-    /**
-     *token 信息扫描
-     */
-    public void tokenScan();
-
+public interface PendingRewardDao extends JpaRepository<PendingReward, String> {
 }

@@ -38,9 +38,6 @@ public class SummaryWatcher implements IWatcher {
 
     private SummaryService summaryService;
 
-    private String chainIds;
-
-
     @Override
     public List<EvmData> scanBlock() {
         initService();
@@ -50,13 +47,12 @@ public class SummaryWatcher implements IWatcher {
         summaryService.circulationSuppl();  //统计合约发行量
         summaryService.totalLockAmount();  //统计合约锁定量
         summaryService.l2LockAmount();     //2层锁定量统计
-        summaryService.l1LockAmount();     //2层锁定量统计
+        summaryService.l1LockAmount();     //1层锁定量统计
         summaryService.burnt();  //统计合约销毁量
         log.info("SummaryWatcher-end:" + System.currentTimeMillis());
         List<EvmData> blockList = Lists.newArrayList();
         return blockList;
     }
-
 
     @Override
     public List<IWatcherPlugin> getOrderedPluginList() {
@@ -73,7 +69,7 @@ public class SummaryWatcher implements IWatcher {
     @Override
     public String getCron() {
         return "0 0 * * * ?";
-       // return "*/5 * * * * ?";
+       //return "*/5 * * * * ?";
     }
 
     private void initService() {

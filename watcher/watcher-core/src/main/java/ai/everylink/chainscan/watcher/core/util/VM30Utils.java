@@ -196,46 +196,17 @@ public class VM30Utils {
      * @return
      */
     @SneakyThrows
-    public BigInteger transfer(Web3j web3j, String contractAddress, String to, BigInteger value) {
+    public TransactionReceipt transfer(Web3j web3j, String contractAddress, String to, BigInteger value) {
         VM30       contract = getContranct(web3j, contractAddress);
-        BigInteger balance  = new BigInteger("0");
+        TransactionReceipt transactionReceipt = new TransactionReceipt();
         try {
-            TransactionReceipt send = contract.transfer(to, value).send();
-            System.out.println(send);
+            transactionReceipt = contract.transfer(to, value).send();
         } catch (Exception ex) {
             ex.printStackTrace();
             log.error("操作transfer失败contract:" + contractAddress + "to:Address" + to);
         }
-        return balance;
+        return transactionReceipt;
     }
-
-//    /**
-//     * 校验合约 是否包含transfer 方法;
-//     *
-//     * @param web3j
-//     * @param to
-//     * @param val
-//     * @param from
-//     * @param contractAddress
-//     * @return
-//     * @throws Exception
-//     */
-//    public boolean querryTransfer(Web3j web3j, String to, BigInteger val, String from, String contractAddress) throws Exception {
-//        List<Type> inputParameters = new ArrayList<>();
-//        inputParameters.add(new Address(to));
-//        inputParameters.add(new Uint256(val));
-//        Function function = new Function("transfer",
-//                                         inputParameters,
-//                                         Collections.<TypeReference<?>>emptyList());
-//        String encodedFunction = FunctionEncoder.encode(function);
-//        org.web3j.protocol.core.methods.response.EthCall response = web3j.ethCall(
-//                        Transaction.createEthCallTransaction(from, contractAddress, encodedFunction),
-//                        DefaultBlockParameterName.LATEST)
-//                .sendAsync().get();
-//        if (response.getValue().equals("0x"))
-//            return false;
-//        return true;
-//    }
 
 
     /**
@@ -273,4 +244,15 @@ public class VM30Utils {
     }
 
 
+    public BigInteger distributionReserve(Web3j web3j, String contractAddress) {
+        VM30       contract = getContranct(web3j, contractAddress);
+        BigInteger distributionReserve  = new BigInteger("0");
+        try {
+            distributionReserve = contract.distributionReserve().send();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.error("操作distributionReserve失败contract:" + contractAddress );
+        }
+        return distributionReserve;
+    }
 }

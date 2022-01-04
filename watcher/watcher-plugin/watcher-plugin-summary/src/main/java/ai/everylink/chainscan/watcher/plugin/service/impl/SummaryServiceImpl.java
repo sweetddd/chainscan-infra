@@ -35,6 +35,7 @@ import io.api.etherscan.executor.impl.HttpExecutor;
 import io.api.etherscan.model.EthNetwork;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -85,6 +86,9 @@ public class SummaryServiceImpl implements SummaryService {
 
     @Value("${cinfigMap.mobiUrl:}")
     private String mobiUrl;
+
+    @Value("${cion.L1Symbol:}")
+    private String L1Symbol;
 
     @Value("${etherScanApi.key:}")
     private String etherScanApiKey;
@@ -174,7 +178,6 @@ public class SummaryServiceImpl implements SummaryService {
 
     @Override
     public void totalStake() {
-
     }
 
     @Override
@@ -293,7 +296,10 @@ public class SummaryServiceImpl implements SummaryService {
 
     @Override
     public void l1LockAmount() {
-        String vMpledge = vmChainUtil.getVMpledge();
+        String l1LockAmount = vmChainUtil.getVMpledge();
+        if(StringUtils.isNotBlank(l1LockAmount)){
+            coinDao.updateL1LockAmount(l1LockAmount, L1Symbol);
+        }
         System.out.println(vmChainUtil);
     }
 
@@ -314,15 +320,5 @@ public class SummaryServiceImpl implements SummaryService {
         }
         return contract;
     }
-
-//    public static void main(String[] args) {
-//        Supplier<IHttpExecutor> supplier     = () -> new HttpExecutor(10000);
-//        Supplier<IHttpExecutor> supplierFull = () -> new HttpExecutor(10000, 7000);
-//        EtherScanApi            etherScanApi = new EtherScanApi(EthNetwork.RINKEBY, supplier);
-//        TokenBalance            balance      = etherScanApi.account().balance("0xcb96cb3ad60642f693fc6ebbf5f1a1783c5dc2c9", "0x2322301db10d13e86cc5679d6700dee68be3bf43");
-//        String                  s            = DecimalUtil.toDecimal(9, balance.getGwei());
-//        System.out.println(balance.getGwei());
-//        System.out.println(s);
-//    }
 }
 
