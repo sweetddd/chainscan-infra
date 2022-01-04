@@ -42,6 +42,10 @@ cion:
   lockCoinNams: "MOBI option,MOBI,VMT"
   burntCoinNams: "MOBI"
   rewardCoinNams: "MOBI"
+  pendingRewardCion: "MOBI"
+  distributionReserveUnit: "USDT"
+  stakingReserveUnit: "MOBI"
+  bufferRewardsUnit: "MOBI"
   chainIds: "4,97"
   web3Urls: "http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf,http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
 evm:

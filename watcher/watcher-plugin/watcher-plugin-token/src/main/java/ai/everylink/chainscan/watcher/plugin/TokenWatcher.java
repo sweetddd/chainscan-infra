@@ -20,6 +20,7 @@ package ai.everylink.chainscan.watcher.plugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
+import ai.everylink.chainscan.watcher.plugin.service.PendingRewardService;
 import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
 import ai.everylink.chainscan.watcher.plugin.vo.EvmData;
 import com.google.common.collect.Lists;
@@ -37,6 +38,8 @@ public class TokenWatcher implements IWatcher {
 
     private TokenInfoService tokenService;
 
+    private PendingRewardService pendingRewardService;
+
     private String chainIds;
 
     @Override
@@ -45,6 +48,7 @@ public class TokenWatcher implements IWatcher {
         long start = System.currentTimeMillis();
         log.info("TokenWatcher-start:" + start);
         tokenService.tokenScan();  //统计合约数据;
+        pendingRewardService.pendingReward(); //pendingReward 统计
         log.info("TokenWatcher-end:" + System.currentTimeMillis());
         List<EvmData> blockList = Lists.newArrayList();
         return blockList;
@@ -72,6 +76,9 @@ public class TokenWatcher implements IWatcher {
     private void initService() {
         if (tokenService == null) {
             tokenService = SpringApplicationUtils.getBean(TokenInfoService.class);
+        }
+        if (pendingRewardService == null) {
+            pendingRewardService = SpringApplicationUtils.getBean(PendingRewardService.class);
         }
     }
 

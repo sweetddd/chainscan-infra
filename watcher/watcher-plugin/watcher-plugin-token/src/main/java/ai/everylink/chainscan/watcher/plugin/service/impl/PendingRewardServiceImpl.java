@@ -18,6 +18,7 @@
 package ai.everylink.chainscan.watcher.plugin.service.impl;
 
 import ai.everylink.chainscan.watcher.core.util.VM30Utils;
+import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
 import ai.everylink.chainscan.watcher.dao.PendingRewardDao;
 import ai.everylink.chainscan.watcher.dao.TokenAccountBalanceDao;
 import ai.everylink.chainscan.watcher.dao.TokenInfoDao;
@@ -64,8 +65,23 @@ public class PendingRewardServiceImpl implements PendingRewardService {
     @Value("${cinfigMap.vmChainUrl:}")
     private String vmChainUrl;
 
+    @Value("${cion.pendingRewardCion:}")
+    private String pendingRewardCion;
+
+    @Value("${cion.distributionReserveUnit:}")
+    private String distributionReserveUnit;
+
+    @Value("${cion.stakingReserveUnit:}")
+    private String stakingReserveUnit;
+
+    @Value("${cion.bufferRewardsUnit:}")
+    private String bufferRewardsUnit;
+
     @Autowired
     private VM30Utils vm30Utils;
+
+    @Autowired
+    private VmChainUtil vmChainUtil;
 
     @Autowired
     private PendingRewardDao pendingRewardDao;
@@ -96,7 +112,7 @@ public class PendingRewardServiceImpl implements PendingRewardService {
     public void pendingReward() {
         PendingReward pendingReward = new PendingReward();
         TokenInfo tokenQuery = new TokenInfo();
-        tokenQuery.setTokenSymbol("MOBI");
+        tokenQuery.setTokenSymbol(pendingRewardCion);
         Example<TokenInfo> exp    = Example.of(tokenQuery);
         List<TokenInfo>    tokens = tokenInfoDao.findAll(exp);
         if(tokens.size() > 0){
@@ -104,12 +120,16 @@ public class PendingRewardServiceImpl implements PendingRewardService {
             //获取MOBI合约交易缓冲
             BigInteger distributionReserve =   vm30Utils.distributionReserve(web3j,contract);
             pendingReward.setMobiDistributionReserve(distributionReserve.longValue());
+            pendingReward.setDistributionReserveUnit(distributionReserveUnit);
         }
-        //cposStaking      PendingRewards
-
-        //cposContribution BufferRewards
-
-
+        String pendingRewards = vmChainUtil.getPendingRewards();
+        pendingReward.setStakingReserve(Long.valueOf(pendingRewards));
+        pendingReward.setStakingReserveUnit(stakingReserveUnit);
+        String bufferRewards = vmChainUtil.getBufferRewards();
+        pendingReward.setBufferRewards(Long.valueOf(bufferRewards));
+        pendingReward.setBufferRewardsUnit(bufferRewardsUnit);
+        pendingReward.setCreateTime(new Date());
+        pendingRewardDao.save(pendingReward);
     }
 
     public static void main(String[] args) {

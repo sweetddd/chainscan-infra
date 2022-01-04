@@ -48,6 +48,49 @@ public class VmChainUtil {
     }
 
     /**
+     * Staking缓存未发放的奖励 取链上的cposStaking的PendingRewards   ，单位是MOBI
+     * @return
+     */
+    public String getPendingRewards() {
+        String pendingRewards = "0";
+        ArrayList<Object> params  = new ArrayList<>();
+        ArrayList<Object> param  = new ArrayList<>();
+        String            key     = Hex.encodeHexString(UtilsCrypto.xxhashAsU8a(("CposStaking").getBytes(), 128));
+        String            modelue = Hex.encodeHexString(UtilsCrypto.xxhashAsU8a(("PendingRewards").getBytes(), 128));
+        param.add("0x" + key + modelue);
+        params.add(param);
+        String storage = getStorage(param, "state_getStorage");
+        if(StringUtils.isNotBlank(storage)){
+            ScaleCodecReader rdr = new ScaleCodecReader(readMessage(storage.substring(2)));
+            BigInteger bigInteger = rdr.readUint128();
+            pendingRewards = bigInteger.toString();
+        }
+        return pendingRewards;
+    }
+
+    /**
+     * 不足144个区块尚未分红的奖励。取链上的cposContribution的BufferRewards。单位是MOBI
+     * @return
+     */
+    public String getBufferRewards() {
+        String bufferRewards = "0";
+        ArrayList<Object> params  = new ArrayList<>();
+        ArrayList<Object> param  = new ArrayList<>();
+        String            key     = Hex.encodeHexString(UtilsCrypto.xxhashAsU8a(("CposContribution").getBytes(), 128));
+        String            modelue = Hex.encodeHexString(UtilsCrypto.xxhashAsU8a(("BufferRewards").getBytes(), 128));
+        param.add("0x" + key + modelue);
+        params.add(param);
+        String storage = getStorage(param, "state_getStorage");
+        if(StringUtils.isNotBlank(storage)){
+            ScaleCodecReader rdr = new ScaleCodecReader(readMessage(storage.substring(2)));
+            BigInteger bigInteger = rdr.readUint128();
+            bufferRewards = bigInteger.toString();
+        }
+        return bufferRewards;
+    }
+
+
+    /**
      * 获取1层质押量
      *
      * @return
@@ -73,10 +116,8 @@ public class VmChainUtil {
                 String eraIedex = item.substring(item.length() - 8, item.length());
                 String currentIndex = currentEra.substring(2);
                if(eraIedex.equals(currentIndex)){
-                   ArrayList<Object> param = new ArrayList<>();
                    ArrayList<Object> index = new ArrayList<>();
                    index.add(item);
-                   param.add(index);
                    String amount = getStorage(index, "state_getStorage");
                     if(StringUtils.isNotBlank(amount)){
                         ScaleCodecReader rdr = new ScaleCodecReader(readMessage(amount.substring(2)));
