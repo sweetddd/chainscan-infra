@@ -1,0 +1,272 @@
+2022-01-06 17:51:11,543 ERROR 34312 [-/127.0.0.1/-/1115ms GET /api/v1/subscanJob] nodejs.ReferenceError: ctx is not defined
+    at subscanJob.index (/Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:27:24)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/app/middleware/egg_loader_trace.js:9:50
+    at async xframe (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xframe.js:7:5)
+    at async xssProtection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xssProtection.js:7:5)
+    at async nosniff (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/nosniff.js:8:5)
+    at async noopen (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/noopen.js:8:5)
+    at async session (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-session/index.js:41:7)
+    at async bodyParser (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-bodyparser/index.js:95:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-static-cache/index.js:41:56
+
+pid: 34312
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 22:50:31,236 ERROR 41189 [-/127.0.0.1/-/0ms GET /] nodejs.ECONNREFUSEDError: connect ECONNREFUSED 127.0.0.1:3306
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1161:16)
+    --------------------
+    at Protocol._enqueue (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/protocol/Protocol.js:144:48)
+    at Protocol.handshake (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/protocol/Protocol.js:51:23)
+    at PoolConnection.connect (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/Connection.js:116:18)
+    at Pool.getConnection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/Pool.js:48:16)
+    at /Users/apple/workspace/everylink/vmchain-watcher/node_modules/ali-rds/node_modules/pify/index.js:29:7
+    at new Promise (<anonymous>)
+    at Pool.<anonymous> (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/ali-rds/node_modules/pify/index.js:12:10)
+    at Pool.ret [as getConnection] (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/ali-rds/node_modules/pify/index.js:56:34)
+    at Pool.query (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/Pool.js:202:8)
+    at /Users/apple/workspace/everylink/vmchain-watcher/node_modules/ali-rds/node_modules/pify/index.js:29:7
+    sql: select now() as currentTime;
+errno: -61
+code: "ECONNREFUSED"
+syscall: "connect"
+address: "127.0.0.1"
+port: 3306
+fatal: true
+name: "ECONNREFUSEDError"
+pid: 41189
+hostname: 192.168.10.102
+
+2022-01-06 22:51:41,318 ERROR 41289 [-/127.0.0.1/-/0ms GET /] nodejs.ECONNREFUSEDError: connect ECONNREFUSED 127.0.0.1:3306
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1161:16)
+    --------------------
+    at Protocol._enqueue (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/protocol/Protocol.js:144:48)
+    at Protocol.handshake (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/protocol/Protocol.js:51:23)
+    at PoolConnection.connect (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/Connection.js:116:18)
+    at Pool.getConnection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/Pool.js:48:16)
+    at /Users/apple/workspace/everylink/vmchain-watcher/node_modules/ali-rds/node_modules/pify/index.js:29:7
+    at new Promise (<anonymous>)
+    at Pool.<anonymous> (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/ali-rds/node_modules/pify/index.js:12:10)
+    at Pool.ret [as getConnection] (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/ali-rds/node_modules/pify/index.js:56:34)
+    at Pool.query (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/Pool.js:202:8)
+    at /Users/apple/workspace/everylink/vmchain-watcher/node_modules/ali-rds/node_modules/pify/index.js:29:7
+    sql: select now() as currentTime;
+errno: -61
+code: "ECONNREFUSED"
+syscall: "connect"
+address: "127.0.0.1"
+port: 3306
+fatal: true
+name: "ECONNREFUSEDError"
+pid: 41289
+hostname: 192.168.10.102
+
+2022-01-06 22:57:23,536 ERROR 41688 [-/127.0.0.1/-/2184ms GET /api/v1/subscanJob] nodejs.Error: Unable to retrieve header and parent from supplied hash
+    at assert (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/@polkadot/util/assert.cjs:36:11)
+    at ApiPromise.getBlockRegistry (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/@polkadot/api/base/Init.cjs:208:22)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async callWithRegistry (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/@polkadot/rpc-core/bundle.cjs:248:136)
+
+pid: 41688
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 22:58:38,580 ERROR 41726 [-/127.0.0.1/-/2009ms GET /api/v1/subscanJob] nodejs.TypeError: Cannot read properties of undefined (reading 'extrinsics')
+    at /Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:44:25
+    at Array.forEach (<anonymous>)
+    at subscanJob.index (/Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:34:16)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/app/middleware/egg_loader_trace.js:9:50
+    at async xframe (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xframe.js:7:5)
+    at async xssProtection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xssProtection.js:7:5)
+    at async nosniff (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/nosniff.js:8:5)
+    at async noopen (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/noopen.js:8:5)
+    at async session (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-session/index.js:41:7)
+
+pid: 41726
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 22:59:16,858 ERROR 41747 [-/127.0.0.1/-/1753ms GET /api/v1/subscanJob] nodejs.TypeError: Cannot read properties of undefined (reading 'extrinsics')
+    at /Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:44:25
+    at Array.forEach (<anonymous>)
+    at subscanJob.index (/Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:34:16)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/app/middleware/egg_loader_trace.js:9:50
+    at async xframe (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xframe.js:7:5)
+    at async xssProtection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xssProtection.js:7:5)
+    at async nosniff (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/nosniff.js:8:5)
+    at async noopen (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/noopen.js:8:5)
+    at async session (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-session/index.js:41:7)
+
+pid: 41747
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 23:00:11,715 ERROR 41769 [-/127.0.0.1/-/2050ms GET /api/v1/subscanJob] nodejs.TypeError: Cannot read properties of undefined (reading 'extrinsics')
+    at /Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:44:25
+    at Array.forEach (<anonymous>)
+    at subscanJob.index (/Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:34:16)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/app/middleware/egg_loader_trace.js:9:50
+    at async xframe (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xframe.js:7:5)
+    at async xssProtection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xssProtection.js:7:5)
+    at async nosniff (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/nosniff.js:8:5)
+    at async noopen (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/noopen.js:8:5)
+    at async session (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-session/index.js:41:7)
+
+pid: 41769
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 23:01:04,458 ERROR 41791 [-/127.0.0.1/-/1670ms GET /api/v1/subscanJob] nodejs.TypeError: Cannot read properties of undefined (reading 'extrinsics')
+    at /Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:44:25
+    at Array.forEach (<anonymous>)
+    at subscanJob.index (/Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:34:16)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/app/middleware/egg_loader_trace.js:9:50
+    at async xframe (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xframe.js:7:5)
+    at async xssProtection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xssProtection.js:7:5)
+    at async nosniff (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/nosniff.js:8:5)
+    at async noopen (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/noopen.js:8:5)
+    at async session (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-session/index.js:41:7)
+
+pid: 41791
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 23:06:36,466 ERROR 41907 [-/127.0.0.1/-/2001ms GET /api/v1/subscanJob] nodejs.Error: Unable to retrieve header and parent from supplied hash
+    at assert (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/@polkadot/util/assert.cjs:36:11)
+    at ApiPromise.getBlockRegistry (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/@polkadot/api/base/Init.cjs:208:22)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async callWithRegistry (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/@polkadot/rpc-core/bundle.cjs:248:136)
+
+pid: 41907
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 23:07:35,391 ERROR 41929 [-/127.0.0.1/-/2480ms GET /api/v1/subscanJob] nodejs.TypeError: Cannot read properties of undefined (reading 'method')
+    at subscanJob.index (/Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:61:100)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/app/middleware/egg_loader_trace.js:9:50
+    at async xframe (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xframe.js:7:5)
+    at async xssProtection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xssProtection.js:7:5)
+    at async nosniff (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/nosniff.js:8:5)
+    at async noopen (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/noopen.js:8:5)
+    at async session (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-session/index.js:41:7)
+    at async bodyParser (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-bodyparser/index.js:95:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-static-cache/index.js:41:56
+
+pid: 41929
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 23:30:02,452 ERROR 42386 [-/127.0.0.1/-/1892ms GET /api/v1/subscanJob] nodejs.TypeError: Cannot read properties of undefined (reading 'extrinsics')
+    at subscanJob.index (/Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:68:23)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/app/middleware/egg_loader_trace.js:9:50
+    at async xframe (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xframe.js:7:5)
+    at async xssProtection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xssProtection.js:7:5)
+    at async nosniff (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/nosniff.js:8:5)
+    at async noopen (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/noopen.js:8:5)
+    at async session (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-session/index.js:41:7)
+    at async bodyParser (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-bodyparser/index.js:95:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-static-cache/index.js:41:56
+
+pid: 42386
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 23:30:07,840 ERROR 42386 [-/127.0.0.1/-/1762ms GET /api/v1/subscanJob] nodejs.TypeError: Cannot read properties of undefined (reading 'extrinsics')
+    at subscanJob.index (/Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:68:23)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/app/middleware/egg_loader_trace.js:9:50
+    at async xframe (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xframe.js:7:5)
+    at async xssProtection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xssProtection.js:7:5)
+    at async nosniff (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/nosniff.js:8:5)
+    at async noopen (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/noopen.js:8:5)
+    at async session (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-session/index.js:41:7)
+    at async bodyParser (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-bodyparser/index.js:95:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-static-cache/index.js:41:56
+
+pid: 42386
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 23:41:25,052 ERROR 42671 [-/127.0.0.1/-/2155ms GET /api/v1/subscanJob] nodejs.TypeError: Cannot read properties of undefined (reading 'hash')
+    at subscanJob.index (/Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:70:54)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/app/middleware/egg_loader_trace.js:9:50
+    at async xframe (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xframe.js:7:5)
+    at async xssProtection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xssProtection.js:7:5)
+    at async nosniff (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/nosniff.js:8:5)
+    at async noopen (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/noopen.js:8:5)
+    at async session (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-session/index.js:41:7)
+    at async bodyParser (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-bodyparser/index.js:95:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-static-cache/index.js:41:56
+
+pid: 42671
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 23:42:09,856 ERROR 42698 [-/127.0.0.1/-/1982ms GET /api/v1/subscanJob] nodejs.TypeError: Cannot read properties of undefined (reading 'hash')
+    at subscanJob.index (/Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:71:54)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/app/middleware/egg_loader_trace.js:9:50
+    at async xframe (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xframe.js:7:5)
+    at async xssProtection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xssProtection.js:7:5)
+    at async nosniff (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/nosniff.js:8:5)
+    at async noopen (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/noopen.js:8:5)
+    at async session (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-session/index.js:41:7)
+    at async bodyParser (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-bodyparser/index.js:95:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-static-cache/index.js:41:56
+
+pid: 42698
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 23:42:53,522 ERROR 42719 [-/127.0.0.1/-/2286ms GET /api/v1/subscanJob] nodejs.TypeError: Cannot read properties of undefined (reading 'hash')
+    at subscanJob.index (/Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:71:54)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/app/middleware/egg_loader_trace.js:9:50
+    at async xframe (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xframe.js:7:5)
+    at async xssProtection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xssProtection.js:7:5)
+    at async nosniff (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/nosniff.js:8:5)
+    at async noopen (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/noopen.js:8:5)
+    at async session (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-session/index.js:41:7)
+    at async bodyParser (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-bodyparser/index.js:95:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-static-cache/index.js:41:56
+
+pid: 42719
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 23:43:26,529 ERROR 42748 [-/127.0.0.1/-/1902ms GET /api/v1/subscanJob] nodejs.TypeError: Cannot read properties of undefined (reading 'hash')
+    at subscanJob.index (/Users/apple/workspace/everylink/vmchain-watcher/app/controller/v1/subscanJob.js:71:54)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/app/middleware/egg_loader_trace.js:9:50
+    at async xframe (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xframe.js:7:5)
+    at async xssProtection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/xssProtection.js:7:5)
+    at async nosniff (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/nosniff.js:8:5)
+    at async noopen (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/lib/middlewares/noopen.js:8:5)
+    at async session (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-session/index.js:41:7)
+    at async bodyParser (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-bodyparser/index.js:95:5)
+    at async /Users/apple/workspace/everylink/vmchain-watcher/node_modules/koa-static-cache/index.js:41:56
+
+pid: 42748
+hostname: brettdeMacBook-Air.local
+
+2022-01-06 23:47:00,153 ERROR 42840 [-/127.0.0.1/-/0ms GET /] nodejs.PROTOCOL_SEQUENCE_TIMEOUTError: Handshake inactivity timeout
+    at Handshake.<anonymous> (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/protocol/Protocol.js:160:17)
+    at Handshake.emit (node:events:390:28)
+    at Handshake._onTimeout (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/protocol/sequences/Sequence.js:124:8)
+    at Timer._onTimeout (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/protocol/Timer.js:32:23)
+    at listOnTimeout (node:internal/timers:557:17)
+    at processTimers (node:internal/timers:500:7)
+    --------------------
+    at Protocol._enqueue (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/protocol/Protocol.js:144:48)
+    at Protocol.handshake (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/protocol/Protocol.js:51:23)
+    at PoolConnection.connect (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/Connection.js:116:18)
+    at Pool.getConnection (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/Pool.js:48:16)
+    at /Users/apple/workspace/everylink/vmchain-watcher/node_modules/ali-rds/node_modules/pify/index.js:29:7
+    at new Promise (<anonymous>)
+    at Pool.<anonymous> (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/ali-rds/node_modules/pify/index.js:12:10)
+    at Pool.ret [as getConnection] (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/ali-rds/node_modules/pify/index.js:56:34)
+    at Pool.query (/Users/apple/workspace/everylink/vmchain-watcher/node_modules/mysql/lib/Pool.js:202:8)
+    at /Users/apple/workspace/everylink/vmchain-watcher/node_modules/ali-rds/node_modules/pify/index.js:29:7
+    sql: select now() as currentTime;
+code: "PROTOCOL_SEQUENCE_TIMEOUT"
+fatal: true
+timeout: 10000
+name: "PROTOCOL_SEQUENCE_TIMEOUTError"
+pid: 42840
+hostname: brettdeMacBook-Air.local
+
