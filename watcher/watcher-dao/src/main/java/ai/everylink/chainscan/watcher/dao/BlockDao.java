@@ -25,6 +25,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * BlockDao
@@ -33,6 +34,8 @@ import java.util.Date;
  * @since 2021-11-30
  */
 public interface BlockDao extends JpaRepository<Block, Long> {
+
+    List<Block> findBlocksByBlockNumberAndBlockHash(Long blockNum, String blockHash);
 
     /**
      * get block by block num

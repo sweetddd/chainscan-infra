@@ -20,8 +20,8 @@ import java.util.List;
 public class IncentiveServiceImpl implements IncentiveService {
 
 
-
-    private static final String resource = "INCENTIVE";
+    private static final Integer CHAIN_ID = 97;
+    private static final String RESOURCE = "POS";
 
     @Autowired
     private BlockScanUtil blockScanUtil;
@@ -60,20 +60,25 @@ public class IncentiveServiceImpl implements IncentiveService {
     }
 
     @Override
+    public List<Block> findBlock(Block block) {
+        return blockDao.findBlocksByBlockNumberAndBlockHash(block.getBlockNumber(), block.getBlockHash());
+    }
+
+    @Override
     public void saveTransaction(Transaction transaction) { transactionDao.save(transaction); }
 
     @Override
     public Block incentiveBlockConvert(IncentiveBlock incentiveBlock) {
         Block block = new Block();
-        block.setBlockNumber(incentiveBlock.getBlockHeight().longValue());
+        block.setBlockNumber(incentiveBlock.getBlockHeight());
         block.setBlockHash(incentiveBlock.getBlockHash());
-        block.setChainId(97);
-        block.setBlockTimestamp(new Date(incentiveBlock.getStartTime().longValue()));
+        block.setChainId(CHAIN_ID);
+        block.setBlockTimestamp(new Date(incentiveBlock.getStartTime()));
         block.setParentHash(incentiveBlock.getParentHash());
         block.setTxSize(incentiveBlock.getTransactionCount().intValue());
         block.setDifficulty(incentiveBlock.getDifficulty().toString());
         block.setBlockFee(incentiveBlock.getBlockedFee());
-        block.setSource(resource);
+        block.setChainType(RESOURCE);
         block.setCreateTime(new Date());
         return block;
     }
@@ -94,7 +99,7 @@ public class IncentiveServiceImpl implements IncentiveService {
         transaction.setAmount(incentiveTransaction.getAmount());
         transaction.setSellerFee(incentiveTransaction.getSellerFee());
         transaction.setBuyerFee(incentiveTransaction.getBuyerFee());
-        transaction.setSource(resource);
+        transaction.setSource(RESOURCE);
         transaction.setCreateTime(new Date());
         return transaction;
     }

@@ -54,16 +54,10 @@ public class IncentivePlugin implements IWatcherPlugin {
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
         init();
         IncentiveBlock incentiveBlock = (IncentiveBlock) block;
-        Block          _block         = incentiveService.incentiveBlockConvert(incentiveBlock);
-        _block.setBurnt(null);
-        _block.setReward(null);
-        Block                      savedBlock            = incentiveService.saveBlock(_block);
-        List<IncentiveTransaction> incentiveTransactions = incentiveBlock.getExtrinsics();
-        Integer                    index                 = 0;
-        for (IncentiveTransaction incentiveTransaction : incentiveTransactions) {
-            Transaction transaction = incentiveService.incentiveTransactionConvert(savedBlock, incentiveTransaction, index);
-            incentiveService.saveTransaction(transaction);
-            index ++;
+        Block _block = incentiveService.incentiveBlockConvert(incentiveBlock);
+        List<Block> _blocks = incentiveService.findBlock(_block);
+        if (_blocks.isEmpty()) {
+            incentiveService.saveBlock(_block);
         }
         return true;
     }
