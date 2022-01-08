@@ -20,6 +20,8 @@ public interface IncentiveService {
 
     Block saveBlock(Block block);
 
+    List<Block> findBlock(Block block);
+
     Transaction incentiveTransactionConvert(Block block, IncentiveTransaction incentiveTransaction, Integer index);
 
     void saveTransaction(Transaction transaction);

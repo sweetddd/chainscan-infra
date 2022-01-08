@@ -96,7 +96,7 @@ public class BlockAnalysisUtil {
     }
 
     public static String getCoinSymbol(String storage){
-        String sub = storage.substring(4, 20);
+        String sub = storage.substring(2, 19);
         return hexStringToString(sub);
     }
 
