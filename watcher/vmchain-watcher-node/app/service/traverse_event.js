@@ -24,15 +24,12 @@ async function main () {
     // Subscribe to system events via storage
     api.query.system.events((events) => {
         console.log(`\nReceived ${events.length} events: ` );
-        console.log(events)
-        console.log("=====================================================")
         // Loop through the Vec<EventRecord>
 
         events.forEach((record) => {
             // Extract the phase, event and the event types
             let event = record.event;
             const types = event.typeDef;
-            console.log("------------------------------------------------------")
             console.log(event.data);
 
             // http://xapi.powx.io/l2-server-jsrpc/jsrpc      rinkeby
@@ -58,10 +55,6 @@ async function main () {
                 const transactionReceipt = await withdrawTransaction.awaitVerifyReceipt();
                 console.log(transactionReceipt)
             })
-            // Loop through each of the parameters, displaying the type and data
-            event.data.forEach(async (data, index) => {
-                console.log(`\t\t\t${types[index].type}: ${data.toString()}`);
-            });
         });
     });
 }
