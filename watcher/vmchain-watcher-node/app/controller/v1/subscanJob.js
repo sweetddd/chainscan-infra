@@ -30,8 +30,6 @@ class subscanJob extends Controller {
     // console.log(blockHashs[0]['block_hash']);
     // console.log(blockHashs[0]['block_timestamp']);
 
-
-
     ctx.service.blocks.updateSubScanBlockState(blockHashs[0]['block_number']);
 
     blockHashs.forEach(item => {
@@ -67,18 +65,18 @@ class subscanJob extends Controller {
 
     const signedBlock = await api.rpc.chain.getBlock(blockHash);
 
-     if (signedBlock.block.extrinsics.length > 1){
-       for(var i = 0; i  < signedBlock.block.extrinsics.length; i ++) {
-         console.log(signedBlock.block.extrinsics[i].hash.toHex());
-         console.log(signedBlock.block.extrinsics[i].signature.nonce);
-         console.log(signedBlock.block.extrinsics[i].signature.tip);
-         console.log(signedBlock.block.extrinsics[i].signature.era);
-         console.log(signedBlock.block.extrinsics[i].signature.signature);
-         console.log(signedBlock.block.extrinsics[i].signature.signer.);
-       }
-     }
+    if (signedBlock.block.extrinsics.length > 1){
+      for(var i = 0; i  < signedBlock.block.extrinsics.length; i ++) {
+        console.log(signedBlock.block.extrinsics[i].hash.toHex());
+        console.log(signedBlock.block.extrinsics[i].signature.nonce);
+        console.log(signedBlock.block.extrinsics[i].signature.tip);
+        console.log(signedBlock.block.extrinsics[i].signature.era);
+        console.log(signedBlock.block.extrinsics[i].signature.signature);
+        // console.log(signedBlock.block.extrinsics[i].signature.signer.);
+      }
+    }
 
-   // const { meta, method, section }   = api.registry.findMetaCall( signedBlock.block.extrinsics[1].method.callIndex);
+    // const { meta, method, section }   = api.registry.findMetaCall( signedBlock.block.extrinsics[1].method.callIndex);
 
     useSuccess(ctx, signedBlock.block.extrinsics[1]);
     // try {
