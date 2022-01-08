@@ -153,8 +153,8 @@ public class EvmWatcher implements IWatcher {
     @Override
     public String getCron() {
 //        return "0 0 0/1 * * ? ";
-//       return "*/5 * * * * ?";
-        return "0 0/10 * * * ? ";
+       return "*/10 * * * * ?";
+//        return "0 0/10 * * * ? ";
     }
 
     private void init() {

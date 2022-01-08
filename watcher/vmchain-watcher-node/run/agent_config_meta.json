@@ -1,0 +1,316 @@
+{
+  "keys": "/Users/apple/workspace/everylink/vmchain-watcher/config/config.default.js",
+  "middleware": "/Users/apple/workspace/everylink/vmchain-watcher/config/config.default.js",
+  "security": {
+    "csrf": {
+      "enable": "/Users/apple/workspace/everylink/vmchain-watcher/config/config.default.js",
+      "type": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "ignoreJSON": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "useSession": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "cookieName": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "sessionName": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "headerName": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "bodyName": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "queryName": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "refererWhiteList": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js"
+    },
+    "domainWhiteList": "/Users/apple/workspace/everylink/vmchain-watcher/config/config.default.js",
+    "protocolWhiteList": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+    "defaultMiddleware": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+    "xframe": {
+      "enable": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "value": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js"
+    },
+    "hsts": {
+      "enable": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.local.js",
+      "maxAge": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "includeSubdomains": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js"
+    },
+    "dta": {
+      "enable": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js"
+    },
+    "methodnoallow": {
+      "enable": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js"
+    },
+    "noopen": {
+      "enable": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js"
+    },
+    "nosniff": {
+      "enable": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js"
+    },
+    "referrerPolicy": {
+      "enable": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "value": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js"
+    },
+    "xssProtection": {
+      "enable": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "value": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js"
+    },
+    "csp": {
+      "enable": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "policy": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js"
+    },
+    "ssrf": {
+      "ipBlackList": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "ipExceptionList": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js",
+      "checkAddress": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js"
+    }
+  },
+  "cors": {
+    "origin": "/Users/apple/workspace/everylink/vmchain-watcher/config/config.default.js",
+    "allowMethods": "/Users/apple/workspace/everylink/vmchain-watcher/config/config.default.js"
+  },
+  "session": {
+    "maxAge": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-session/config/config.default.js",
+    "key": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-session/config/config.default.js",
+    "httpOnly": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-session/config/config.default.js",
+    "encrypt": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-session/config/config.default.js",
+    "logValue": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-session/config/config.default.js"
+  },
+  "helper": {
+    "shtml": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security/config/config.default.js"
+  },
+  "jsonp": {
+    "limit": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-jsonp/config/config.default.js",
+    "callback": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-jsonp/config/config.default.js",
+    "csrf": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-jsonp/config/config.default.js"
+  },
+  "onerror": {
+    "errorPageUrl": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-onerror/config/config.default.js",
+    "appErrorFilter": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-onerror/config/config.default.js",
+    "templatePath": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-onerror/config/config.default.js"
+  },
+  "i18n": {
+    "defaultLocale": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-i18n/config/config.default.js",
+    "dirs": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-i18n/config/config.default.js",
+    "queryField": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-i18n/config/config.default.js",
+    "cookieField": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-i18n/config/config.default.js",
+    "cookieDomain": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-i18n/config/config.default.js",
+    "cookieMaxAge": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-i18n/config/config.default.js"
+  },
+  "watcher": {
+    "type": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-watcher/config/config.local.js",
+    "eventSources": {
+      "default": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-watcher/config/config.default.js",
+      "development": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-watcher/config/config.default.js"
+    }
+  },
+  "customLogger": {
+    "scheduleLogger": {
+      "consoleLevel": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-schedule/config/config.default.js",
+      "file": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-schedule/config/config.default.js"
+    }
+  },
+  "schedule": {
+    "directory": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-schedule/config/config.default.js"
+  },
+  "multipart": {
+    "mode": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+    "autoFields": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+    "defaultCharset": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+    "fieldNameSize": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+    "fieldSize": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+    "fields": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+    "fileSize": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+    "files": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+    "fileExtensions": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+    "whitelist": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+    "allowArrayField": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+    "tmpdir": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+    "cleanSchedule": {
+      "cron": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js",
+      "disable": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart/config/config.default.js"
+    }
+  },
+  "development": {
+    "watchDirs": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/config/config.default.js",
+    "ignoreDirs": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/config/config.default.js",
+    "fastReady": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/config/config.default.js",
+    "reloadOnDebug": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/config/config.default.js",
+    "overrideDefault": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/config/config.default.js",
+    "overrideIgnore": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development/config/config.default.js"
+  },
+  "logrotator": {
+    "filesRotateByHour": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-logrotator/config/config.default.js",
+    "hourDelimiter": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-logrotator/config/config.default.js",
+    "filesRotateBySize": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-logrotator/config/config.default.js",
+    "maxFileSize": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-logrotator/config/config.default.js",
+    "maxFiles": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-logrotator/config/config.default.js",
+    "rotateDuration": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-logrotator/config/config.default.js",
+    "maxDays": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-logrotator/config/config.default.js"
+  },
+  "static": {
+    "prefix": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-static/config/config.default.js",
+    "dir": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-static/config/config.default.js",
+    "dynamic": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-static/config/config.default.js",
+    "preload": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-static/config/config.default.js",
+    "buffer": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-static/config/config.default.js",
+    "maxFiles": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-static/config/config.default.js"
+  },
+  "view": {
+    "root": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-view/config/config.default.js",
+    "cache": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-view/config/config.local.js",
+    "defaultExtension": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-view/config/config.default.js",
+    "defaultViewEngine": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-view/config/config.default.js",
+    "mapping": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-view/config/config.default.js"
+  },
+  "mysql": {
+    "default": {
+      "database": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-mysql/config/config.default.js",
+      "connectionLimit": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-mysql/config/config.default.js"
+    },
+    "app": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-mysql/config/config.default.js",
+    "agent": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-mysql/config/config.default.js"
+  },
+  "env": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "name": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "cookies": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "proxy": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "maxIpsCount": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "maxProxyCount": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "protocolHeaders": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "ipHeaders": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "hostHeaders": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "pkg": {
+    "name": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "version": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "description": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "private": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "egg": {
+      "declarations": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+    },
+    "dependencies": {
+      "@polkadot/api": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "egg": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "egg-cors": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "egg-mysql": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "egg-scripts": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "request": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+    },
+    "devDependencies": {
+      "autod": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "autod-egg": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "egg-bin": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "egg-ci": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "egg-mock": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "eslint": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "eslint-config-egg": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "lodash": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+    },
+    "engines": {
+      "node": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+    },
+    "scripts": {
+      "start": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "stop": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "dev": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "debug": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "test": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "test-local": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "cov": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "lint": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "ci": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "autod": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+    },
+    "ci": {
+      "version": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+    },
+    "repository": {
+      "type": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "url": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+    },
+    "author": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "license": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+  },
+  "baseDir": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "HOME": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "rundir": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "dump": {
+    "ignore": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+  },
+  "confusedConfigurations": {
+    "bodyparser": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "notFound": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "sitefile": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "middlewares": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "httpClient": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+  },
+  "notfound": {
+    "pageUrl": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+  },
+  "siteFile": {
+    "/favicon.ico": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+  },
+  "bodyParser": {
+    "enable": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "encoding": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "formLimit": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "jsonLimit": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "textLimit": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "strict": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "queryString": {
+      "arrayLimit": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "depth": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "parameterLimit": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+    },
+    "onerror": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+  },
+  "logger": {
+    "dir": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "encoding": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "env": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "level": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "consoleLevel": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "disableConsoleAfterReady": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "outputJSON": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "buffer": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "appLogName": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "coreLogName": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "agentLogName": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "errorLogName": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "coreLogger": {
+      "consoleLevel": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.local.js"
+    },
+    "allowDebugAtProd": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "enablePerformanceTimer": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+  },
+  "httpclient": {
+    "enableDNSCache": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "dnsCacheLookupInterval": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "dnsCacheMaxLength": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "request": {
+      "timeout": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+    },
+    "httpAgent": {
+      "keepAlive": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "freeSocketTimeout": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "maxSockets": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "maxFreeSockets": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+    },
+    "httpsAgent": {
+      "keepAlive": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "freeSocketTimeout": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "maxSockets": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "maxFreeSockets": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+    }
+  },
+  "meta": {
+    "enable": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "logging": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+  },
+  "coreMiddleware": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "workerStartTimeout": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "serverTimeout": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+  "cluster": {
+    "listen": {
+      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "port": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+      "hostname": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+    }
+  },
+  "clusterClient": {
+    "maxWaitTime": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js",
+    "responseTimeout": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+  },
+  "onClientError": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/config.default.js"
+}

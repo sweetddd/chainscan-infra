@@ -38,9 +38,11 @@ logging:
         ai.everylink.openapi: info
 
 cion:
+  L1Symbol: "VMT"
   lockCoinNams: "MOBI option,MOBI,VMT"
   burntCoinNams: "MOBI"
   rewardCoinNams: "MOBI"
+  pendingRewardCion: "MOBI"
   chainIds: "1,99"
   web3Urls: "https://mainnet.infura.io/v3/72f3a83ea86b41b191264bd16cbac2bf,http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
 cinfigMap:

@@ -9,6 +9,7 @@ import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.Web3jService;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.RemoteCall;
 import org.web3j.protocol.core.methods.request.Transaction;
@@ -85,6 +86,14 @@ public class VM30 extends Contract {
 
     public RemoteCall<BigInteger> totalLockAmount() {
         Function function = new Function("totalLockAmount",
+                Arrays.<Type>asList(),
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
+                }));
+        return executeRemoteCallSingleValueReturn(function, BigInteger.class);
+    }
+
+    public RemoteCall<BigInteger> distributionReserve() {
+        Function function = new Function("un_distribution_reserve",
                 Arrays.<Type>asList(),
                 Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
                 }));
@@ -254,4 +263,5 @@ public class VM30 extends Contract {
     protected String getStaticDeployedAddress(String networkId) {
         return _addresses.get(networkId);
     }
+
 }

@@ -33,6 +33,4 @@ public interface TokenInfoService {
      */
     public void tokenScan();
 
-
-
 }
