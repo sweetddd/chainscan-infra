@@ -2,9 +2,11 @@
 
 let fs = require("fs");
 let http = require('@polkadot/api');
-let ethers = require('ethers');
-let zksync = require('zksync/build');
 let web3 = require('web3');
+let ethers = require('ethers');
+let zksync = require('../zksync/build');
+let bridgerCall = require('./../bridge/bridge-utils');
+let GlobalConstants = require('./../bridge/constants');
 
 let WsProvider = http.WsProvider
 let ApiPromise = http.ApiPromise
@@ -57,6 +59,36 @@ async function main () {
             })
         });
     });
+}
+
+const bridge=async function(){
+    let wallet = new web3("http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf");
+    let ethPrivateKey = "d2302498102cb336f9291c9913031b11008a49d025b2e7b03f237371372a28e3";
+    let amount = "1000000";
+    let token = "USDT";
+    let decimals = 6;
+    let provider = new ethers.providers.Web3Provider(
+        wallet.eth.currentProvider
+    );
+
+    const ethWallet = new ethers.Wallet(ethPrivateKey,provider);
+
+    let contract= await bridgerCall.Call.createContractInstance(GlobalConstants.GlobalConstants.Contracts[token].from,GlobalConstants.GlobalConstants.ContractABIs.Erc20,wallet);
+    let tx= await bridgerCall.Call.erc20Aprrove(GlobalConstants.GlobalConstants.Contracts[token].from,GlobalConstants.GlobalConstants.ETH_ERC20_HANDLER_ADDRESS,'150000','6',ethWallet);
+    console.log(`${tx} 完成`);
+
+    let txs =await bridgerCall.Call.erc20_despoit(
+        GlobalConstants.GlobalConstants.ETH_BRIDGE_ADDRESS,
+        token,
+        amount,
+        GlobalConstants.GlobalConstants.VMCHAIN_ID,
+        GlobalConstants.GlobalConstants.Contracts[token].resourceId,
+        bridgerCall.Call.getCallData(amount,decimals,ethWallet.address),
+        ethWallet,
+        decimals)
+
+    console.log(`${txs} 完成`);
+
 }
 
 main().catch((error) => {
