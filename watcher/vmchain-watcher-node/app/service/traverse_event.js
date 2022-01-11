@@ -16,12 +16,12 @@ let context = fs.readFileSync("E:\\project\\IdeaProject\\chainscan-infra\\watche
 // let context = fs.readFileSync("../../config/types.json");
 let typesData= JSON.parse(context);
 
-// http://xapi.powx.io/l2-server-jsrpc/jsrpc      rinkeby
-// http://xapi.powx.io/l2-server3-jsrpc/jsrpc     vm
 const L2Address = {
     "rinkeby": "http://xapi.powx.io/l2-server-jsrpc/jsrpc",
     "vm": "http://xapi.powx.io/l2-server3-jsrpc/jsrpc"
 }
+let token = "USDT";
+const type =  'Withdraw';
 
 
 async function main () {
@@ -31,9 +31,9 @@ async function main () {
         types:typesData
     });
     // Subscribe to system events via storage
-    api.query.system.events((events) => {
+    await api.query.system.events(async (events) => {
         // Loop through the Vec<EventRecord>
-        events.forEach(async (record) => {
+        await events.forEach(async (record) => {
             // Extract the event
             let event = record.event;
             if (event.section.toString() === "cposContribution" && event.method.toString() === "Dividend") {
@@ -41,69 +41,15 @@ async function main () {
                 const reverse = parseInt(event.data[1].toString())
                 const timestamp = event.data[2].toString()
                 console.log(`Received dividend events, block height: ${block_height}, reverse: ${reverse}, timestamp: ${timestamp}`)
-
-                let token = "USDT";
-                const type =  'Withdraw';
+                // await rinkebyWithdraw("rinkeby", reverse)
+                // await vmWithdraw("vm", reverse)
 
                 Object.keys(L2Address).map(async name => {
                     if (name.trim() === "rinkeby"){
-                        // let amount = "50000000";
-                        let ethPrivateKey = "9d054bd9d4f13c37fea4daa1f2f96968ce272e5a8b455b0d516c09acbe2f2803";
-                        let web3Wallet = new web3("http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf");
-                        let provider = new ethers.providers.Web3Provider(
-                            web3Wallet.eth.currentProvider
-                        );
-                        const syncProvider = await zksync.Provider.newHttpProvider(
-                            L2Address[name], 1000
-                        );
-                        const ethWallet = new ethers.Wallet(ethPrivateKey,provider);
-                        const zkWallet =  await zksync.Wallet.fromEthSigner(ethWallet,syncProvider);
-
-                        // 查看 zkSync 账户余额
-                        let nonce = await zkWallet.getNonce()
-                        const state = await zkWallet.getAccountState();
-                        const committedBalances = state.committed.balances;
-                        const balance = committedBalances["USDT"];
-                        console.log(`current L2 name: ${name}, USDT balance: ${balance}`)
-
-                        const fee = await zkWallet.provider.getTransactionFee(type, zkWallet.address(), token);
-                        const withdrawTransaction = await zkWallet.withdrawFromSyncToEthereum({
-                            ethAddress:zkWallet.address(),
-                            token: token,
-                            amount: balance,
-                            fee:fee.totalFee,
-                            nonce:nonce
-                        });
-                        const transactionReceipt = await withdrawTransaction.awaitVerifyReceipt();
-                        await bridge(ethPrivateKey, balance)
+                        await rinkebyWithdraw(name, reverse)
                     }
                     else {
-                        // let amount = "500";
-                        let ethPrivateKey = "0f9390c5b10cb10befbedf8cf451bf16e4c1e70c80ec12051f5c65454bdb3707";
-                        let web3Wallet = new web3("http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf");
-                        let provider = new ethers.providers.Web3Provider(
-                            web3Wallet.eth.currentProvider
-                        );
-                        const syncProvider = await zksync.Provider.newHttpProvider(
-                            L2Address[name], 1000
-                        );
-                        const ethWallet = new ethers.Wallet(ethPrivateKey,provider);
-                        const zkWallet =  await zksync.Wallet.fromEthSigner(ethWallet,syncProvider);
-
-                        // 查看 zkSync 账户余额
-                        const state = await zkWallet.getAccountState();
-                        const committedBalances = state.committed.balances;
-                        const balance = committedBalances["USDT"];
-                        console.log(`current L2 name: ${name}, USDT balance: ${balance}`)
-
-                        const fee = await zkWallet.provider.getTransactionFee(type, zkWallet.address(), token);
-                        const withdrawTransaction = await zkWallet.withdrawFromSyncToEthereum({
-                            ethAddress:zkWallet.address(),
-                            token: token,
-                            amount: balance,
-                            fee:fee.totalFee
-                        });
-                        const transactionReceipt = await withdrawTransaction.awaitVerifyReceipt();
+                        await vmWithdraw(name, reverse)
                     }
                 })
             }
@@ -111,17 +57,74 @@ async function main () {
     });
 }
 
-const bridge = async function(){
-    // let ethPrivateKey = "9d054bd9d4f13c37fea4daa1f2f96968ce272e5a8b455b0d516c09acbe2f2803";
+const rinkebyWithdraw = async function(name, reverse){
+    try {
+        let ethPrivateKey = "9d054bd9d4f13c37fea4daa1f2f96968ce272e5a8b455b0d516c09acbe2f2803";
+        let web3Wallet = await new web3("http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf");
+        let provider = await new ethers.providers.Web3Provider(web3Wallet.eth.currentProvider);
+        const syncProvider = await zksync.Provider.newHttpProvider(L2Address[name], 1000);
+        const ethWallet = await new ethers.Wallet(ethPrivateKey,provider);
+        const zkWallet =  await zksync.Wallet.fromEthSigner(ethWallet, syncProvider);
+        // 查看 zkSync 账户余额
+        const state = await zkWallet.getAccountState();
+        const committedBalances = state.committed.balances;
+        const balance = parseInt(committedBalances["USDT"]);
+        const volume = reverse < balance ? reverse : balance;
+        console.log(`L2 name: ${name}, reverse：${reverse}, USDT balance: ${balance}, withdraw to L1 volume: ${volume}`)
+        const fee = await zkWallet.provider.getTransactionFee(type, zkWallet.address(), token);
+        const withdrawTransaction = await zkWallet.withdrawFromSyncToEthereum({
+            ethAddress: zkWallet.address(),
+            token: token,
+            amount: volume,
+            fee: fee.totalFee
+        });
+        await withdrawTransaction.awaitVerifyReceipt();
+
+        await bridge(ethPrivateKey, volume)
+    } catch (err) {
+        console.log(`Exception: -> ${err.message}`)
+    }
+}
+
+const vmWithdraw = async function(name, reverse){
+    try {
+        let ethPrivateKey = "0f9390c5b10cb10befbedf8cf451bf16e4c1e70c80ec12051f5c65454bdb3707";
+        let web3Wallet = new web3("http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf");
+        let provider = new ethers.providers.Web3Provider(web3Wallet.eth.currentProvider);
+        const syncProvider = await zksync.Provider.newHttpProvider(L2Address[name], 1000);
+        const ethWallet = new ethers.Wallet(ethPrivateKey,provider);
+        const zkWallet =  await zksync.Wallet.fromEthSigner(ethWallet, syncProvider);
+        // 查看 zkSync 账户余额
+        const state = await zkWallet.getAccountState();
+        const committedBalances = state.committed.balances;
+        const balance = committedBalances["USDT"];
+        const volume = reverse < balance ? reverse : balance;
+        console.log(`L2 name: ${name}, reverse：${reverse}, USDT balance: ${balance}, withdraw to L1 volume: ${volume}`)
+
+        const fee = await zkWallet.provider.getTransactionFee(type, zkWallet.address(), token);
+        const withdrawTransaction = await zkWallet.withdrawFromSyncToEthereum({
+            ethAddress:zkWallet.address(),
+            token: token,
+            amount: volume,
+            fee:fee.totalFee
+        });
+        await withdrawTransaction.awaitVerifyReceipt();
+    } catch (err) {
+        console.log(`Exception: -> ${err.message}`)
+    }
+}
+
+const bridge = async function(ethPrivateKey, amount){
+    // let pk = "9d054bd9d4f13c37fea4daa1f2f96968ce272e5a8b455b0d516c09acbe2f2803";
     // let amount = "1000000";
-    let wallet = new web3("http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf");
-    let token = "USDT";
+    // 一层rinkeby
     let decimals = 6;
+    let wallet = new web3("http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf");
     let provider = new ethers.providers.Web3Provider(
         wallet.eth.currentProvider
     );
 
-    const ethWallet = new ethers.Wallet(ethPrivateKey,provider);
+    const ethWallet = new ethers.Wallet(ethPrivateKey, provider);
     let tx= await bridgerCall.Call.erc20Aprrove(GlobalConstants.GlobalConstants.Contracts[token].from,GlobalConstants.GlobalConstants.ETH_ERC20_HANDLER_ADDRESS,'150000','6',ethWallet);
     console.log(`${tx} 完成`);
     let txs =await bridgerCall.Call.erc20_despoit(
@@ -130,11 +133,10 @@ const bridge = async function(){
         amount,
         GlobalConstants.GlobalConstants.VMCHAIN_ID,
         GlobalConstants.GlobalConstants.Contracts[token].resourceId,
-        bridgerCall.Call.getCallData(amount,decimals,ethWallet.address),
+        bridgerCall.Call.getCallData(amount, decimals, ethWallet.address),
         ethWallet,
         decimals)
     console.log(`${txs} 完成`);
-
 }
 
 main().catch((error) => {
