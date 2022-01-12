@@ -3,25 +3,25 @@
 const { Controller } = require('egg');
 const { useSuccess } = require('../../utils/index.js');
 
-var fs = require("fs");
-var context = fs.readFileSync("./config/types.json");
-var typesData= JSON.parse(context);
+const fs = require('fs');
+const context = fs.readFileSync('./config/types.json');
+const typesData = JSON.parse(context);
 
 // substrate
-var http = require('@polkadot/api');
-var Keyring = http.Keyring
+const http = require('@polkadot/api');
+const Keyring = http.Keyring;
 const keyring = new Keyring({ type: 'sr25519' });
 
-var WsProvider = http.WsProvider
-var ApiPromise = http.ApiPromise
-const wsProvider = new WsProvider(process.env.CHAIN_WS_ENDPOINT);
-// const wsProvider = new WsProvider('ws://vmchain-node-0-sandbox.chain-sandbox.svc.cluster.local:9944');
+const WsProvider = http.WsProvider;
+const ApiPromise = http.ApiPromise;
+// const wsProvider = new WsProvider(process.env.CHAIN_WS_ENDPOINT);
+const wsProvider = new WsProvider('ws://10.233.65.230:9944');
 
 class subscanJob extends Controller {
   async index() {
     const api = await ApiPromise.create({
       provider: wsProvider,
-      types:typesData
+      types: typesData,
     });
     const { ctx } = this;
     const blockHashs = await ctx.service.blocks.getSubScanBlockHash();
@@ -30,7 +30,7 @@ class subscanJob extends Controller {
     // console.log(blockHashs[0]['block_hash']);
     // console.log(blockHashs[0]['block_timestamp']);
 
-    ctx.service.blocks.updateSubScanBlockState(blockHashs[0]['block_number']);
+    ctx.service.blocks.updateSubScanBlockState(blockHashs[0].block_number);
 
     blockHashs.forEach(item => {
       // {
@@ -61,12 +61,12 @@ class subscanJob extends Controller {
 
     });
 
-    const blockHash = "0xda2bcddaf9d017cd981588c214a204bf2c934098ad319da88ade2f911da88a7d";
+    const blockHash = '0xda2bcddaf9d017cd981588c214a204bf2c934098ad319da88ade2f911da88a7d';
 
     const signedBlock = await api.rpc.chain.getBlock(blockHash);
 
-    if (signedBlock.block.extrinsics.length > 1){
-      for(var i = 0; i  < signedBlock.block.extrinsics.length; i ++) {
+    if (signedBlock.block.extrinsics.length > 1) {
+      for (let i = 0; i < signedBlock.block.extrinsics.length; i++) {
         console.log(signedBlock.block.extrinsics[i].hash.toHex());
         console.log(signedBlock.block.extrinsics[i].signature.nonce);
         console.log(signedBlock.block.extrinsics[i].signature.tip);
