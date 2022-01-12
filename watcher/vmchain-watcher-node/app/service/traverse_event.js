@@ -76,7 +76,13 @@ const rinkebyWithdraw = async function(name, reverse){
         console.log(state)
         const committedBalances = state.committed.balances;
         const balance = parseInt(committedBalances["USDT"]);
-        const volume = reverse < balance ? reverse : balance;
+        let volume = 0;
+        if (reverse < balance) {
+            volume = reverse
+        } else {
+            // 10个点的手续费
+            volume = parseInt(balance * 0.9)
+        }
         console.log(`L2 name: ${name}, reverse：${reverse}, USDT balance: ${balance}, withdraw to L1 volume: ${volume}`)
         const fee = await zkWallet.provider.getTransactionFee(type, zkWallet.address(), token);
         const withdrawTransaction = await zkWallet.withdrawFromSyncToEthereum({
@@ -88,7 +94,7 @@ const rinkebyWithdraw = async function(name, reverse){
         await withdrawTransaction.awaitVerifyReceipt();
         await bridge(volume)
     } catch (err) {
-        console.log(`Exception: -> ${err.message}`)
+        console.log(`Rinkeby withdraw exception: -> ${err.message}`)
     }
 }
 
@@ -105,7 +111,13 @@ const vmWithdraw = async function(name, reverse){
         console.log(state)
         const committedBalances = state.committed.balances;
         const balance = committedBalances["USDT"];
-        const volume = reverse < balance ? reverse : balance;
+        let volume = 0;
+        if (reverse < balance) {
+            volume = reverse
+        } else {
+            // 10个点的手续费
+            volume = parseInt(balance * 0.9)
+        }
         console.log(`L2 name: ${name}, reverse：${reverse}, USDT balance: ${balance}, withdraw to L1 volume: ${volume}`)
 
         const fee = await zkWallet.provider.getTransactionFee(type, zkWallet.address(), token);
@@ -117,7 +129,7 @@ const vmWithdraw = async function(name, reverse){
         });
         await withdrawTransaction.awaitVerifyReceipt();
     } catch (err) {
-        console.log(`Exception: -> ${err.message}`)
+        console.log(`VM withdraw exception: -> ${err.message}`)
     }
 }
 
