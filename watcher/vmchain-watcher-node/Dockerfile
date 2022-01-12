@@ -10,6 +10,6 @@ RUN yarn add ethers@5.5.3
 RUN yarn add web3
 RUN npm install
 
-# 启动服务，默认挂载到7001端口
-EXPOSE 7010
+# 启动服务，默认挂载到7011端口
+EXPOSE 7011
 CMD ["npm", "run start"]
