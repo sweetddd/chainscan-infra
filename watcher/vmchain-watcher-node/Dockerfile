@@ -7,6 +7,7 @@ RUN npm cache clean --force
 RUN npm config set registry https://registry.npm.taobao.org
 RUN yarn add @polkadot/api@5.8.3
 RUN yarn add ethers@5.5.3
+RUN yarn add zksync-crypto@0.6.0
 RUN yarn add web3
 RUN npm install
 
