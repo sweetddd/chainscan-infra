@@ -12,9 +12,10 @@ let WsProvider = http.WsProvider
 let ApiPromise = http.ApiPromise
 
 const wsProvider = new WsProvider(process.env.CHAIN_WS_ENDPOINT);
-let context = fs.readFileSync('../config/types.json');
+let context = fs.readFileSync('./config/types.json');
 // const wsProvider = new WsProvider("ws://10.233.65.230:9900");
 // let context = fs.readFileSync("E:\\project\\IdeaProject\\chainscan-infra\\watcher\\vmchain-watcher-node\\config\\types.json");
+
 let typesData= JSON.parse(context);
 
 const L2Address = {
@@ -24,7 +25,7 @@ const L2Address = {
 let token = "USDT";
 const type =  'Withdraw';
 //手续费账号
-let ethPrivateKey = "0xa53578fe8f9a1678be99f58dbe3e189743f5cb2149ba77d004c6819d0dd25104";
+let ethPrivateKey = "0xe71c0d817dc5b037f1fcd36b374ffb4e3894026a028e3c26e946943c4362036a";
 
 
 async function main () {
