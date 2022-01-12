@@ -13,8 +13,8 @@ const ApiPromise = http.ApiPromise;
 
 const wsProvider = new WsProvider(process.env.CHAIN_WS_ENDPOINT);
 let context = fs.readFileSync('./config/types.json');
-const wsProvider = new WsProvider('ws://10.233.65.230:9900');
-const context = fs.readFileSync('E:\\project\\IdeaProject\\chainscan-infra\\watcher\\vmchain-watcher-node\\config\\types.json');
+// const wsProvider = new WsProvider('ws://10.233.65.230:9900');
+// const context = fs.readFileSync('E:\\project\\IdeaProject\\chainscan-infra\\watcher\\vmchain-watcher-node\\config\\types.json');
 
 const typesData = JSON.parse(context);
 
