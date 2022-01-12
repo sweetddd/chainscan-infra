@@ -23,38 +23,11 @@ spec:
         ports:
         - containerPort: 7011
         env:
-          - name: CDN_HOST
+          - name: CHAIN_WS_ENDPOINT
             valueFrom:
               configMapKeyRef:
-                name: chainscan-backend-config
-                key: cdn-host
-          - name: TZ
-            value: GMT
-          - name: DB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-chainscan
-                key: password
-          - name: DB_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: database-chainscan
-                key: username
-          - name: DB_HOST
-            valueFrom:
-              secretKeyRef:
-                name: database-chainscan
-                key: db-host
-          - name: DB_PORT
-            valueFrom:
-              secretKeyRef:
-                name: database-chainscan
-                key: db-port
-          - name: DB_NAME
-            valueFrom:
-              secretKeyRef:
-                name: database-chainscan
-                key: db-name
+                name: chainscan-node-config
+                key: chain-ws-endpoint
         resources:
           requests:
             cpu: 100m
