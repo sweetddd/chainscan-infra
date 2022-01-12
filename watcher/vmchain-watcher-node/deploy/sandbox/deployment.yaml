@@ -23,7 +23,7 @@ spec:
         command: ["/bin/sh", "-c", "--"]
         args: ["while true; do npm run start; sleep 30; done;"]
         ports:
-        - containerPort: 7010
+        - containerPort: 7011
         env:
           - name: CDN_HOST
             valueFrom:
@@ -59,13 +59,18 @@ spec:
               secretKeyRef:
                 name: database-chainscan
                 key: db-name
+          - name:
+              valueFrom:
+                secretKeyRef:
+                  name: database-chainscan
+                  key: db-name
         resources:
           requests:
-            cpu: 0.1
-            memory: 0.1Gi
+            cpu: 100m
+            memory: 1Gi
           limits:
-            cpu: 1
-            memory: 0.5Gi
+            cpu: '2'
+            memory: 4Gi
       volumes:
       - name: host-time
         hostPath:

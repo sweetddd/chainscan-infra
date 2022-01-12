@@ -62,7 +62,7 @@ const erc20_despoit = async function (contractAddress,token, amount,   dest, res
     let dec = expandDecimals(amount, decimals);
     let contract = new ethers.Contract(contractAddress, GlobalConstants.GlobalConstants.ContractABIs.Bridge.abi, wallet);
 
-   let res =  await  contract.deposit(dest,resourceId,data,{"gasPrice":200000000,gasLimit :2100000});
+   let res =  await  contract.deposit(dest,resourceId,data, {gasPrice:"10000000015",gasLimit :"600000"});
 
     // let tx = await bridgeInstance.methods.deposit(
     //     dest, // destination chain id

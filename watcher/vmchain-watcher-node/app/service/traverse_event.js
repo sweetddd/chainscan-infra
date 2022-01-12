@@ -22,6 +22,8 @@ const L2Address = {
 }
 let token = "USDT";
 const type =  'Withdraw';
+//手续费账号
+let ethPrivateKey = "0xa53578fe8f9a1678be99f58dbe3e189743f5cb2149ba77d004c6819d0dd25104";
 
 
 async function main () {
@@ -43,7 +45,6 @@ async function main () {
                 console.log(`Received dividend events, block height: ${block_height}, reverse: ${reverse}, timestamp: ${timestamp}`)
                 // await rinkebyWithdraw("rinkeby", reverse)
                 // await vmWithdraw("vm", reverse)
-
                 Object.keys(L2Address).map(async name => {
                     if (name.trim() === "rinkeby"){
                         await rinkebyWithdraw(name, reverse)
@@ -59,7 +60,7 @@ async function main () {
 
 const rinkebyWithdraw = async function(name, reverse){
     try {
-        let ethPrivateKey = "9d054bd9d4f13c37fea4daa1f2f96968ce272e5a8b455b0d516c09acbe2f2803";
+        // let ethPrivateKey = "0xa53578fe8f9a1678be99f58dbe3e189743f5cb2149ba77d004c6819d0dd25104";
         let web3Wallet = await new web3("http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf");
         let provider = await new ethers.providers.Web3Provider(web3Wallet.eth.currentProvider);
         const syncProvider = await zksync.Provider.newHttpProvider(L2Address[name], 1000);
@@ -67,6 +68,7 @@ const rinkebyWithdraw = async function(name, reverse){
         const zkWallet =  await zksync.Wallet.fromEthSigner(ethWallet, syncProvider);
         // 查看 zkSync 账户余额
         const state = await zkWallet.getAccountState();
+        console.log(state)
         const committedBalances = state.committed.balances;
         const balance = parseInt(committedBalances["USDT"]);
         const volume = reverse < balance ? reverse : balance;
@@ -79,8 +81,7 @@ const rinkebyWithdraw = async function(name, reverse){
             fee: fee.totalFee
         });
         await withdrawTransaction.awaitVerifyReceipt();
-
-        await bridge(ethPrivateKey, volume)
+        await bridge(volume)
     } catch (err) {
         console.log(`Exception: -> ${err.message}`)
     }
@@ -88,7 +89,7 @@ const rinkebyWithdraw = async function(name, reverse){
 
 const vmWithdraw = async function(name, reverse){
     try {
-        let ethPrivateKey = "0f9390c5b10cb10befbedf8cf451bf16e4c1e70c80ec12051f5c65454bdb3707";
+        // let ethPrivateKey = "0xa53578fe8f9a1678be99f58dbe3e189743f5cb2149ba77d004c6819d0dd25104";
         let web3Wallet = new web3("http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf");
         let provider = new ethers.providers.Web3Provider(web3Wallet.eth.currentProvider);
         const syncProvider = await zksync.Provider.newHttpProvider(L2Address[name], 1000);
@@ -96,6 +97,7 @@ const vmWithdraw = async function(name, reverse){
         const zkWallet =  await zksync.Wallet.fromEthSigner(ethWallet, syncProvider);
         // 查看 zkSync 账户余额
         const state = await zkWallet.getAccountState();
+        console.log(state)
         const committedBalances = state.committed.balances;
         const balance = committedBalances["USDT"];
         const volume = reverse < balance ? reverse : balance;
@@ -114,9 +116,7 @@ const vmWithdraw = async function(name, reverse){
     }
 }
 
-const bridge = async function(ethPrivateKey, amount){
-    // let pk = "9d054bd9d4f13c37fea4daa1f2f96968ce272e5a8b455b0d516c09acbe2f2803";
-    // let amount = "1000000";
+const bridge = async function(amount){
     // 一层rinkeby
     let decimals = 6;
     let wallet = new web3("http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf");
