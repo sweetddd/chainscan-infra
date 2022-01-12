@@ -7,7 +7,7 @@
 
   environment {
      REGISTRY = 'registry.cn-beijing.aliyuncs.com/pox'
-     APP_NAME = 'vmchain-watcher-node'
+     APP_NAME = 'chainscan-infra-node'
   }
 
   stages {

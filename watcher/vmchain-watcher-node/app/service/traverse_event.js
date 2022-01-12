@@ -12,8 +12,8 @@ let WsProvider = http.WsProvider
 let ApiPromise = http.ApiPromise
 
 const wsProvider = new WsProvider("ws://10.233.65.230:9900");
-let context = fs.readFileSync("E:\\project\\IdeaProject\\chainscan-infra\\watcher\\vmchain-watcher-node\\app\\service\\types.json");
-// let context = fs.readFileSync("../../config/types.json");
+// let context = fs.readFileSync("E:\\project\\IdeaProject\\chainscan-infra\\watcher\\vmchain-watcher-node\\app\\service\\types.json");
+let context = fs.readFileSync("../../config/types.json");
 let typesData= JSON.parse(context);
 
 const L2Address = {
