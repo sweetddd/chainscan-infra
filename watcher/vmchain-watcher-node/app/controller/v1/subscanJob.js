@@ -14,8 +14,8 @@ const keyring = new Keyring({ type: 'sr25519' });
 
 var WsProvider = http.WsProvider
 var ApiPromise = http.ApiPromise
-const wsProvider = new WsProvider('ws://10.233.75.89:9944');
-//const wsProvider = new WsProvider('ws://vmchain-node-2-sandbox.chain-sandbox.svc.cluster.local:9944');
+// const wsProvider = new WsProvider('ws://10.233.65.230:9944');
+const wsProvider = new WsProvider('ws://vmchain-node-2-sandbox.chain-sandbox.svc.cluster.local:9944');
 
 class subscanJob extends Controller {
   async index() {

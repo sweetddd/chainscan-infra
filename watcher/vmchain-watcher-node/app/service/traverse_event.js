@@ -11,9 +11,10 @@ let GlobalConstants = require('./../bridge/constants');
 let WsProvider = http.WsProvider
 let ApiPromise = http.ApiPromise
 
-const wsProvider = new WsProvider("ws://10.233.65.230:9900");
-// let context = fs.readFileSync("E:\\project\\IdeaProject\\chainscan-infra\\watcher\\vmchain-watcher-node\\app\\service\\types.json");
+const wsProvider = new WsProvider(process.env.CHAIN_WS_ENDPOINT);
 let context = fs.readFileSync("../../config/types.json");
+// const wsProvider = new WsProvider("ws://10.233.65.230:9900");
+// let context = fs.readFileSync("E:\\project\\IdeaProject\\chainscan-infra\\watcher\\vmchain-watcher-node\\config\\types.json");
 let typesData= JSON.parse(context);
 
 const L2Address = {
@@ -27,6 +28,9 @@ let ethPrivateKey = "0xa53578fe8f9a1678be99f58dbe3e189743f5cb2149ba77d004c6819d0
 
 
 async function main () {
+    console.log(`CHAIN_WS_ENDPOINT: ${process.env.CHAIN_WS_ENDPOINT}`)
+    console.log(`Fee account address: ${ethPrivateKey}`)
+
     // Create our API with a default connection to the local node
     const api = await ApiPromise.create({
         provider: wsProvider,
