@@ -18,17 +18,17 @@ class TransactionsService extends Service {
      * @return
      */
   async addTransactionsDetail({ id: transaction_hash }) {
-    var  addTxSql = 'INSERT INTO ${TABLE} (' +
+    const addTxSql = 'INSERT INTO ${TABLE} (' +
         'transaction_hash,block_hash,block_number,status,tx_timestamp,from_addr,to_addr,value,nonce,input_method' +
         ') VALUES(?,?,?,?,?,?,?,?,?,?)';
-    var  addTxSql_Params = ['Wilson', 55];
-    await this.app.mysql.query(addTxSql,addTxSql_Params,function (err, result) {
-      if(err){
-        console.log('[INSERT SUBSCABTX ERROR] - ',err.message);
+    const addTxSql_Params = [ 'Wilson', 55 ];
+    await this.app.mysql.query(addTxSql, addTxSql_Params, function(err, result) {
+      if (err) {
+        console.log('[INSERT SUBSCABTX ERROR] - ', err.message);
         return;
       }
       console.log('-------INSERT SUBSCABTX----------');
-      console.log('INSERT ID:',result);
+      console.log('INSERT ID:', result);
       console.log('#######################');
     });
   }

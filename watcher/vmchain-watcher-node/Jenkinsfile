@@ -7,7 +7,7 @@
 
   environment {
      REGISTRY = 'registry.cn-beijing.aliyuncs.com/pox'
-     APP_NAME = 'vmchain-watcher'
+     APP_NAME = 'chainscan-infra-node'
   }
 
   stages {
@@ -20,12 +20,12 @@
         parentCredentials: true,
         recursiveSubmodules: true,
         reference: '', trackingSubmodules: true]],
-        userRemoteConfigs: [[credentialsId: 'gitaccount', url: 'http://git.everylink.ai/DAO/vmchain-watcher.git']]])
+        userRemoteConfigs: [[credentialsId: 'gitaccount', url: 'http://git.everylink.ai/paas/chainscan-infra.git']]])
       }
     }
     stage('build & push') {
       steps {
-        dir('vmchain-watcher') {
+        dir('watcher/vmchain-watcher-node') {
             container('nodejs') {
                 withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,credentialsId : 'dockerhub' ,usernameVariable : 'DOCKER_USERNAME' ,)]) {
                     sh 'echo docker --version'
@@ -39,13 +39,13 @@
     }
     stage('deploy to sandbox') {
       steps {
-        kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, configs: 'vmchain-watcher/deploy/sandbox/**', kubeconfigId: 'kubeconfig')
+        kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, configs: 'watcher/vmchain-watcher-node/deploy/sandbox/**', kubeconfigId: 'kubeconfig')
       }
     }
     stage('build & push to production') {
       steps {
         input(message: 'Waiting for audit @eric  ', submitter: 'eric,admin')
-        dir('vmchain-watcher') {
+        dir('watcher/vmchain-watcher-node') {
           container('nodejs') {
             withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,credentialsId : 'dockerhub' ,usernameVariable : 'DOCKER_USERNAME' ,)]) {
               sh 'echo "$DOCKER_PASSWORD" | docker login $REGISTRY -u "$DOCKER_USERNAME" --password-stdin'
@@ -58,7 +58,7 @@
     }
     stage('deploy to production') {
       steps {
-        kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, configs: 'vmchain-watcher/deploy/production/**', kubeconfigId: 'kubeconfig-prd')
+        kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, configs: 'watcher/vmchain-watcher-node/deploy/production/**', kubeconfigId: 'kubeconfig-prd')
       }
     }
   }

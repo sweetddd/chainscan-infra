@@ -6,8 +6,8 @@ metadata:
 spec:
   ports:
   - name: http
-    port: 7010
-    targetPort: 7010
+    port: 7011
+    targetPort: 7011
     protocol: TCP
 #    nodePort: 31296
   selector:

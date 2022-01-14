@@ -92,7 +92,13 @@ public class Block {
     @Column(name = "block_fee")
     private BigDecimal blockFee;
 
-    @Column(name = "source")
-    private String source;
+    @Column(name = "chain_type")
+    private String chainType;
+
+    @Column(name = "params")
+    private String params;
+
+    @Column(name = "finalized")
+    private int finalized;
 
 }

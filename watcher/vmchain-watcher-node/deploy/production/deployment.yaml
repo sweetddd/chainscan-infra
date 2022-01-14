@@ -4,7 +4,7 @@ metadata:
   name: $APP_NAME-production
   namespace: paas
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: $APP_NAME-production
@@ -21,47 +21,20 @@ spec:
           mountPath: /etc/localtime
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 7010
+        - containerPort: 7011
         env:
-          - name: CDN_HOST
+          - name: CHAIN_WS_ENDPOINT
             valueFrom:
               configMapKeyRef:
-                name: chainscan-backend-config
-                key: cdn-host
-          - name: TZ
-            value: GMT
-          - name: DB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-chainscan
-                key: password
-          - name: DB_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: database-chainscan
-                key: username
-          - name: DB_HOST
-            valueFrom:
-              secretKeyRef:
-                name: database-chainscan
-                key: db-host
-          - name: DB_PORT
-            valueFrom:
-              secretKeyRef:
-                name: database-chainscan
-                key: db-port
-          - name: DB_NAME
-            valueFrom:
-              secretKeyRef:
-                name: database-chainscan
-                key: db-name
+                name: chainscan-node-config
+                key: chain-ws-endpoint
         resources:
           requests:
-            cpu: 0.1
-            memory: 0.1Gi
+            cpu: 100m
+            memory: 1Gi
           limits:
-            cpu: 1
-            memory: 0.5Gi
+            cpu: '2'
+            memory: 4Gi
       volumes:
       - name: host-time
         hostPath:

@@ -36,7 +36,8 @@ public class DividendWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        return "0/4 * * * * ? ";
+         return "0 0 * * * ?";
+//        return "0/4 * * * * ? ";
     }
 
     @Override
@@ -46,7 +47,7 @@ public class DividendWatcher implements IWatcher {
 
     @Override
     public List<IncentiveBlock> scanBlock() throws WatcherExecutionException {
-//        init();
+        init();
 //        System.out.println("@@@@@@@@@@@@@@@@@@@@@@@");
 //        System.out.println("########: " + incentiveService.incentiveLastBlockScan());
 //        List<IncentiveBlock> incentiveBlocks = incentiveService.incentiveBlocksScan(pageSize);
