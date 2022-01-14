@@ -77,4 +77,18 @@ public class Coin {
 
     @Column(name = "icon_cache_id")
     private Long iconCacheId;
+
+    @Column(name = "total_lock_amount")
+    private String totalLockAmount;
+
+    @Column(name = "total_lock_amount")
+    private String totalBurntAmount;
+
+    @Column(name = "total_lock_amount")
+    private String l2LockAmount;
+
+    @Column(name = "total_lock_amount")
+    private String l1LockAmount;
+
+
 }
