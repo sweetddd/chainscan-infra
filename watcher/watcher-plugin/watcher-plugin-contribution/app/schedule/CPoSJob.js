@@ -4,8 +4,6 @@ const bridgerCall = require("./../../app/bridge/bridge-utils");
 const GlobalConstants = require("./../../app/bridge/constants");
 const { ApiPromise, WsProvider, HttpProvider } = require("@polkadot/api");
 const fs = require("fs");
-const { blake2AsHex } = require('@polkadot/util-crypto');
-const { hexToU8a, isHex, stringToU8a,hexToBn,numberToHex } =  require('@polkadot/util');
 
 const vmWeb3Url = process.env.vmWeb3Url;
 const ethWeb3Url = process.env.ethWeb3Url;
@@ -13,11 +11,8 @@ const feeAccountPrivateKey = process.env.feeAccountPrivateKey;
 
 
 
-//const wsProvider = new WsProvider(process.env.CHAIN_WS_ENDPOINT);
 const wsProvider = new HttpProvider(process.env.vmWeb3Url);
-let context = fs.readFileSync('/Users/henry/IdeaProjects/chainscan-infra/watcher/vmchain-watcher-node/config/types.json');
-// const wsProvider = new WsProvider('ws://10.233.65.230:9900');
-// const context = fs.readFileSync('E:\\project\\IdeaProject\\chainscan-infra\\watcher\\vmchain-watcher-node\\config\\types.json');
+let context = fs.readFileSync('./../config/types.json');
 
 const typesData = JSON.parse(context);
 
