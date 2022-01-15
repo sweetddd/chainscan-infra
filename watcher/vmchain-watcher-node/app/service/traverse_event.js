@@ -7,11 +7,16 @@ const ethers = require('ethers');
 const zksync = require('../zksync/build');
 const bridgerCall = require('./../bridge/bridge-utils');
 const GlobalConstants = require('./../bridge/constants');
+const userRewardService = require('./userRewards');
+const {Service} = require("egg");
 
 const WsProvider = http.WsProvider;
 const ApiPromise = http.ApiPromise;
 
-const wsProvider = new WsProvider(process.env.CHAIN_WS_ENDPOINT);
+
+
+//const wsProvider = new WsProvider(process.env.CHAIN_WS_ENDPOINT);
+const wsProvider = new WsProvider("ws://127.0.0.1:9944");
 let context = fs.readFileSync('./config/types.json');
 // const wsProvider = new WsProvider('ws://10.233.65.230:9900');
 // const context = fs.readFileSync('E:\\project\\IdeaProject\\chainscan-infra\\watcher\\vmchain-watcher-node\\config\\types.json');
@@ -28,38 +33,62 @@ const type = 'Withdraw';
 const ethPrivateKey = '0xe71c0d817dc5b037f1fcd36b374ffb4e3894026a028e3c26e946943c4362036a';
 
 
-async function main() {
-  console.log(`CHAIN_WS_ENDPOINT: ${process.env.CHAIN_WS_ENDPOINT}`);
-  console.log(`Fee account address: ${ethPrivateKey}`);
 
-  // Create our API with a default connection to the local node
-  const api = await ApiPromise.create({
-    provider: wsProvider,
-    types: typesData,
-  });
-    // Subscribe to system events via storage
-  await api.query.system.events(async events => {
-    // Loop through the Vec<EventRecord>
-    await events.forEach(async record => {
-      // Extract the event
-      const event = record.event;
-      if (event.section.toString() === 'cposContribution' && event.method.toString() === 'Dividend') {
-        const block_height = event.data[0].toString();
-        const reverse = parseInt(event.data[1].toString());
-        const timestamp = event.data[2].toString();
-        console.log(`Received dividend events, block height: ${block_height}, reverse: ${reverse}, timestamp: ${timestamp}`);
-        // await rinkebyWithdraw("rinkeby", reverse)
-        // await vmWithdraw("vm", reverse)
-        Object.keys(L2Address).map(async name => {
-          if (name.trim() === 'rinkeby') {
-            await rinkebyWithdraw(name, reverse);
-          } else {
-            await vmWithdraw(name, reverse);
-          }
-        });
-      }
-    });
-  });
+
+async function cPosWatcher() {
+
+//   const servi =  new TransactionsService();
+//   console.log(servi);
+//
+//   console.log(`CHAIN_WS_ENDPOINT: ${process.env.CHAIN_WS_ENDPOINT}`);
+//   console.log(`Fee account address: ${ethPrivateKey}`);
+//
+//   // Create our API with a default connection to the local node
+//   const api = await ApiPromise.create({
+//     provider: wsProvider,
+//     types: typesData,
+//   });
+//     // Subscribe to system events via storage
+//   await api.query.system.events(async events => {
+//     // Loop through the Vec<EventRecord>
+//     await events.forEach(async record => {
+//       // Extract the event
+//       const event = record.event;
+//       if (event.section.toString() === 'cposContribution' && event.method.toString() === 'Dividend') {
+//         const block_height = event.data[0].toString();
+//         const reverse = parseInt(event.data[1].toString());
+//         const timestamp = event.data[2].toString();
+//         console.log(`Received dividend events, block height: ${block_height}, reverse: ${reverse}, timestamp: ${timestamp}`);
+//         // await rinkebyWithdraw("rinkeby", reverse)
+//         // await vmWithdraw("vm", reverse)
+//         Object.keys(L2Address).map(async name => {
+//           if (name.trim() === 'rinkeby') {
+//             await rinkebyWithdraw(name, reverse);
+//           } else {
+//             await vmWithdraw(name, reverse);
+//           }
+//         });
+//       }else if (event.section.toString() === 'cposContribution' && event.method.toString() === 'Reward'){
+//               const eras = event.data[0].toString();
+//             const rewardsKeys = await api.query.cposContribution.eraRewards.keys(eras);
+//
+//             rewardsKeys.map(async ({ args: [era, mining] }) => {
+//                     const rewards = await api.query.cposContribution.eraRewards(eras,mining);
+//                     await userRewardService.addUserReward(JSON.parse(rewards.toString()));
+//
+//                     console.log(JSON.parse(rewards.toString()));
+//
+//             });
+//
+// //            var keys = await api.query.cposContribution.eraRewards.keys();
+// //             var list = keys.map(e => e.args[0].toJSON())
+// //             var res = await api.query.cposContribution.eraRewards.multi(list);
+// //             console.log("eraRewards"+res)
+//
+//
+//        }
+//     });
+//   });
 }
 
 const rinkebyWithdraw = async function(name, reverse) {
@@ -155,8 +184,9 @@ const bridge = async function(amount) {
   console.log(`${txs} 完成`);
 };
 
-main().catch(error => {
-  console.error(error);
-  process.exit(-1);
-});
+// main().catch(error => {
+//   console.error(error);
+//   process.exit(-1);
+// });
+
 

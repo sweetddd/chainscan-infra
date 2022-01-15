@@ -11,6 +11,15 @@ class BlockService extends Service {
     this.database = this.app.mysql;
   }
 
+
+  /**
+   * 获取最大区块号
+   * @returns
+   */
+  async getMaxBlockNumber() {
+    const res = await this.app.mysql.query(`select max(block_number) from ${TABLE} where chain_type = 'CPoS'`);
+    return res[0]['max(block_number)'];
+  }
   /**
    * 获取未扫描区块hash
    * @returns {Promise<*>}
@@ -37,6 +46,49 @@ class BlockService extends Service {
       }
     });
   }
+
+  async getBlockByHash(hash) {
+    const res = await this.database.query(`select  * from  ${TABLE} where chain_type = 'CPoS' and block_hash = ?`,[hash]);
+    return res;
+  }
+
+
+  async addBlock(block) {
+
+   let exitBlock =  await this.getBlockByHash(block.block_hash);
+    if(exitBlock[0]) {
+      await this.updateBlock(exitBlock[0],block);
+    }else{
+      const addTxSql = 'INSERT INTO block (' +
+          'block_number, block_hash,  block_timestamp,  tx_size,  difficulty,  create_time, block_fee, chain_type' +
+          ') VALUES(?,?,?,?,?,?,?,?)';
+      const addTxSql_Params = [block.block_height,block.block_hash,block.start_time,block.transaction_count,block.difficulty,new Date(),block.blocked_fee,'CPoS'];
+      await this.app.mysql.query(addTxSql, addTxSql_Params, function(err, result) {
+        if (err) {
+          console.log('[INSERT SUBSCABTX ERROR] - ', err.message);
+          return;
+        }
+        console.log('INSERT ID:', result);
+        console.log('#######################');
+
+      });
+    }
+
+  }
+
+  async updateBlock(oldBlock,newBlock) {
+    //修改数据
+    var updateSql = 'UPDATE block SET tx_size = ?,block_fee = ?  WHERE id = ? ';
+    var updateqSlParams = [newBlock.transaction_count,newBlock.blocked_fee,oldBlock.id];
+    this.database.query(updateSql,updateqSlParams,function (err,result) {
+      if(err){
+        console.log('[UPDATE SUBSCABBLOCK ERROR] - ',err.message);
+        return;
+      }
+    });
+  }
+
+
 }
 
 module.exports = BlockService;
