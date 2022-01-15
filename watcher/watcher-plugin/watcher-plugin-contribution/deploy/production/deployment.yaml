@@ -25,28 +25,28 @@ spec:
         env:
           - name: DB_HOST
             valueFrom:
-              configMapKeyRef:
-                name: watcher-contribution-config
-                key: db-host
+              secretKeyRef:
+                name: database-contribution
+                key: url
           - name: DB_PORT
             valueFrom:
-              configMapKeyRef:
-                name: watcher-contribution-config
-                key: db-port
+              secretKeyRef:
+                name: database-contribution
+                key: port
           - name: DB_USERNAME
             valueFrom:
-              configMapKeyRef:
-                name: watcher-contribution-config
-                key: db-username
+              secretKeyRef:
+                name: database-contribution
+                key: username
           - name: DB_PASSWORD
             valueFrom:
-              configMapKeyRef:
-                name: watcher-contribution-config
-                key: db-password
+              secretKeyRef:
+                name: database-contribution
+                key: password
           - name: DB_NAME
             valueFrom:
-              configMapKeyRef:
-                name: watcher-contribution-config
+              secretKeyRef:
+                name: database-contribution
                 key: db-name
           - name: vmWeb3Url
             valueFrom:
@@ -60,7 +60,7 @@ spec:
                 key: eth-web3-url
           - name: feeAccountPrivateKey
             valueFrom:
-              configMapKeyRef:
+              valueFrom:
                 name: watcher-contribution-config
                 key: fee-account-private-key
         resources:
