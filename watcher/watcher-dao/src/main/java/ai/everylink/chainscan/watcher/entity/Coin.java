@@ -81,13 +81,13 @@ public class Coin {
     @Column(name = "total_lock_amount")
     private String totalLockAmount;
 
-    @Column(name = "total_lock_amount")
+    @Column(name = "total_burnt_amount")
     private String totalBurntAmount;
 
-    @Column(name = "total_lock_amount")
+    @Column(name = "l2_lock_amount")
     private String l2LockAmount;
 
-    @Column(name = "total_lock_amount")
+    @Column(name = "l1_lock_amount")
     private String l1LockAmount;
 
 
