@@ -113,25 +113,69 @@
     "downward_messages": "Vec<InboundDownwardMessage>",
     "horizontal_messages": "BTreeMap<ParaId, Vec<InboundHrmpMessage>>"
   },
-  "IncentiveBlock": {
+  "ContributionBlock": {
     "block_height": "u64",
-    "difficulty": "u64",
-    "blocked_fee": "u64",
+    "difficulty": "u128",
+    "blocked_fee": "u128",
     "start_time": "u64",
     "block_hash": "H256",
     "transaction_count": "u64",
-    "transactions": "Vec<IncentiveTransaction>"
+    "transactions": "Vec<ContributionTransaction>"
   },
-  "IncentiveTransaction": {
+  "ContributionTransaction": {
     "coin_symbol": "Vec<u8>",
     "transaction_type": "Vec<u8>",
     "buyer_address": "H160",
     "seller_address": "H160",
-    "amount": "u64",
-    "price": "u64",
-    "buyer_fee": "u64",
-    "seller_fee": "u64",
-    "transaction_hash": "H256"
+    "amount": "u128",
+    "price": "u128",
+    "buyer_fee": "u128",
+    "seller_fee": "u128",
+    "transaction_hash": "H256",
+    "transaction_time":"u64"
+  },
+  "MinerRewards": {
+    "miner": "H160",
+    "reward": "u128",
+    "transaction_volume": "u128",
+    "withdraw": "bool",
+    "era": "EraIndex"
+  },
+  "UnlockChunk": {
+    "value": "Balance",
+    "era": "EraIndex"
+  },
+  "DelegateTokenLedger": {
+    "target": "AccountId",
+    "amount": "Balance",
+    "claimed_rewards": "Balance",
+    "claimed_nft_rewards": "Balance",
+    "withdraw": "bool",
+    "unlocking": "Vec<UnlockChunk>"
+  },
+  "DelegateTokenLedgers": {
+    "total": "Balance",
+    "pos_amount": "Balance",
+    "claimed_rewards": "Balance",
+    "claimed_nft_rewards": "Balance",
+    "ledgers": " Vec<DelegateTokenLedger>"
+  },
+  "ValidatorInfo": {
+    "total": "Balance",
+    "own": "Balance",
+    "others": "Balance",
+    "pos_amount": "Balance",
+    "commission": "Perbill"
+  },
+  "DelegateNftLedger": {
+    "own": "AccountId",
+    "target": "AccountId",
+    "unlocking": "i64",
+    "claimed_rewards": "Balance"
+  },
+  "ValidatorDetail": {
+    "validator": "AccountId",
+    "info": "ValidatorInfo"
   },
   "RoundInfo": {
     "current": "RoundIndex",

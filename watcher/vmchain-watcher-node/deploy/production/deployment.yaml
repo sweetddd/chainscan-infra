@@ -23,11 +23,36 @@ spec:
         ports:
         - containerPort: 7011
         env:
-          - name: CHAIN_WS_ENDPOINT
+          - name: DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: database-contribution
+                key: database-host
+          - name: DB_PORT
+            valueFrom:
+              secretKeyRef:
+                name: database-contribution
+                key: db-port
+          - name: DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: database-contribution
+                key: username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-contribution
+                key: password
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: database-contribution
+                key: db-name
+          - name: vmWeb3Url
             valueFrom:
               configMapKeyRef:
-                name: chainscan-node-config
-                key: chain-ws-endpoint
+                name: watcher-contribution-config
+                key: vm-web3-url
         resources:
           requests:
             cpu: 100m

@@ -19,15 +19,26 @@ class TransactionsService extends Service {
   }
 
 
-  base64(txt){
-
-    let monyer = new Array();
-    for(let i=0;i<txt.length;i++){
-      const s=txt.charCodeAt(i).toString(16);
-       monyer = monyer + new Array(5-String(s).length).join("0")+s;
+  hexToStr(hex, encoding) {
+    let trimedStr = hex.trim();
+    let rawStr = trimedStr.substr(0, 2).toLowerCase() === "0x" ? trimedStr.substr(2) : trimedStr;
+    let len = rawStr.length;
+    if (len % 2 !== 0) {
+      console.log("Illegal Format ASCII Code!");
+      return "";
     }
-    return monyer;
+    let curCharCode;
+    let resultStr = [];
+    for (let i = 0; i < len; i = i + 2) {
+      curCharCode = parseInt(rawStr.substr(i, 2), 16);
+      resultStr.push(curCharCode);
+    }
+    // encoding为空时默认为utf-8
+    let bytesView = new Uint8Array(resultStr);
+    let str = new TextDecoder(encoding).decode(bytesView);
+    return str;
   }
+
 
 
   /**
@@ -36,7 +47,6 @@ class TransactionsService extends Service {
      * @return
      */
   async addTransactionsDetail(block,tx) {
-
 
     let exitTransaction =  await this.getTransactionByHash(tx.transaction_hash);
     if(exitTransaction[0]) {
@@ -51,7 +61,7 @@ class TransactionsService extends Service {
       }
       let newTime = new Date(time);
       tx.transaction_time = newTime;
-      const addTxSql_Params = [ tx.transaction_hash,block.block_hash, block.block_height,tx.transaction_time,tx.buyer_address,tx.seller_address,tx.amount,tx.coin_symbol,tx.price,tx.buyer_fee,tx.seller_fee,tx.amount,'CPoS'];
+      const addTxSql_Params = [ tx.transaction_hash,block.block_hash, block.block_height,tx.transaction_time,tx.buyer_address,tx.seller_address,tx.amount,this.hexToStr(tx.coin_symbol),tx.price,tx.buyer_fee,tx.seller_fee,tx.amount,'CPoS'];
       await this.app.mysql.query(addTxSql, addTxSql_Params, function(err, result) {
         if (err) {
           console.log('[INSERT SUBSCABTX ERROR] - ', err.message);
