@@ -19,7 +19,6 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.dao.*;
-import ai.everylink.chainscan.watcher.entity.AccountContractBalance;
 import ai.everylink.chainscan.watcher.entity.Block;
 import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.entity.TransactionLog;
@@ -35,9 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.web3j.abi.TypeDecoder;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.Log;
@@ -46,7 +42,6 @@ import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -72,15 +67,6 @@ public class EvmDataServiceImpl implements EvmDataService {
 
     @Autowired
     private TransactionLogDao transactionLogDao;
-
-    @Autowired
-    private AccountDao accountDao;
-
-    @Autowired
-    private AccountContractBalanceDao accountContractBalanceDao;
-
-    @Autowired
-    private ContractDao contractDao;
 
     @PostConstruct
     private void initWeb3j() {
@@ -137,10 +123,6 @@ public class EvmDataServiceImpl implements EvmDataService {
             log.info("[save]block={},logs saved,size={}", data.getBlock().getNumber(), logList.size());
         }
 
-//        if (!CollectionUtils.isEmpty(txList)) {
-//            updateContractBalance(txList);
-//            log.info("[save]block={},balanced saved.", data.getBlock().getNumber());
-//        }
     }
 
     private Block buildBlock(EvmData data, int chainId) {
@@ -255,54 +237,6 @@ public class EvmDataServiceImpl implements EvmDataService {
         return gson.toJson(obj);
     }
 
-
-    /**
-     * 更新账户余额
-     * @param txList
-     */
-    private void updateContractBalance(List<Transaction> txList) {
-        for (Transaction tx : txList) {
-            if (StringUtils.equalsIgnoreCase("0x", tx.getInput())) {
-                log.info("not contract.blockNum={},tx_hash={}", tx.getBlockNumber(), tx.getTransactionHash());
-                continue;
-            }
-
-            String method = tx.getInputMethod();
-            String params = tx.getInputParams();
-            if (StringUtils.isEmpty(method) || StringUtils.isEmpty(params)) {
-                log.info("method or params is null.block={},tx_hash={}", tx.getBlockNumber(), tx.getTransactionHash());
-                continue;
-            }
-
-            InputParam inputParam = parseInputParam(tx.getInput());
-
-            if (StringUtils.containsIgnoreCase(method, "transfer")) {
-                String fromAddr = tx.getFromAddr();
-                String contractAddr = tx.getToAddr();
-                String toAddr = inputParam.addr;
-                Long amount = inputParam.amount;
-                boolean decFlag = decreaseAccountAmount(fromAddr, contractAddr, amount);
-                boolean incFlag = increaseAccountAmount(toAddr, contractAddr, amount);
-                log.info("transfer called.block={},tx={},dec={},inc={}",
-                        tx.getBlockNumber(), tx.getTransactionHash(), decFlag, incFlag);
-            } else if (StringUtils.containsIgnoreCase(method, "mint")) {
-                String contractAddr = tx.getToAddr();
-                String addr = inputParam.addr;
-                Long amount = inputParam.amount;
-                boolean incFlag = increaseAccountAmount(addr, contractAddr, amount);
-                log.info("mint called.block={},tx={},inc={}",
-                        tx.getBlockNumber(), tx.getTransactionHash(), incFlag);
-            } else if (StringUtils.containsIgnoreCase(method, "burn")) {
-                String contractAddr = tx.getToAddr();
-                String addr = inputParam.addr;
-                Long amount = inputParam.amount;
-                boolean decFlag = decreaseAccountAmount(addr, contractAddr, amount);
-                log.info("burn called.block={},tx={},dec={}",
-                        tx.getBlockNumber(), tx.getTransactionHash(), decFlag);
-            }
-        }
-    }
-
     private void inputParams(Transaction tx) {
         String input = tx.getInput();
         if(input.length()> 10 && input.substring(0,2).equals("0x")){
@@ -319,51 +253,5 @@ public class EvmDataServiceImpl implements EvmDataService {
         }
     }
 
-    private boolean increaseAccountAmount(String addr, String contractAddr, Long amount) {
-        AccountContractBalance old = accountContractBalanceDao.getByAccountAddrAndContractAddr(addr, contractAddr);
-        if (old == null) {
-            old = new AccountContractBalance();
-            old.setAccountAddr(addr);
-            old.setContractAddr(contractAddr);
-            old.setBalance(amount);
-            old.setCreateTime(new Date());
-            accountContractBalanceDao.saveAndFlush(old);
-
-            return true;
-        }
-        int rows = accountContractBalanceDao.increaseBalance(amount, addr, contractAddr);
-        return rows > 0;
-    }
-
-    private boolean decreaseAccountAmount(String addr, String contractAddr, Long amount) {
-        AccountContractBalance old = accountContractBalanceDao.getByAccountAddrAndContractAddr(addr, contractAddr);
-        if (old == null) {
-            log.error("decrease failure,no record found.addr={},contractAddr={}", addr, contractAddr);
-            return false;
-        }
-
-        int rows = accountContractBalanceDao.decreaseBalance(amount, addr, contractAddr);
-        return rows > 0;
-    }
-
-
-    private InputParam parseInputParam(String inputData) {
-        // String method = inputData.substring(0, 10);
-        String to    = inputData.substring(10, 74);
-        String value = inputData.substring(74);
-        Method refMethod;
-        try {
-            refMethod = TypeDecoder.class.getDeclaredMethod("decode", String.class, int.class, Class.class);
-            refMethod.setAccessible(true);
-            Address address = (Address) refMethod.invoke(null, to, 0, Address.class);
-            Uint256 amount = (Uint256) refMethod.invoke(null, value, 0, Uint256.class);
-
-            return new InputParam(address.toString(), amount.getValue().longValue());
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-
-        return null;
-    }
 }
 

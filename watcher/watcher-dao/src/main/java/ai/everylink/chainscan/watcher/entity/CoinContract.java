@@ -4,7 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 
-@Table(name = "coin_contract")
+@Table(name = "token_contract")
 @Entity
 @Data
 public class CoinContract {

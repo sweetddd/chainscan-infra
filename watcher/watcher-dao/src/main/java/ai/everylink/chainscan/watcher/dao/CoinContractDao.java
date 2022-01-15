@@ -32,9 +32,9 @@ import java.util.List;
  */
 public interface CoinContractDao extends JpaRepository<CoinContract, String> {
 
-    @Query(value = "select * from coin_contract where  chain_id=:chainId", nativeQuery = true)
+    @Query(value = "select * from token_contract where  chain_id=:chainId", nativeQuery = true)
     public List<CoinContract> selectByChainId(@Param("chainId") Long chainId);
 
-    @Query(value = "select * from coin_contract where  name=:coinNam", nativeQuery = true)
+    @Query(value = "select * from token_contract where  name=:coinNam", nativeQuery = true)
     public List<CoinContract> selectByName(String coinNam);
 }

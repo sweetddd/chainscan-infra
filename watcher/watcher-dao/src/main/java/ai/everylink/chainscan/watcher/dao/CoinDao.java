@@ -38,7 +38,7 @@ public interface CoinDao extends JpaRepository<Coin, String> {
      * @param totalSupply
      * @param name
      */
-    @Query(value = "update coin set total_supply =(?1) where name=(?2)", nativeQuery = true)
+    @Query(value = "update token set total_supply =(?1) where name=(?2)", nativeQuery = true)
     @Modifying
     @Transactional
     public void updateTotalSupply(BigInteger totalSupply, String name);
@@ -48,7 +48,7 @@ public interface CoinDao extends JpaRepository<Coin, String> {
      * @param totalLockAmount
      * @param name
      */
-    @Query(value = "update coin set total_lock_amount =(?1) where name=(?2)", nativeQuery = true)
+    @Query(value = "update token set total_lock_amount =(?1) where name=(?2)", nativeQuery = true)
     @Modifying
     @Transactional
     public void updateTotalLockAmount(BigInteger totalLockAmount, String name);
@@ -58,7 +58,7 @@ public interface CoinDao extends JpaRepository<Coin, String> {
      * @param totalBurntAmount
      * @param name
      */
-    @Query(value = "update coin set total_burnt_amount =(?1) where name=(?2)", nativeQuery = true)
+    @Query(value = "update token set total_burnt_amount =(?1) where name=(?2)", nativeQuery = true)
     @Modifying
     @Transactional
     public void burntAmount(BigInteger totalBurntAmount, String name);
@@ -68,7 +68,7 @@ public interface CoinDao extends JpaRepository<Coin, String> {
      * @param balance
      * @param symbol
      */
-    @Query(value = "update coin set l2_lock_amount =(?1) where symbol=(?2)", nativeQuery = true)
+    @Query(value = "update token set l2_lock_amount =(?1) where symbol=(?2)", nativeQuery = true)
     @Modifying
     @Transactional
     public void updateL2LockAmount(String balance,String symbol) ;
@@ -78,7 +78,7 @@ public interface CoinDao extends JpaRepository<Coin, String> {
      * @param l1LockAmount
      * @param l1Symbol
      */
-    @Query(value = "update coin set l1_lock_amount =(?1) where symbol=(?2)", nativeQuery = true)
+    @Query(value = "update token set l1_lock_amount =(?1) where symbol=(?2)", nativeQuery = true)
     @Modifying
     @Transactional
     public void updateL1LockAmount(String l1LockAmount, String l1Symbol);
