@@ -1,0 +1,185 @@
+{
+  "Keys": "(AccountId32,AccountId32,AccountId32,AccountId32)",
+  "AccountId": "EthereumAccountId",
+  "efCount": "u32",
+  "Address": "MultiAddress",
+  "SolutionVoterIndexOf": "u32",
+  "&'static[VoteWeight]": "u64",
+  "RefCount": "u32",
+  "AccountInfo": {
+    "nonce": "u32",
+    "sufficients": "RefCount",
+    "consumers": "RefCount",
+    "providers": "RefCount",
+    "data": "AccountData"
+  },
+  "AccountData": {
+    "free": "Balance",
+    "reserved": "Balance",
+    "fee_frozen": "Balance",
+    "misc_frozen": "Balance"
+  },
+  "LookupSource": "MultiAddress",
+  "Balance": "u128",
+  "AuthorId": "AccountId",
+  "Account": {
+    "nonce": "U256",
+    "balance": "u128"
+  },
+  "ExtrinsicSignature": "EthereumSignature",
+  "RoundIndex": "u32",
+  "Candidate": {
+    "id": "AccountId",
+    "fee": "Perbill",
+    "bond": "Balance",
+    "nominators": "Vec<Bond>",
+    "total": "Balance",
+    "state": "CollatorStatus"
+  },
+  "Nominator": {
+    "nominations": "Vec<Bond>",
+    "total": "Balance"
+  },
+  "Bond": {
+    "owner": "AccountId",
+    "amount": "Balance"
+  },
+  "CollatorStatus": {
+    "_enum": [
+      "Active",
+      "Idle",
+      {
+        "Leaving": "RoundIndex"
+      }
+    ]
+  },
+  "TxPoolResultContent": {
+    "pending": "HashMap<H160, HashMap<U256, PoolTransaction>>",
+    "queued": "HashMap<H160, HashMap<U256, PoolTransaction>>"
+  },
+  "TxPoolResultInspect": {
+    "pending": "HashMap<H160, HashMap<U256, Summary>>",
+    "queued": "HashMap<H160, HashMap<U256, Summary>>"
+  },
+  "TxPoolResultStatus": {
+    "pending": "U256",
+    "queued": "U256"
+  },
+  "Summary": "Bytes",
+  "PoolTransaction": {
+    "hash": "H256",
+    "nonce": "U256",
+    "block_hash": "Option<H256>",
+    "block_number": "Option<U256>",
+    "from": "H160",
+    "to": "Option<H160>",
+    "value": "U256",
+    "gas_price": "U256",
+    "gas": "U256",
+    "input": "Bytes"
+  },
+  "Range": "RangeBalance",
+  "RangeBalance": {
+    "min": "Balance",
+    "ideal": "Balance",
+    "max": "Balance"
+  },
+  "RangePerbill": {
+    "min": "Perbill",
+    "ideal": "Perbill",
+    "max": "Perbill"
+  },
+  "InflationInfo": {
+    "expect": "RangeBalance",
+    "annual": "RangePerbill",
+    "round": "RangePerbill"
+  },
+  "OrderedSet": "Vec<Bond>",
+  "Collator": {
+    "id": "AccountId",
+    "bond": "Balance",
+    "nominators": "Vec<Bond>",
+    "total": "Balance",
+    "state": "CollatorStatus"
+  },
+  "CollatorSnapshot": {
+    "bond": "Balance",
+    "nominators": "Vec<Bond>",
+    "total": "Balance"
+  },
+  "SystemInherentData": {
+    "validation_data": "PersistedValidationData",
+    "relay_chain_state": "StorageProof",
+    "downward_messages": "Vec<InboundDownwardMessage>",
+    "horizontal_messages": "BTreeMap<ParaId, Vec<InboundHrmpMessage>>"
+  },
+  "ContributionBlock": {
+    "block_height": "u64",
+    "difficulty": "u128",
+    "blocked_fee": "u128",
+    "start_time": "u64",
+    "block_hash": "H256",
+    "transaction_count": "u64",
+    "transactions": "Vec<ContributionTransaction>"
+  },
+  "ContributionTransaction": {
+    "coin_symbol": "Vec<u8>",
+    "transaction_type": "Vec<u8>",
+    "buyer_address": "H160",
+    "seller_address": "H160",
+    "amount": "u128",
+    "price": "u128",
+    "buyer_fee": "u128",
+    "seller_fee": "u128",
+    "transaction_hash": "H256",
+    "transaction_time":"u64"
+  },
+  "MinerRewards": {
+    "miner": "H160",
+    "reward": "u128",
+    "transaction_volume": "u128",
+    "withdraw": "bool",
+    "era": "EraIndex"
+  },
+  "UnlockChunk": {
+    "value": "Balance",
+    "era": "EraIndex"
+  },
+  "DelegateTokenLedger": {
+    "target": "AccountId",
+    "amount": "Balance",
+    "claimed_rewards": "Balance",
+    "claimed_nft_rewards": "Balance",
+    "withdraw": "bool",
+    "unlocking": "Vec<UnlockChunk>"
+  },
+  "DelegateTokenLedgers": {
+    "total": "Balance",
+    "pos_amount": "Balance",
+    "claimed_rewards": "Balance",
+    "claimed_nft_rewards": "Balance",
+    "ledgers": " Vec<DelegateTokenLedger>"
+  },
+  "ValidatorInfo": {
+    "total": "Balance",
+    "own": "Balance",
+    "others": "Balance",
+    "pos_amount": "Balance",
+    "commission": "Perbill"
+  },
+  "DelegateNftLedger": {
+    "own": "AccountId",
+    "target": "AccountId",
+    "unlocking": "i64",
+    "claimed_rewards": "Balance"
+  },
+  "ValidatorDetail": {
+    "validator": "AccountId",
+    "info": "ValidatorInfo"
+  },
+  "RoundInfo": {
+    "current": "RoundIndex",
+    "first": "BlockNumber",
+    "length": "u32"
+  }
+}
