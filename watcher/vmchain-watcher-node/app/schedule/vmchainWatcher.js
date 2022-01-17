@@ -10,7 +10,7 @@ const { hexToU8a, isHex, stringToU8a,hexToBn,numberToHex } =  require('@polkadot
 
 const vmWeb3Url = process.env.vmWeb3Url;
 const wsProvider = new HttpProvider(vmWeb3Url);
-let context = fs.readFileSync('./../../config/types.json');
+let context = fs.readFileSync('./config/types.json');
 
 const typesData = JSON.parse(context);
 
