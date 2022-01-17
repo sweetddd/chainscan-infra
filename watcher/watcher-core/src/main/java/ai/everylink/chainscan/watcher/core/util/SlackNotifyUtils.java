@@ -20,7 +20,7 @@ public final class SlackNotifyUtils {
 
     private SlackNotifyUtils() {}
 
-    private static int MAX_MSG_LEN = 20000;
+    public static int MAX_MSG_LEN = 20000;
 
     /**
      * slack通知发送结果
