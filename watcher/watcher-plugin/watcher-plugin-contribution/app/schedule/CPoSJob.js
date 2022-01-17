@@ -12,7 +12,7 @@ const feeAccountPrivateKey = process.env.feeAccountPrivateKey;
 
 
 const wsProvider = new HttpProvider(process.env.vmWeb3Url);
-let context = fs.readFileSync('./../../config/types.json');
+let context = fs.readFileSync('./config/types.json');
 
 const typesData = JSON.parse(context);
 
