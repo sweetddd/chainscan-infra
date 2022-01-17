@@ -16,6 +16,8 @@ spec:
       containers:
       - name: $APP_NAME-sandbox
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
+        command: [ "/bin/sh", "-c", "--" ]
+        args: [ "npm run start" ]
         volumeMounts:
         - name: host-time
           mountPath: /etc/localtime
