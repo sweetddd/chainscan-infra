@@ -1,6 +1,8 @@
 package ai.everylink.chainscan.watcher.core.util;
 
 
+import org.springframework.util.StringUtils;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -18,10 +20,24 @@ public final class SlackNotifyUtils {
 
     private SlackNotifyUtils() {}
 
+    private static int MAX_MSG_LEN = 20000;
+
     /**
      * slack通知发送结果
      */
     public static class SlackNotifyResult {
+
+        public SlackNotifyResult() {}
+
+        public SlackNotifyResult(boolean success) {
+            this.success = success;
+        }
+
+        public SlackNotifyResult(boolean success, Throwable e) {
+            this.success = success;
+            this.e = e;
+        }
+
         /**
          * true - 发送成功
          * false - 发送失败
@@ -32,6 +48,28 @@ public final class SlackNotifyUtils {
          * 发送失败(success=false)时的异常信息
          */
         public Throwable e;
+    }
+
+    /**
+     * 发送slack通知
+     *
+     * @param slackWebhookUrl slack频道中配置的webhook url
+     * @param msg 要通知到额内容
+     * @return
+     */
+    public static SlackNotifyResult sendSlackNotificationWithRawText(String slackWebhookUrl, String msg) {
+        if (StringUtils.isEmpty(slackWebhookUrl)) {
+            return buildSlackNotifyResult(false, "slackWebhookUrl is null");
+        }
+        if (StringUtils.isEmpty(msg)) {
+            return buildSlackNotifyResult(false, "msg is null");
+        }
+        if (msg.length() >= MAX_MSG_LEN) {
+            return buildSlackNotifyResult(false, "msg's length is over " + MAX_MSG_LEN);
+        }
+
+        String json = "{\"text\":\"" + msg + "\"}";
+        return sendSlackNotification(slackWebhookUrl, json);
     }
 
     /**
@@ -77,5 +115,13 @@ public final class SlackNotifyUtils {
         }
 
         return result;
+    }
+
+    private static SlackNotifyResult buildSlackNotifyResult(boolean success, String errorMsg) {
+        if (success) {
+            return new SlackNotifyResult(true);
+        }
+
+        return new SlackNotifyResult(false, new IllegalArgumentException(errorMsg));
     }
 }

@@ -4,7 +4,7 @@ metadata:
   name: $APP_NAME-production
   namespace: paas
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: $APP_NAME-production
