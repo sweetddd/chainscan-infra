@@ -14,4 +14,4 @@ RUN npm install
 
 # 启动服务，默认挂载到7011端口
 EXPOSE 7011
-CMD ["npm", "run start"]
+CMD ["npm run start"]
