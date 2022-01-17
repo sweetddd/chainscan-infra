@@ -60,7 +60,7 @@ spec:
                 key: eth-web3-url
           - name: feeAccountPrivateKey
             valueFrom:
-              valueFrom:
+              configMapKeyRef:
                 name: watcher-contribution-config
                 key: fee-account-private-key
         resources:
