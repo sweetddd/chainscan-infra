@@ -22,47 +22,47 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 7011
-#        env:
-#          - name: DB_HOST
-#            valueFrom:
-#              secretKeyRef:
-#                name: database-contribution
-#                key: url
-#          - name: DB_PORT
-#            valueFrom:
-#              secretKeyRef:
-#                name: database-contribution
-#                key: port
-#          - name: DB_USERNAME
-#            valueFrom:
-#              secretKeyRef:
-#                name: database-contribution
-#                key: username
-#          - name: DB_PASSWORD
-#            valueFrom:
-#              secretKeyRef:
-#                name: database-contribution
-#                key: password
-#          - name: DB_NAME
-#            valueFrom:
-#              secretKeyRef:
-#                name: database-contribution
-#                key: db-name
-#          - name: vmWeb3Url
-#            valueFrom:
-#              configMapKeyRef:
-#                name: watcher-contribution-config
-#                key: vm-web3-url
-#          - name: ethWeb3Url
-#            valueFrom:
-#              configMapKeyRef:
-#                name: watcher-contribution-config
-#                key: eth-web3-url
-#          - name: feeAccountPrivateKey
-#            valueFrom:
-#              valueFrom:
-#                name: watcher-contribution-config
-#                key: fee-account-private-key
+        env:
+          - name: DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: database-contribution
+                key: url
+          - name: DB_PORT
+            valueFrom:
+              secretKeyRef:
+                name: database-contribution
+                key: port
+          - name: DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: database-contribution
+                key: username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-contribution
+                key: password
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: database-contribution
+                key: db-name
+          - name: vmWeb3Url
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-contribution-config
+                key: vm-web3-url
+          - name: ethWeb3Url
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-contribution-config
+                key: eth-web3-url
+          - name: feeAccountPrivateKey
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-contribution-config
+                key: fee-account-private-key
         resources:
           requests:
             cpu: 100m
