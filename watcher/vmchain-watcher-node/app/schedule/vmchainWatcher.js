@@ -37,6 +37,7 @@ async function scanBlock(ctx,api){
     if(!maxBlockNumber){
         maxBlockNumber = 1;
     }
+    console.log(maxBlockNumber+"maxBlockNumber is ")
     await baseBlock(ctx,api,maxBlockNumber);
     await baseBlock(ctx,api,maxBlockNumber+1);
 
@@ -46,6 +47,7 @@ async function baseBlock(ctx,api,maxBlockNumber){
 
 
     let newBlock =  await api.query.cposContribution.contributionBlocks(maxBlockNumber);
+
     console.log(newBlock.toString())
     if(!newBlock.toString()){
         console.log("no mobi data")
