@@ -33,6 +33,8 @@ module.exports = {
 
 
 async function scanBlock(ctx,api){
+    console.log(3);
+
     let maxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
     if(!maxBlockNumber){
         maxBlockNumber = 1;
@@ -73,11 +75,15 @@ async function baseBlock(ctx,api,maxBlockNumber){
 
 async function vmchainWatcher(ctx) {
 
+    console.log(1);
+    console.log(vmWeb3Url);
     // Create our API with a default connection to the local node
     const api = await ApiPromise.create({
         provider: wsProvider,
         types: typesData,
     });
+    console.log(2);
+
 // numberToHex(0x1234, 32); // => 0x00001234
     await scanBlock(ctx,api);
 
