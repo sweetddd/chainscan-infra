@@ -20,7 +20,7 @@ const typesData = JSON.parse(context);
 module.exports = {
     schedule: {
         interval: '5s', // 1 分钟间隔
-        type: 'all', // 指定所有的 worker 都需要执行
+        type: 'worker', // 指定所有的 worker 都需要执行
     },
     async task(ctx) {
         console.log(vmchainWatcher(ctx))
@@ -36,6 +36,7 @@ async function scanBlock(ctx,api){
     console.log(3);
 
     let maxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
+    console.log(maxBlockNumber+"maxBlockNumber is ")
     if(!maxBlockNumber){
         maxBlockNumber = 1;
     }
