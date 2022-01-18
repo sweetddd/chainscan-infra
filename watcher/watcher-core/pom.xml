@@ -180,5 +180,16 @@
             <artifactId>polkaj-tx</artifactId>
             <version>0.5.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.slack.api</groupId>
+            <artifactId>bolt</artifactId>
+            <version>1.16.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.slack.api</groupId>
+            <artifactId>bolt-servlet</artifactId>
+            <version>1.16.1</version>
+        </dependency>
     </dependencies>
 </project>
