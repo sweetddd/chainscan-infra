@@ -39,6 +39,12 @@ class TransactionsService extends Service {
     return str;
   }
 
+  async sumVolume(startHeight ,endHeight) {
+    const res = await this.database.query(`select  sum(amount*price) from  ${TABLE} where chain_type = 'CPoS' and block_number > ? and block_number < ?`,[startHeight,endHeight]);
+    return res;
+  }
+
+
 
 
   /**

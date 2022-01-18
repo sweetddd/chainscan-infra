@@ -23,7 +23,7 @@ module.exports = {
         type: 'worker', // 指定所有的 worker 都需要执行
     },
     async task(ctx) {
-        console.log(vmchainWatcher(ctx))
+        vmchainWatcher(ctx)
     },
 
 
@@ -33,14 +33,11 @@ module.exports = {
 
 
 async function scanBlock(ctx,api){
-    console.log(3);
 
     let maxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
-    console.log(maxBlockNumber+"maxBlockNumber is ")
     if(!maxBlockNumber){
         maxBlockNumber = 1;
     }
-    console.log(maxBlockNumber+"maxBlockNumber is ")
     await baseBlock(ctx,api,maxBlockNumber);
     await baseBlock(ctx,api,maxBlockNumber+1);
 
@@ -51,20 +48,24 @@ async function baseBlock(ctx,api,maxBlockNumber){
 
     let newBlock =  await api.query.cposContribution.contributionBlocks(maxBlockNumber);
 
-    console.log(newBlock.toString())
     if(!newBlock.toString()){
         console.log("no mobi data")
     }else{
         let newBlockJson = JSON.parse(newBlock.toString());
         let blockTime = newBlockJson.start_time.toString();
-        console.log(blockTime)
+
 
         if(blockTime.length == 10){
             blockTime = blockTime +"000"
         }
-        let newTime = new Date(blockTime);
+        let newTime = new Date(parseInt(blockTime));
+        if (blockTime == 0){
+            newTime = new Date();
+        }
+
         newBlockJson.start_time = newTime;
-        await ctx.service.blocks.addBlock(newBlockJson);
+
+        await ctx.service.blocks.addBlock(newBlockJson,ctx);
         for(let tx in newBlockJson.transactions){
             await ctx.service.transactions.addTransactionsDetail(newBlockJson,newBlockJson.transactions[tx]);
         }
@@ -76,14 +77,11 @@ async function baseBlock(ctx,api,maxBlockNumber){
 
 async function vmchainWatcher(ctx) {
 
-    console.log(1);
-    console.log(vmWeb3Url);
     // Create our API with a default connection to the local node
     const api = await ApiPromise.create({
         provider: wsProvider,
         types: typesData,
     });
-    console.log(2);
 
 // numberToHex(0x1234, 32); // => 0x00001234
     await scanBlock(ctx,api);
