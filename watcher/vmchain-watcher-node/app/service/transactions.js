@@ -40,7 +40,7 @@ class TransactionsService extends Service {
   }
 
   async sumVolume(startHeight ,endHeight) {
-    const res = await this.database.query(`select  sum(amount*price) from  ${TABLE} where chain_type = 'CPoS' and block_number > ? and block_number < ?`,[startHeight,endHeight]);
+    const res = await this.database.query(`select  sum(value) from  ${TABLE} where chain_type = 'CPoS' and block_number > ? and block_number < ?`,[startHeight,endHeight]);
     return res;
   }
 
@@ -67,7 +67,7 @@ class TransactionsService extends Service {
       }
       let newTime = new Date(time);
       tx.transaction_time = newTime;
-      const addTxSql_Params = [ tx.transaction_hash,block.block_hash, block.block_height,tx.transaction_time,tx.buyer_address,tx.seller_address,tx.amount,this.hexToStr(tx.coin_symbol),tx.price,tx.buyer_fee,tx.seller_fee,tx.amount,'CPoS'];
+      const addTxSql_Params = [ tx.transaction_hash,block.block_hash, block.block_height,tx.transaction_time,tx.buyer_address,tx.seller_address,tx.transaction_volume,this.hexToStr(tx.coin_symbol),tx.price,tx.buyer_fee,tx.seller_fee,tx.amount,'CPoS'];
       await this.app.mysql.query(addTxSql, addTxSql_Params, function(err, result) {
         if (err) {
           console.log('[INSERT SUBSCABTX ERROR] - ', err.message);

@@ -79,7 +79,7 @@ class BlockService extends Service {
         let dividendRecord = {
           "mining_details":mining_details,
           "earnings":earnings[0]['sum(block_fee)'],
-          "volume":volume[0]['sum(amount*price)'],
+          "volume":volume[0]['sum(value)'],
           "transactions":transactions[0]['sum(tx_size)'],
           "mining_earnings":50,
           "time":block.start_time,

@@ -132,7 +132,8 @@
     "buyer_fee": "u128",
     "seller_fee": "u128",
     "transaction_hash": "H256",
-    "transaction_time":"u64"
+    "transaction_time":"u64",
+    "transaction_volume":"u128"
   },
   "MinerRewards": {
     "miner": "H160",
