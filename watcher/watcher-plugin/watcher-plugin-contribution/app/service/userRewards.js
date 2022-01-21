@@ -23,9 +23,13 @@ class UserRewardService extends Service {
         ') VALUES(?,?,?,?,?,?)';
     const reward = ethers.utils.formatUnits(
         rewards.reward.toString(),
-        decimals || 18
+         18
     )
-    const addTxSql_Params = [rewards.miner,rewards.era,reward,rewards.transaction_volume,rewards.withdraw,new Date()];
+    const transaction_volume = ethers.utils.formatUnits(
+        rewards.transaction_volume.toString(),
+         6
+    )
+    const addTxSql_Params = [rewards.miner,rewards.era,reward,transaction_volume,rewards.withdraw,new Date()];
     await this.app.mysql.query(addTxSql, addTxSql_Params, function(err, result) {
       if (err) {
         console.log('[INSERT SUBSCABTX ERROR] - ', err.message);
