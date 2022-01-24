@@ -7,7 +7,7 @@ import javax.persistence.*;
 @Table(name = "token_contract")
 @Entity
 @Data
-public class CoinContract {
+public class TokenContract {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

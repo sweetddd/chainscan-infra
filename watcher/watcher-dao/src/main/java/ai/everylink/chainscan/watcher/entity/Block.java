@@ -21,6 +21,7 @@ package ai.everylink.chainscan.watcher.entity;
 import lombok.Data;
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 
 /**
@@ -78,10 +79,10 @@ public class Block {
     private Integer blockSize;
 
     @Column(name = "gas_used")
-    private Integer gasUsed;
+    private BigInteger gasUsed;
 
     @Column(name = "gas_limit")
-    private Integer gasLimit;
+    private BigInteger gasLimit;
 
     @Column(name = "extra_data")
     private String extraData;

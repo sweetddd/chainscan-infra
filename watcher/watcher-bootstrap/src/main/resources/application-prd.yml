@@ -43,10 +43,16 @@ cion:
   burntCoinNams: "MOBI"
   rewardCoinNams: "MOBI"
   pendingRewardCion: "MOBI"
-  chainIds: "1,99"
-  web3Urls: "https://mainnet.infura.io/v3/72f3a83ea86b41b191264bd16cbac2bf,http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
+  distributionReserveUnit: "USDT"
+  stakingReserveUnit: "MOBI"
+  bufferRewardsUnit: "MOBI"
+  chainIds: "4,97"
+  web3Urls: "http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf,http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
+evm:
+  vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
 cinfigMap:
   mobiUrl: http://xapi.powx.io
   rinkebyUrl: http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
+  vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
 etherScanApi:
   key: RAWVEBW2RS6EEETNQ83ASVE972E415G5C3

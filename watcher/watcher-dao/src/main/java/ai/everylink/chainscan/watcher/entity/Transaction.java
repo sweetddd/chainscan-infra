@@ -39,6 +39,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 
 /**
@@ -90,13 +91,13 @@ public class Transaction {
     private String value;
 
     @Column(name = "tx_fee")
-    private Integer txFee;
+    private String txFee;
 
     @Column(name = "gas_used")
-    private Integer gasUsed;
+    private BigInteger gasUsed;
 
     @Column(name = "gas_limit")
-    private Integer gasLimit;
+    private BigInteger gasLimit;
 
     @Column(name = "gas_price")
     private String gasPrice;
@@ -140,6 +141,8 @@ public class Transaction {
     @Column(name = "token_tag")
     private Integer tokenTag;
 
+    @Column(name = "chain_type")
+    private String chainType;
 }
 
 

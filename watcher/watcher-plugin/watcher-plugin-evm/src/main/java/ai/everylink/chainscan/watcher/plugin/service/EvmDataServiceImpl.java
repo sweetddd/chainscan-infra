@@ -57,6 +57,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class EvmDataServiceImpl implements EvmDataService {
 
+    private static final String CHAIN_TYPE = "frontier";
+
     private Web3j web3j;
 
     @Autowired
@@ -141,13 +143,15 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setDifficulty(data.getBlock().getDifficulty().toString());
         block.setTotalDifficulty(data.getBlock().getTotalDifficulty().toString());
         block.setBlockSize(data.getBlock().getSize().intValue());
-        block.setGasUsed(data.getBlock().getGasUsed().intValue());
-        block.setGasLimit(data.getBlock().getGasLimit().intValue());
+        block.setGasUsed(data.getBlock().getGasUsed());
+        block.setGasLimit(data.getBlock().getGasLimit());
         block.setExtraData(data.getBlock().getExtraData());
         block.setCreateTime(new Date());
         block.setBurnt("");
         block.setReward("");
         block.setValidator(data.getBlock().getMiner());
+        block.setChainType(CHAIN_TYPE);
+
         return block;
     }
 
@@ -165,7 +169,7 @@ public class EvmDataServiceImpl implements EvmDataService {
                 TransactionReceipt receipt = web3j.ethGetTransactionReceipt(item.getHash()).send().getResult();
                 if(receipt != null){
                    tx.setStatus(receipt.getStatus());
-                   tx.setTxFee(receipt.getGasUsed().intValue());
+                   tx.setTxFee(receipt.getGasUsed().toString());
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -183,8 +187,12 @@ public class EvmDataServiceImpl implements EvmDataService {
                 tx.setToAddr(item.getTo());
             }
             tx.setValue(item.getValue().toString());
-            tx.setGasLimit(item.getGasPrice().intValue()*item.getGas().intValue()); // TODO
-            tx.setGasUsed(item.getGas().intValue());
+            tx.setGasLimit(item.getGas()); // TODO
+            if (item.getGasPrice() != null && item.getGas() != null) {
+                log.info("[save]price or gas is null. tx={}", item.getHash());
+                tx.setTxFee(item.getGasPrice().multiply(item.getGas()).toString());
+            }
+            tx.setGasUsed(item.getGas());
             tx.setGasPrice(item.getGasPrice().toString());
             tx.setNonce(item.getNonce().toString());
             tx.setInput(item.getInput());
@@ -194,6 +202,7 @@ public class EvmDataServiceImpl implements EvmDataService {
                 tx.setTxType(1);
             }
             tx.setCreateTime(new Date());
+            tx.setChainType(CHAIN_TYPE);
             inputParams(tx);
             txList.add(tx);
         }

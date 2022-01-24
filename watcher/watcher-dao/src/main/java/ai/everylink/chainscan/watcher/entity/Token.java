@@ -10,7 +10,7 @@ import javax.persistence.Table;
 @Table(name = "token")
 @Entity
 @Data
-public class Coin {
+public class Token {
     @Id
     @Column(name = "name", nullable = false)
     private String name;
