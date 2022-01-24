@@ -12,7 +12,9 @@
     "egg-cors": "^2.2.3",
     "egg-mysql": "^3.0.0",
     "egg-scripts": "^2.11.0",
-    "request": "^2.88.2"
+    "ethers": "^5.5.3",
+    "request": "^2.88.2",
+    "zksync": "^0.11.1"
   },
   "devDependencies": {
     "autod": "^3.0.1",
@@ -28,9 +30,9 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "start": "egg-scripts start --daemon --title=egg-server-",
+    "start": "egg-scripts start --port=7011 --title=egg-server-",
     "stop": "egg-scripts stop --title=egg-server-",
-    "dev": "egg-bin dev",
+    "dev": "egg-bin --port=7011 dev",
     "debug": "egg-bin debug",
     "test": "npm run lint -- --fix && npm run test-local",
     "test-local": "egg-bin test",

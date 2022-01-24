@@ -4,7 +4,7 @@ metadata:
   name: $APP_NAME-sandbox
   namespace: paas
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: $APP_NAME-sandbox
@@ -16,34 +16,15 @@ spec:
       containers:
       - name: $APP_NAME-sandbox
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
+        command: [ "/bin/sh", "-c", "--" ]
+        args: [ "npm run start" ]
         volumeMounts:
         - name: host-time
           mountPath: /etc/localtime
         imagePullPolicy: IfNotPresent
-        command: ["/bin/sh", "-c", "--"]
-        args: ["while true; do npm run start; sleep 30; done;"]
         ports:
-        - containerPort: 7010
+        - containerPort: 7011
         env:
-          - name: CDN_HOST
-            valueFrom:
-              configMapKeyRef:
-                name: chainscan-backend-config
-                key: cdn-host
-          - name: TZ
-            value: GMT
-          - name: NODE_ENV
-            value: "sandbox"
-          - name: DB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-chainscan
-                key: password
-          - name: DB_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: database-chainscan
-                key: username
           - name: DB_HOST
             valueFrom:
               secretKeyRef:
@@ -54,18 +35,34 @@ spec:
               secretKeyRef:
                 name: database-chainscan
                 key: db-port
+          - name: DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: database-chainscan
+                key: username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-chainscan
+                key: password
           - name: DB_NAME
             valueFrom:
               secretKeyRef:
                 name: database-chainscan
                 key: db-name
+          - name: vmWeb3Url
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-contribution-config
+                key: vm-web3-url
+
         resources:
           requests:
-            cpu: 0.1
-            memory: 0.1Gi
+            cpu: 100m
+            memory: 1Gi
           limits:
-            cpu: 1
-            memory: 0.5Gi
+            cpu: '2'
+            memory: 4Gi
       volumes:
       - name: host-time
         hostPath:

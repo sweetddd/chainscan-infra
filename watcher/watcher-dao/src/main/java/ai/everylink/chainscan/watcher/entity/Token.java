@@ -77,4 +77,18 @@ public class Token {
 
     @Column(name = "icon_cache_id")
     private Long iconCacheId;
+
+    @Column(name = "total_lock_amount")
+    private String totalLockAmount;
+
+    @Column(name = "total_burnt_amount")
+    private String totalBurntAmount;
+
+    @Column(name = "l2_lock_amount")
+    private String l2LockAmount;
+
+    @Column(name = "l1_lock_amount")
+    private String l1LockAmount;
+
+
 }
