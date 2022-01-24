@@ -47,5 +47,6 @@ cion:
 cinfigMap:
   mobiUrl: http://xapi.powx.io
   rinkebyUrl: http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
+  vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
 etherScanApi:
   key: RAWVEBW2RS6EEETNQ83ASVE972E415G5C3

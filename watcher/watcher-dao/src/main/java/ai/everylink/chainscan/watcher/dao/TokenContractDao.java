@@ -17,7 +17,7 @@
 
 package ai.everylink.chainscan.watcher.dao;
 
-import ai.everylink.chainscan.watcher.entity.CoinContract;
+import ai.everylink.chainscan.watcher.entity.TokenContract;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,11 +30,11 @@ import java.util.List;
  * @author brett
  * @since 2021-12-14
  */
-public interface CoinContractDao extends JpaRepository<CoinContract, String> {
+public interface TokenContractDao extends JpaRepository<TokenContract, String> {
 
-    @Query(value = "select * from coin_contract where  chain_id=:chainId", nativeQuery = true)
-    public List<CoinContract> selectByChainId(@Param("chainId") Long chainId);
+    @Query(value = "select * from token_contract where  chain_id=:chainId", nativeQuery = true)
+    public List<TokenContract> selectByChainId(@Param("chainId") Long chainId);
 
-    @Query(value = "select * from coin_contract where  name=:coinNam", nativeQuery = true)
-    public List<CoinContract> selectByName(String coinNam);
+    @Query(value = "select * from token_contract where  name=:coinNam", nativeQuery = true)
+    public List<TokenContract> selectByName(String coinNam);
 }
