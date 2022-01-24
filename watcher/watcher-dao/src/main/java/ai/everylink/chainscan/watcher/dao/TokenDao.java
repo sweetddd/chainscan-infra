@@ -17,7 +17,7 @@
 
 package ai.everylink.chainscan.watcher.dao;
 
-import ai.everylink.chainscan.watcher.entity.Coin;
+import ai.everylink.chainscan.watcher.entity.Token;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -31,7 +31,7 @@ import java.math.BigInteger;
  * @author brett
  * @since 2021-12-14
  */
-public interface CoinDao extends JpaRepository<Coin, String> {
+public interface TokenDao extends JpaRepository<Token, String> {
 
     /**
      * 更新totalSupply

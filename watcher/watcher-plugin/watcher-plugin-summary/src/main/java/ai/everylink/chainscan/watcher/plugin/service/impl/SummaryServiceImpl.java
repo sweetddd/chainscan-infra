@@ -23,9 +23,9 @@ import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
 import ai.everylink.chainscan.watcher.core.util.httpUtil.HttpHeader;
 import ai.everylink.chainscan.watcher.core.util.httpUtil.HttpParamers;
 import ai.everylink.chainscan.watcher.core.util.httpUtil.HttpUtilService;
-import ai.everylink.chainscan.watcher.dao.CoinContractDao;
-import ai.everylink.chainscan.watcher.dao.CoinDao;
-import ai.everylink.chainscan.watcher.entity.CoinContract;
+import ai.everylink.chainscan.watcher.dao.TokenContractDao;
+import ai.everylink.chainscan.watcher.dao.TokenDao;
+import ai.everylink.chainscan.watcher.entity.TokenContract;
 import ai.everylink.chainscan.watcher.plugin.service.SummaryService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -96,7 +96,7 @@ public class SummaryServiceImpl implements SummaryService {
     private HashMap<Long, Web3j> web3jMap = new HashMap<Long, Web3j>();
 
     @Autowired
-    private CoinDao coinDao;
+    private TokenDao coinDao;
 
     @Autowired
     private VM30Utils vm30Utils;
@@ -106,7 +106,7 @@ public class SummaryServiceImpl implements SummaryService {
 
 
     @Autowired
-    private CoinContractDao coinContractDao;
+    private TokenContractDao coinContractDao;
 
     /**
      * 初始化web3j
@@ -150,11 +150,11 @@ public class SummaryServiceImpl implements SummaryService {
             initWeb3j();
         }
         HashMap<String, BigInteger> totalSupplyMap = new HashMap<>();
-        List<CoinContract>          all            = coinContractDao.findAll();
+        List<TokenContract>         all            = coinContractDao.findAll();
         for (Long chainId : chainIds) {
-            List<CoinContract> coinContracts = coinContractDao.selectByChainId(chainId);
-            Web3j              web3j         = web3jMap.get(chainId);
-            for (CoinContract coinContract : coinContracts) {
+            List<TokenContract> coinContracts = coinContractDao.selectByChainId(chainId);
+            Web3j               web3j         = web3jMap.get(chainId);
+            for (TokenContract coinContract : coinContracts) {
                 BigInteger totalSupply = vm30Utils.totalSupply(web3j, coinContract.getContractAddress());
 
                 if (totalSupplyMap.get(coinContract.getName()) == null) {
@@ -187,8 +187,8 @@ public class SummaryServiceImpl implements SummaryService {
         }
         HashMap<String, BigInteger> totalLockAmountMap = new HashMap<>();
         for (String coinNam : rewardCoinNams) {
-            List<CoinContract> coinContracts = coinContractDao.selectByName(coinNam);
-            for (CoinContract coinContract : coinContracts) {
+            List<TokenContract> coinContracts = coinContractDao.selectByName(coinNam);
+            for (TokenContract coinContract : coinContracts) {
                 Web3j      web3j           = web3jMap.get(coinContract.getChainId());
                 BigInteger totalLockAmount = vm30Utils.burnt(web3j, coinContract.getContractAddress());
                 if (totalLockAmountMap.get(coinContract.getName()) == null) {
@@ -212,8 +212,8 @@ public class SummaryServiceImpl implements SummaryService {
         }
         HashMap<String, BigInteger> totalLockAmountMap = new HashMap<>();
         for (String coinNam : burntCoinNams) {
-            List<CoinContract> coinContracts = coinContractDao.selectByName(coinNam);
-            for (CoinContract coinContract : coinContracts) {
+            List<TokenContract> coinContracts = coinContractDao.selectByName(coinNam);
+            for (TokenContract coinContract : coinContracts) {
                 Web3j      web3j           = web3jMap.get(coinContract.getChainId());
                 BigInteger totalLockAmount = vm30Utils.burnt(web3j, coinContract.getContractAddress());
                 if (totalLockAmountMap.get(coinContract.getName()) == null) {
@@ -236,8 +236,8 @@ public class SummaryServiceImpl implements SummaryService {
         }
         HashMap<String, BigInteger> totalLockAmountMap = new HashMap<>();
         for (String coinNam : lockCoinNams) {
-            List<CoinContract> coinContracts = coinContractDao.selectByName(coinNam);
-            for (CoinContract coinContract : coinContracts) {
+            List<TokenContract> coinContracts = coinContractDao.selectByName(coinNam);
+            for (TokenContract coinContract : coinContracts) {
                 Web3j      web3j           = web3jMap.get(coinContract.getChainId());
                 BigInteger totalLockAmount = vm30Utils.totalLockAmount(web3j, coinContract.getContractAddress());
                 if (totalLockAmountMap.get(coinContract.getName()) == null) {
