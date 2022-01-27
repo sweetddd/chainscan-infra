@@ -140,7 +140,9 @@
     "reward": "u128",
     "transaction_volume": "u128",
     "withdraw": "bool",
-    "era": "EraIndex"
+    "era": "EraIndex",
+    "fee": "u128"
+
   },
   "UnlockChunk": {
     "value": "Balance",
@@ -168,11 +170,22 @@
     "pos_amount": "Balance",
     "commission": "Perbill"
   },
+  "DelegateNftBook": {
+    "book": "Vec<DelegateNftTicker<AccountId>>"
+  },
+  "DelegateNftTicker": {
+    "target": "AccountId",
+    "token_id": "U256",
+    "lock": "EraIndex",
+    "unlock": "EraIndex"
+  },
   "DelegateNftLedger": {
     "own": "AccountId",
     "target": "AccountId",
-    "unlocking": "i64",
-    "claimed_rewards": "Balance"
+    "unlocking": "EraIndex",
+    "claimed_rewards": "Balance",
+    "amount":"Balance",
+    "release_era":"EraIndex"
   },
   "ValidatorDetail": {
     "validator": "AccountId",
