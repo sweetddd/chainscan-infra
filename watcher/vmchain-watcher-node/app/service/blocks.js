@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const Service = require('egg').Service;
 const TABLE = 'block';
-const dividend_block = 6;
+const dividend_block = 144;
 const { env } = require('process');
 
 class BlockService extends Service {
@@ -75,6 +75,8 @@ class BlockService extends Service {
         let mining_details = start_height + "-" + end_height;
         let earnings = await this.sumFees(start_height,end_height);
         let volume = await ctx.service.transactions.sumVolume(start_height,end_height);
+        console.log(start_height);
+        console.log(end_height);
         let transactions = await this.sumCount(start_height,end_height);
         let dividendRecord = {
           "mining_details":mining_details,
