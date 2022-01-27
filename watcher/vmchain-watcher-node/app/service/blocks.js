@@ -83,7 +83,7 @@ class BlockService extends Service {
           "earnings":earnings[0]['sum(block_fee)'],
           "volume":volume[0]['sum(value)'],
           "transactions":transactions[0]['sum(tx_size)'],
-          "mining_earnings":300,
+          "mining_earnings":50*dividend_block,
           "time":block.start_time,
           "burnt":0,
         }
