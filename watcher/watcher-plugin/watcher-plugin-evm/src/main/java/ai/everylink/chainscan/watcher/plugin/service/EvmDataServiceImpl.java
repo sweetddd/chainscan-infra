@@ -104,6 +104,47 @@ public class EvmDataServiceImpl implements EvmDataService {
         blockDao.updateBlockByHash(finalizedHash);
     }
 
+    @Override
+    public void processUnconfirmedVMBlocks(int childBlockNum) {
+        List<Block> blockList = blockDao.listUncomfirmedBlock();
+        if (CollectionUtils.isEmpty(blockList)) {
+            return;
+        }
+        if (blockList.size() <= childBlockNum) {
+            return;
+        }
+
+        for (int i = 0; i < blockList.size(); i++) {
+            int childNum = i + childBlockNum + 1;
+            if (childNum > blockList.size()) {
+                break;
+            }
+
+            boolean isLinked = isLinked(blockList.get(i), blockList.subList(i+1, childNum));
+            if (isLinked) {
+                log.info("[vm_confirm]confirmed.hash={}", blockList.get(i).getBlockHash());
+                blockDao.updateBlockStatus(0, blockList.get(i).getBlockNumber());
+            }
+        }
+    }
+
+    /**
+     * 能否成链
+     */
+    private boolean isLinked(Block parentBlock, List<Block> childBlockList) {
+        Block firstChild = childBlockList.get(0);
+        if (childBlockList.size() == 1) {
+            return parentBlock.getBlockHash().equalsIgnoreCase(firstChild.getParentHash());
+        }
+
+        if (parentBlock.getBlockHash().equalsIgnoreCase(firstChild.getParentHash())) {
+            return isLinked(firstChild, childBlockList.subList(1, childBlockList.size()));
+        }
+
+        return false;
+    }
+
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveEvmData(EvmData data) {
@@ -151,6 +192,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setReward("");
         block.setValidator(data.getBlock().getMiner());
         block.setChainType(CHAIN_TYPE);
+        block.setStatus(1);
 
         return block;
     }

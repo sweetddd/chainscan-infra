@@ -102,4 +102,6 @@ public class Block {
     @Column(name = "finalized")
     private int finalized;
 
+    @Column(name = "status")
+    private Integer status;
 }

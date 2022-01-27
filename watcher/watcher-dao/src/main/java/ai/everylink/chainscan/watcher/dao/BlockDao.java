@@ -79,4 +79,22 @@ public interface BlockDao extends JpaRepository<Block, Long> {
      */
     @Query(value = "select block_timestamp from block where chain_id=?1 order by block_number desc limit 1", nativeQuery = true)
     Date getMaxBlockCreationTime(int chainId);
+
+    /**
+     * 查询未确认区块列表。
+     * status=1表示未确认
+     * @return
+     */
+    @Query(value = "select * from block where chain_type='frontier' and status=1 order by block_number limit 100", nativeQuery = true)
+    List<Block> listUncomfirmedBlock();
+
+    /**
+     * 更新区块状态
+     * @param status
+     * @return
+     */
+    @Query(value = "update block set status=?1 where block_number=?2 and chain_type='frontier'", nativeQuery = true)
+    @Modifying
+    @Transactional
+    int updateBlockStatus(Integer status, Long blockNumber);
 }
