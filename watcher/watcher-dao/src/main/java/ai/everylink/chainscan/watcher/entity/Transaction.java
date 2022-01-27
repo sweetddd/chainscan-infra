@@ -72,6 +72,10 @@ public class Transaction {
     @Column(name = "chain_id")
     private Integer chainId;
 
+    /**
+     * 0x1 : success
+     * 0x0 : fail
+     */
     @Column(name = "status")
     private String status;
 
@@ -114,6 +118,10 @@ public class Transaction {
     @Column(name = "input_params")
     private String inputParams;
 
+    /**
+     * 1 - 合约交易
+     * 0 - 非合约交易
+     */
     @Column(name = "tx_type")
     private Integer txType;
 
