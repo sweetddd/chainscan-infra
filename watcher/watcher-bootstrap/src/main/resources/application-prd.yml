@@ -39,13 +39,13 @@ logging:
 
 cion:
   L1Symbol: "VMT"
-  lockCoinNams: "MOBI option,MOBI,VMT"
-  burntCoinNams: "MOBI"
-  rewardCoinNams: "MOBI"
-  pendingRewardCion: "MOBI"
+  lockCoinNams: "DNA option,DNA,VMT"
+  burntCoinNams: "DNA"
+  rewardCoinNams: "DNA"
+  pendingRewardCion: "DNA"
   distributionReserveUnit: "USDT"
-  stakingReserveUnit: "MOBI"
-  bufferRewardsUnit: "MOBI"
+  stakingReserveUnit: "DNA"
+  bufferRewardsUnit: "DNA"
   chainIds: "4,97"
   web3Urls: "http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf,http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
 evm:
