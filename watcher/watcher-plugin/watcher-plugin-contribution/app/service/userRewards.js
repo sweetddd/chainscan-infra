@@ -41,6 +41,11 @@ class UserRewardService extends Service {
     });
   }
 
+  async getMaxEra() {
+    const res = await this.app.mysql.query(`select max(era) from user_reward`);
+    return res[0]['max(era)'];
+  }
+
 
 }
 

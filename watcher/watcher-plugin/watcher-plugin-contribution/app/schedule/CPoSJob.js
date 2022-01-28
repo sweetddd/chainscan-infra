@@ -53,6 +53,32 @@ async function cPosWatcher(ctx) {
 // numberToHex(0x1234, 32); // => 0x00001234
 
 
+    let maxEra = await ctx.service.userRewards.getMaxEra();
+    if(!maxEra){
+        maxEra = 0;
+    }
+    console.log(maxEra);
+    let currentEra = await api.query.cposContribution.currentEra();
+    console.log(currentEra.words[0]);
+
+    if(!currentEra || currentEra < 1){
+        currentEra = 1;
+    }
+
+    if(currentEra > maxEra){
+        let eras = maxEra+1;
+        const rewardsKeys = await api.query.cposContribution.eraRewards.keys(eras);
+
+        rewardsKeys.map(async ({ args: [era, mining] }) => {
+            const rewards = await api.query.cposContribution.eraRewards(eras,mining);
+            const rewardsJson = JSON.parse(rewards.toString());
+            console.log(rewardsJson);
+            await ctx.service.userRewards.addUserReward(rewardsJson);
+
+        });
+
+    }
+
 
     // Subscribe to system events via storage
   await api.query.system.events(async events => {
@@ -75,18 +101,18 @@ async function cPosWatcher(ctx) {
           }
         });
       }else if (event.section.toString() === 'cposContribution' && event.method.toString() === 'Reward'){
-              const eras = event.data[0].toString();
-            const rewardsKeys = await api.query.cposContribution.eraRewards.keys(eras);
-
-            rewardsKeys.map(async ({ args: [era, mining] }) => {
-                    const rewards = await api.query.cposContribution.eraRewards(eras,mining);
-                    const rewardsJson = JSON.parse(rewards.toString());
-                    console.log(rewardsJson);
-                    await ctx.service.userRewards.addUserReward(rewardsJson);
-
-                    console.log(JSON.parse(rewards.toString()));
-
-            });
+            //   const eras = event.data[0].toString();
+            // const rewardsKeys = await api.query.cposContribution.eraRewards.keys(eras);
+            //
+            // rewardsKeys.map(async ({ args: [era, mining] }) => {
+            //         const rewards = await api.query.cposContribution.eraRewards(eras,mining);
+            //         const rewardsJson = JSON.parse(rewards.toString());
+            //         console.log(rewardsJson);
+            //         await ctx.service.userRewards.addUserReward(rewardsJson);
+            //
+            //         console.log(JSON.parse(rewards.toString()));
+            //
+            // });
 
        }
 

@@ -104,6 +104,47 @@ public class EvmDataServiceImpl implements EvmDataService {
         blockDao.updateBlockByHash(finalizedHash);
     }
 
+    @Override
+    public void processUnconfirmedVMBlocks(int childBlockNum) {
+        List<Block> blockList = blockDao.listUncomfirmedBlock();
+        if (CollectionUtils.isEmpty(blockList)) {
+            return;
+        }
+        if (blockList.size() <= childBlockNum) {
+            return;
+        }
+
+        for (int i = 0; i < blockList.size(); i++) {
+            int childNum = i + childBlockNum + 1;
+            if (childNum > blockList.size()) {
+                break;
+            }
+
+            boolean isLinked = isLinked(blockList.get(i), blockList.subList(i+1, childNum));
+            if (isLinked) {
+                log.info("[vm_confirm]confirmed.hash={}", blockList.get(i).getBlockHash());
+                blockDao.updateBlockStatus(0, blockList.get(i).getBlockNumber());
+            }
+        }
+    }
+
+    /**
+     * 能否成链
+     */
+    private boolean isLinked(Block parentBlock, List<Block> childBlockList) {
+        Block firstChild = childBlockList.get(0);
+        if (childBlockList.size() == 1) {
+            return parentBlock.getBlockHash().equalsIgnoreCase(firstChild.getParentHash());
+        }
+
+        if (parentBlock.getBlockHash().equalsIgnoreCase(firstChild.getParentHash())) {
+            return isLinked(firstChild, childBlockList.subList(1, childBlockList.size()));
+        }
+
+        return false;
+    }
+
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveEvmData(EvmData data) {
@@ -151,6 +192,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setReward("");
         block.setValidator(data.getBlock().getMiner());
         block.setChainType(CHAIN_TYPE);
+        block.setStatus(1);
 
         return block;
     }
@@ -165,43 +207,55 @@ public class EvmDataServiceImpl implements EvmDataService {
         for (EthBlock.TransactionResult result : data.getBlock().getTransactions()) {
             Transaction tx = new Transaction();
             org.web3j.protocol.core.methods.response.Transaction item                  = ((EthBlock.TransactionObject) result).get();
-            try {
-                TransactionReceipt receipt = web3j.ethGetTransactionReceipt(item.getHash()).send().getResult();
-                if(receipt != null){
-                   tx.setStatus(receipt.getStatus());
-                   tx.setTxFee(receipt.getGasUsed().toString());
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
             tx.setTransactionHash(item.getHash());
             tx.setBlockHash(item.getBlockHash());
             tx.setBlockNumber(item.getBlockNumber().longValue());
             tx.setChainId(chainId);
             tx.setTransactionIndex(item.getTransactionIndex().intValue());
-            tx.setFailMsg(""); // TODOdata = {EvmData@17780} "EvmData(chainId=4, block=org.web3j.protocol.core.methods.response.EthBlock$Block@c3e0a9e9, transactionLogMap={0x97b6ed17a2f463e0efd75fd4214dd5c660da74de466cee3285d836ade7a9cb0f=[Log{removed=false, logIndex='0x12', transactionIndex='0xf', transactionHash='0x97b6ed17a2f463e0efd75fd4214dd5c660da74de466cee3285d836ade7a9cb0f', blockHash='0xc9dc50cdbe476ba65bd06c659511f12833db9c47efe4c1565697790f5a6966c3', blockNumber='0x947e43', address='0xf91c814e4a51eeedac79405fa279351aaa04af5f', data='0x', type='null', topics=[0x9a2a6f18254a6b445277c4ccc7e79b71001a0a585ceb7b2ee101df78e5be36db, 0x00000000000000000000000015b7c5507a40d9cad51aed828b9e889d8d701738, 0x000000000000000000000000000000000000000000000000000000003baea1d0, 0x00000000000000000000000000000000000000000000000000000000000001f4]}, Log{removed=false, logIndex='0x13', transactionIndex='0xf', transactionHash='0x97b6ed17a2f463e0efd75fd4214dd5c660da74de466cee3285d836ade7a9cb0f', blockHash='0xc9dc50cdbe476ba65bd06c659511f12833db9c47efe4c15656977"… View
+            tx.setFailMsg("");
             tx.setTxTimestamp(convertTime(data.getBlock().getTimestamp().longValue()*1000));
             tx.setFromAddr(item.getFrom());
             if (Objects.nonNull(item.getTo())) {
                 tx.setToAddr(item.getTo());
             }
             tx.setValue(item.getValue().toString());
-            tx.setGasLimit(item.getGas()); // TODO
-            if (item.getGasPrice() != null && item.getGas() != null) {
-                log.info("[save]price or gas is null. tx={}", item.getHash());
-                tx.setTxFee(item.getGasPrice().multiply(item.getGas()).toString());
-            }
-            tx.setGasUsed(item.getGas());
+            tx.setGasLimit(item.getGas());
             tx.setGasPrice(item.getGasPrice().toString());
             tx.setNonce(item.getNonce().toString());
             tx.setInput(item.getInput());
             if (StringUtils.equalsIgnoreCase("0x", item.getInput())) {
-                tx.setTxType(0); // 1-合约交易 0-非合约交易
+                tx.setTxType(0);
             } else {
                 tx.setTxType(1);
             }
             tx.setCreateTime(new Date());
+
+            try {
+                TransactionReceipt receipt = web3j.ethGetTransactionReceipt(item.getHash()).send().getResult();
+                if(receipt != null){
+                    // status
+                    if (receipt.getStatus() != null &&
+                            ( receipt.getStatus().equalsIgnoreCase("1")
+                                    || receipt.getStatus().equalsIgnoreCase("0x1"))) {
+                        tx.setStatus("0x1");
+                    } else {
+                        tx.setStatus("0x0");
+                    }
+
+                    // gas fee
+                    if (receipt.getGasUsed() != null) {
+                        tx.setGasUsed(receipt.getGasUsed());
+                        if (item.getGasPrice() != null) {
+                            tx.setTxFee(item.getGasPrice().multiply(receipt.getGasUsed()).toString());
+                        }
+                    }
+                } else {
+                    log.info("[save]cannot get gas used and tx fee. txHash={}", item.getHash());
+                }
+            } catch (IOException e) {
+                log.error("[save]error occurred when query tx receipt. tx=" + item.getHash() + ",msg=" + e.getMessage(), e);
+            }
+
             tx.setChainType(CHAIN_TYPE);
             inputParams(tx);
             txList.add(tx);
