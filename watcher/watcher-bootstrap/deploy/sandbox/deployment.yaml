@@ -46,6 +46,28 @@ spec:
             value: "test"
           - name: TZ
             value: UTC
+          - name: "evm.chain.rinkebyUrl"
+            value: "http://vmchain-dev-node-0-sandbox.chain-sandbox.svc.cluster.local:9934"
+          - name: "nacos.config.server-addr"
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: nacos.config.server-addr
+          - name: "spring.datasource.url"
+            valueFrom:
+              secretKeyRef:
+                name: database-watcher
+                key: database-url
+          - name: "spring.datasource.username"
+            valueFrom:
+              secretKeyRef:
+                name: database-watcher
+                key: username
+          - name: "spring.datasource.password"
+            valueFrom:
+              secretKeyRef:
+                name: database-watcher
+                key: password
       volumes:
       - name: host-time
         hostPath:
