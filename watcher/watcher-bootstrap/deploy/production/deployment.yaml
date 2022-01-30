@@ -68,6 +68,31 @@ spec:
               secretKeyRef:
                 name: database-watcher
                 key: password
+          - name: "cion.web3Urls"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: cion.web3Urls
+          - name: "evm.vmChainUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: evm.vmChainUrl
+          - name: "cinfigMap.mobiUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: cinfigMap.mobiUrl
+          - name: "cinfigMap.rinkebyUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: cinfigMap.rinkebyUrl
+          - name: "cinfigMap.vmChainUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: cinfigMap.vmChainUrl
       volumes:
       - name: host-time
         hostPath:
