@@ -192,7 +192,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setReward("");
         block.setValidator(data.getBlock().getMiner());
         block.setChainType(CHAIN_TYPE);
-        block.setStatus(1);
+        block.setStatus(0);
 
         return block;
     }
