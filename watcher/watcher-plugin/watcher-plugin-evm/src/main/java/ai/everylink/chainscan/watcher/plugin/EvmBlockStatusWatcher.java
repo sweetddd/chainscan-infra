@@ -22,7 +22,6 @@ import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
 import com.google.common.collect.Lists;
-import com.mysql.cj.xdevapi.SchemaImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
