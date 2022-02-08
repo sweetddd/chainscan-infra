@@ -37,8 +37,8 @@ logging:
         ai.everylink.openapi.lottery: info
         ai.everylink.openapi: info
 coin:
-  L1Symbol: "VMT"
-  lockCoinNams: "DNA option,DNA,VMT"
+  L1Symbol: "DTX"
+  lockCoinNams: "DNA option,DNA,DTX"
   burntCoinNams: "DNA"
   rewardCoinNams: "DNA"
   pendingRewardCion: "DNA"

@@ -19,7 +19,7 @@ server:
 
 spring:
   profiles:
-    active: local
+    active: test
   main:
     allow-bean-definition-overriding: true
   application:
