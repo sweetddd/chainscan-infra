@@ -62,19 +62,19 @@ public class PendingRewardServiceImpl implements PendingRewardService {
 
     private Web3j web3j;
 
-    @Value("${cinfigMap.vmChainUrl:}")
+    @Value("${watcher.vmChainUrl:}")
     private String vmChainUrl;
 
-    @Value("${cion.pendingRewardCion:}")
+    @Value("${coin.pendingRewardCion:}")
     private String pendingRewardCion;
 
-    @Value("${cion.distributionReserveUnit:}")
+    @Value("${coin.distributionReserveUnit:}")
     private String distributionReserveUnit;
 
-    @Value("${cion.stakingReserveUnit:}")
+    @Value("${coin.stakingReserveUnit:}")
     private String stakingReserveUnit;
 
-    @Value("${cion.bufferRewardsUnit:}")
+    @Value("${coin.bufferRewardsUnit:}")
     private String bufferRewardsUnit;
 
     @Autowired

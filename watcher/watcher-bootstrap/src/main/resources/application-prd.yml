@@ -37,7 +37,7 @@ logging:
         ai.everylink.openapi.lottery: info
         ai.everylink.openapi: info
 
-cion:
+coin:
   L1Symbol: "VMT"
   lockCoinNams: "DNA option,DNA,VMT"
   burntCoinNams: "DNA"
@@ -50,8 +50,8 @@ cion:
   web3Urls: "http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf,http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
 evm:
   vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
-cinfigMap:
-  mobiUrl: http://xapi.powx.io
+watcher:
+  dnaUrl: http://xapi.powx.io
   rinkebyUrl: http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
   vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
 etherScanApi:

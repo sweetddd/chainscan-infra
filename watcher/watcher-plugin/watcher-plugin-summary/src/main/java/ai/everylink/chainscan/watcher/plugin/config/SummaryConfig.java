@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2021-12-14
  */
 @Configuration
-@ConfigurationProperties(prefix = "cion")
+@ConfigurationProperties(prefix = "coin")
 @Data
 public class SummaryConfig {
 
