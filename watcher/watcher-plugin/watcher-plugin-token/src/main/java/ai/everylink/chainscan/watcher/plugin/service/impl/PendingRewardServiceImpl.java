@@ -120,8 +120,8 @@ public class PendingRewardServiceImpl implements PendingRewardService {
             //获取MOBI合约交易缓冲
             BigInteger distributionReserve =   vm30Utils.distributionReserve(web3j,contract);
             pendingReward.setMobiDistributionReserve(distributionReserve.longValue());
-            pendingReward.setDistributionReserveUnit(distributionReserveUnit);
         }
+        pendingReward.setDistributionReserveUnit(distributionReserveUnit);
         String pendingRewards = vmChainUtil.getPendingRewards();
         pendingReward.setStakingReserve(Long.valueOf(pendingRewards));
         pendingReward.setStakingReserveUnit(stakingReserveUnit);
