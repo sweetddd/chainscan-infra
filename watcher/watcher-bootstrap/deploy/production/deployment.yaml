@@ -123,11 +123,11 @@ spec:
               configMapKeyRef:
                 name: chainscan-watcher-config
                 key: evm.vmChainUrl
-          - name: "watcher.dnaUrl"
+          - name: "watcher.L2Url"
             valueFrom:
               configMapKeyRef:
                 name: chainscan-watcher-config
-                key: watcher.dnaUrl
+                key: watcher.L2Url
           - name: "watcher.rinkebyUrl"
             valueFrom:
               configMapKeyRef:

@@ -51,7 +51,7 @@ coin:
 evm:
   vmChainUrl: http://vmdev.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
 watcher:
-  dnaUrl: http://xapi.powx.io
+  L2Url: http://xapi.powx.io/l2-server-api/api/
   rinkebyUrl: http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
   vmChainUrl: http://vmdev.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
 etherScanApi:

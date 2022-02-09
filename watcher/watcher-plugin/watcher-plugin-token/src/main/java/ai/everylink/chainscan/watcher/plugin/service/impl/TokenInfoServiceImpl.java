@@ -112,7 +112,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 addToken(toAddr, fromAddr); //增加合约信息;
             }
             //账户信息余额更新;
-            if(method != null){
+            if (method != null) {
                 if (method.equals("mint(") || method.equals("transfer(") || method.equals("transferFrom(")
                         || method.equals("burn(") || method.equals("burnFrom(")) {
                     saveOrUpdateBalance(fromAddr, toAddr); //监控此方法更新用户余额信息;
@@ -141,7 +141,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             List<TokenInfo>    tokens = tokenInfoDao.findAll(exp);
             if (tokens.size() < 1) {
                 //判断合约类型
-                checkTokenType(toAddr, fromAddr,tokenQuery);
+                checkTokenType(toAddr, fromAddr, tokenQuery);
                 //增加账户与token关系数据;
                 saveOrUpdateBalance(fromAddr, toAddr);
                 tokenQuery.setTokenType(1);
@@ -185,7 +185,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      *
      * @param contract
      */
-    private void checkTokenType(String contract, String fromAddr,TokenInfo tokenInfo) {
+    private void checkTokenType(String contract, String fromAddr, TokenInfo tokenInfo) {
         try {
             List<Type> parames = new ArrayList<>();
             //ERC20:
@@ -252,19 +252,20 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             parames.add(new Address(fromAddr));
             boolean isApprovedForAll = vm30Utils.querryFunction(web3j, parames, "isApprovedForAll", fromAddr, contract);
 
-            if(transfer && allowance && totalSupply && balanceOf && transferFrom){
+            if (transfer && allowance && totalSupply && balanceOf && transferFrom) {
                 tokenInfo.setTokenType(1);
-            }else if(balanceOf && ownerOf && safeTransferFrom && transferFrom
-                    && approve && setApprovalForAll && getApproved && isApprovedForAll){
+            } else if (balanceOf && ownerOf && safeTransferFrom && transferFrom
+                    && approve && setApprovalForAll && getApproved && isApprovedForAll) {
                 tokenInfo.setTokenType(2);
-            }else {
+            } else {
                 tokenInfo.setTokenType(0);
             }
         } catch (Exception e) {
-            log.error("识别合约类型异常:"+ e.getMessage());
+            log.error("识别合约类型异常:" + e.getMessage());
             e.printStackTrace();
             tokenInfo.setTokenType(0);
         }
     }
+
 }
 
