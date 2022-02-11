@@ -249,6 +249,13 @@ public class EvmDataServiceImpl implements EvmDataService {
                             tx.setTxFee(item.getGasPrice().multiply(receipt.getGasUsed()).toString());
                         }
                     }
+
+                    //创建合约交易
+                    String function = item.getInput().substring(0, 10);
+                    if(function.equals("0x60806040")){
+                        //设置to地址为合约地址
+                        tx.setToAddr(receipt.getContractAddress());
+                    }
                 } else {
                     log.info("[save]cannot get gas used and tx fee. txHash={}", item.getHash());
                 }
