@@ -46,6 +46,98 @@ spec:
             value: "test"
           - name: TZ
             value: UTC
+          - name: "evm.chain.rinkebyUrl"
+            value: "http://vmchain-dev-node-0-sandbox.chain-sandbox.svc.cluster.local:9934"
+          - name: "nacos.config.server-addr"
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: nacos.config.server-addr
+          - name: "spring.datasource.url"
+            valueFrom:
+              secretKeyRef:
+                name: database-watcher
+                key: database-url
+          - name: "spring.datasource.username"
+            valueFrom:
+              secretKeyRef:
+                name: database-watcher
+                key: username
+          - name: "spring.datasource.password"
+            valueFrom:
+              secretKeyRef:
+                name: database-watcher
+                key: password
+          - name: "coin.web3Urls"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: coin.web3Urls
+          - name: "coin.L1Symbol"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: coin.l1-symbol
+          - name: "coin.lockCoinNams"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: coin.lock-coin-nams
+          - name: "coin.burntCoinNams"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: coin.burnt-coin-nams
+          - name: "coin.rewardCoinNams"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: coin.reward-coin-nams
+          - name: "coin.pendingRewardCion"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: coin.pending-reward-cion
+          - name: "coin.distributionReserveUnit"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: coin.distribution-reserve-unit
+          - name: "coin.stakingReserveUnit"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: coin.staking-reserve-unit
+          - name: "coin.bufferRewardsUnit"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: coin.buffer-reserve-unit
+          - name: "coin.chainIds"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: coin.chain-ids
+          - name: "evm.vmChainUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: evm.vmChainUrl
+          - name: "watcher.L2Url"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: watcher.L2Url
+          - name: "watcher.rinkebyUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: watcher.rinkebyUrl
+          - name: "watcher.vmChainUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: watcher.vmChainUrl
       volumes:
       - name: host-time
         hostPath:

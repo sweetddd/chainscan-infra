@@ -69,4 +69,6 @@ public interface SummaryService {
      * L1层质押量统计
      */
     public void l1LockAmount();
+
+    public  void erc721();
 }

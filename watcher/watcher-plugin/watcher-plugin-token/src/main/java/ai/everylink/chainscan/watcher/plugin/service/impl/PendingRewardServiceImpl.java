@@ -62,19 +62,19 @@ public class PendingRewardServiceImpl implements PendingRewardService {
 
     private Web3j web3j;
 
-    @Value("${cinfigMap.vmChainUrl:}")
+    @Value("${watcher.vmChainUrl:}")
     private String vmChainUrl;
 
-    @Value("${cion.pendingRewardCion:}")
+    @Value("${coin.pendingRewardCion:}")
     private String pendingRewardCion;
 
-    @Value("${cion.distributionReserveUnit:}")
+    @Value("${coin.distributionReserveUnit:}")
     private String distributionReserveUnit;
 
-    @Value("${cion.stakingReserveUnit:}")
+    @Value("${coin.stakingReserveUnit:}")
     private String stakingReserveUnit;
 
-    @Value("${cion.bufferRewardsUnit:}")
+    @Value("${coin.bufferRewardsUnit:}")
     private String bufferRewardsUnit;
 
     @Autowired
@@ -120,8 +120,8 @@ public class PendingRewardServiceImpl implements PendingRewardService {
             //获取MOBI合约交易缓冲
             BigInteger distributionReserve =   vm30Utils.distributionReserve(web3j,contract);
             pendingReward.setMobiDistributionReserve(distributionReserve.longValue());
-            pendingReward.setDistributionReserveUnit(distributionReserveUnit);
         }
+        pendingReward.setDistributionReserveUnit(distributionReserveUnit);
         String pendingRewards = vmChainUtil.getPendingRewards();
         pendingReward.setStakingReserve(Long.valueOf(pendingRewards));
         pendingReward.setStakingReserveUnit(stakingReserveUnit);

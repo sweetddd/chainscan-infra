@@ -16,13 +16,13 @@ public class PendingReward {
     private Long id;
 
     @Column(name = "mobi_distribution_reserve", nullable = false)
-    private Long mobiDistributionReserve;
+    private Long mobiDistributionReserve = 0L;
 
     @Column(name = "staking_reserve", nullable = false)
-    private Long stakingReserve;
+    private Long stakingReserve = 0L;
 
     @Column(name = "buffer_rewards", nullable = false)
-    private Long bufferRewards;
+    private Long bufferRewards = 0L;
 
     @Column(name = "distribution_reserve_unit", nullable = false, length = 80)
     private String distributionReserveUnit;

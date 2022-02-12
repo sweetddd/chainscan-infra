@@ -39,6 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.http.HttpService;
@@ -66,28 +67,28 @@ public class SummaryServiceImpl implements SummaryService {
     private EtherScanApi api = new EtherScanApi();
     ;
 
-    @Value("#{'${cion.chainIds}'.split(',')}")
+    @Value("#{'${coin.chainIds}'.split(',')}")
     private List<Long> chainIds;
 
-    @Value("#{'${cion.lockCoinNams}'.split(',')}")
+    @Value("#{'${coin.lockCoinNams}'.split(',')}")
     private List<String> lockCoinNams;
 
-    @Value("#{'${cion.burntCoinNams}'.split(',')}")
+    @Value("#{'${coin.burntCoinNams}'.split(',')}")
     private List<String> burntCoinNams;
 
-    @Value("#{'${cion.rewardCoinNams}'.split(',')}")
+    @Value("#{'${coin.rewardCoinNams}'.split(',')}")
     private List<String> rewardCoinNams;
 
-    @Value("#{'${cion.web3Urls}'.split(',')}")
+    @Value("#{'${coin.web3Urls}'.split(',')}")
     private List<String> web3Urls;
 
-    @Value("${cinfigMap.rinkebyUrl:}")
+    @Value("${watcher.rinkebyUrl:}")
     private String rinkebyUrl;
 
-    @Value("${cinfigMap.mobiUrl:}")
-    private String mobiUrl;
+    @Value("${watcher.L2Url:}")
+    private String L2Url;
 
-    @Value("${cion.L1Symbol:}")
+    @Value("${coin.L1Symbol:}")
     private String L1Symbol;
 
     @Value("${etherScanApi.key:}")
@@ -166,8 +167,8 @@ public class SummaryServiceImpl implements SummaryService {
                 //BigDecimal bigDecimal  = total.movePointLeft(coinContract.getContractDecimals().intValue());
             }
         }
-        for (String cionName : totalSupplyMap.keySet()) {
-            coinDao.updateTotalSupply(totalSupplyMap.get(cionName), cionName);
+        for (String coinName : totalSupplyMap.keySet()) {
+            coinDao.updateTotalSupply(totalSupplyMap.get(coinName), coinName);
         }
     }
 
@@ -199,8 +200,8 @@ public class SummaryServiceImpl implements SummaryService {
                 }
             }
         }
-        for (String cionName : totalLockAmountMap.keySet()) {
-            coinDao.burntAmount(totalLockAmountMap.get(cionName), cionName);
+        for (String coinName : totalLockAmountMap.keySet()) {
+            coinDao.burntAmount(totalLockAmountMap.get(coinName), coinName);
         }
     }
 
@@ -224,8 +225,8 @@ public class SummaryServiceImpl implements SummaryService {
                 }
             }
         }
-        for (String cionName : totalLockAmountMap.keySet()) {
-            coinDao.burntAmount(totalLockAmountMap.get(cionName), cionName);
+        for (String coinName : totalLockAmountMap.keySet()) {
+            coinDao.burntAmount(totalLockAmountMap.get(coinName), coinName);
         }
     }
 
@@ -248,8 +249,8 @@ public class SummaryServiceImpl implements SummaryService {
                 }
             }
         }
-        for (String cionName : totalLockAmountMap.keySet()) {
-            coinDao.updateTotalLockAmount(totalLockAmountMap.get(cionName), cionName);
+        for (String coinName : totalLockAmountMap.keySet()) {
+            coinDao.updateTotalLockAmount(totalLockAmountMap.get(coinName), coinName);
         }
     }
 
@@ -265,9 +266,9 @@ public class SummaryServiceImpl implements SummaryService {
         paramers.addParam("from", "latest");
         paramers.addParam("limit", "100");
         paramers.addParam("direction", "older");
-        HttpUtilService httpUtilService = new HttpUtilService(mobiUrl);
+        HttpUtilService httpUtilService = new HttpUtilService(L2Url);
         try {
-            result = httpUtilService.service("/l2-server-api/api/v0.2/tokens", paramers, header);
+            result = httpUtilService.service("v0.2/tokens", paramers, header);
             JSONObject resultData = JSONObject.parseObject(result);
             if (resultData.get("status").toString().equals("success")) {
                 String    list = JSONObject.parseObject(resultData.get("result").toString()).get("list").toString();
@@ -303,14 +304,33 @@ public class SummaryServiceImpl implements SummaryService {
         System.out.println(vmChainUtil);
     }
 
+    @Override
+    public void erc721() {
+        Web3j web3j = null;
+        try {
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            builder.connectTimeout(30 * 1000, TimeUnit.MILLISECONDS);
+            builder.writeTimeout(30 * 1000, TimeUnit.MILLISECONDS);
+            builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
+            OkHttpClient httpClient  = builder.build();
+            HttpService  httpService = new HttpService("http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf", httpClient, false);
+            web3j = Web3j.build(httpService);
+        } catch (Exception e) {
+            log.error("初始化web3j异常", e);
+        }
+        String    symbol  = vm30Utils.symbol(web3j, "0xac430d03BDceCcD49DDD8c06B7772B3b61b26039").toString();
+        String    tokenURL  = vm30Utils.tokenURL(web3j, "0xac430d03BDceCcD49DDD8c06B7772B3b61b26039", new BigInteger("1")).toString();
+        System.out.println(tokenURL);
+    }
+
     private String getL2Contract() {
         String          contract        = "";
         String          result          = "";
         HttpHeader      header          = new HttpHeader();
         HttpParamers    paramers        = HttpParamers.httpGetParamers();
-        HttpUtilService httpUtilService = new HttpUtilService(mobiUrl);
+        HttpUtilService httpUtilService = new HttpUtilService(L2Url);
         try {
-            result = httpUtilService.service("/l2-server-api/api/v0.2/config", paramers, header);
+            result = httpUtilService.service("v0.2/config", paramers, header);
             JSONObject resultData = JSONObject.parseObject(result);
             if (resultData.get("status").toString().equals("success")) {
                 contract = JSONObject.parseObject(resultData.get("result").toString()).get("contract").toString();

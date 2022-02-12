@@ -36,21 +36,21 @@ logging:
         ai.everylink.openapi.bonuspoint: info
         ai.everylink.openapi.lottery: info
         ai.everylink.openapi: info
-cion:
-  L1Symbol: "VMT"
-  lockCoinNams: "MOBI option,MOBI,VMT"
-  burntCoinNams: "MOBI"
-  rewardCoinNams: "MOBI"
-  pendingRewardCion: "MOBI"
+coin:
+  L1Symbol: "DTX"
+  lockCoinNams: "DNA option,DNA,DTX"
+  burntCoinNams: "DNA"
+  rewardCoinNams: "DNA"
+  pendingRewardCion: "DNA"
   distributionReserveUnit: "USDT"
-  stakingReserveUnit: "MOBI"
-  bufferRewardsUnit: "MOBI"
+  stakingReserveUnit: "DNA"
+  bufferRewardsUnit: "DNA"
   chainIds: "4,97"
   web3Urls: "http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf,http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
 evm:
   vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
-cinfigMap:
-  mobiUrl: http://xapi.powx.io
+watcher:
+  L2Url: http://xapi.powx.io/l2-server-api/api/v0.2/
   rinkebyUrl: http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
   vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
 etherScanApi:

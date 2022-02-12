@@ -132,6 +132,15 @@ public class VM30 extends Contract {
         return executeRemoteCallSingleValueReturn(function, Utf8String.class);
     }
 
+    public RemoteCall<Utf8String> tokenURL(BigInteger tokenId) {
+        Function function = new Function("tokenURL",
+                Arrays.<Type>asList(
+                        new Uint256(1)),
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {
+                }));
+        return executeRemoteCallSingleValueReturn(function, Utf8String.class);
+    }
+
 
     public RemoteCall<TransactionReceipt> transferFrom(String _from, String _to, BigInteger _value) {
         Function function = new Function(
