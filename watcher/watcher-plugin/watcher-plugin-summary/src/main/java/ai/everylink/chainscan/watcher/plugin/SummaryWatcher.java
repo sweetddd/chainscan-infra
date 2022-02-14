@@ -44,13 +44,13 @@ public class SummaryWatcher implements IWatcher {
         // 定时统计circulationSuppl
         long start = System.currentTimeMillis();
         log.info("SummaryWatcher-start:" + start);
-        summaryService.erc721();
+        //summaryService.erc721();
 
-//        summaryService.circulationSuppl();  //统计合约发行量
-//        summaryService.totalLockAmount();  //统计合约锁定量
-//        summaryService.l2LockAmount();     //2层锁定量统计
-//        summaryService.l1LockAmount();     //1层锁定量统计
-//        summaryService.burnt();  //统计合约销毁量
+        summaryService.circulationSuppl();  //统计合约发行量
+        summaryService.totalLockAmount();  //统计合约锁定量
+        summaryService.l2LockAmount();     //2层锁定量统计
+        summaryService.l1LockAmount();     //1层锁定量统计
+        summaryService.burnt();  //统计合约销毁量
         log.info("SummaryWatcher-end:" + System.currentTimeMillis());
         List<EvmData> blockList = Lists.newArrayList();
         return blockList;
