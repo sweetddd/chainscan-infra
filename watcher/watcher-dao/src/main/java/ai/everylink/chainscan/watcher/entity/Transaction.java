@@ -151,6 +151,9 @@ public class Transaction {
 
     @Column(name = "chain_type")
     private String chainType;
+
+    @Column(name = "contract_address")
+    private String contractAddress;
 }
 
 
