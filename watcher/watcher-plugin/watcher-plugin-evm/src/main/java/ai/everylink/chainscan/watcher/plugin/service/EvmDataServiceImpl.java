@@ -251,10 +251,12 @@ public class EvmDataServiceImpl implements EvmDataService {
                     }
 
                     //创建合约交易
-                    String function = item.getInput().substring(0, 10);
-                    if(function.equals("0x60806040") && receipt.getContractAddress() != null){
-                        //设置to地址为合约地址
-                        tx.setToAddr(receipt.getContractAddress());
+                    if(item.getInput().length() > 10){
+                        String function = item.getInput().substring(0, 10);
+                        if(function.equals("0x60806040") && receipt.getContractAddress() != null){
+                            //设置to地址为合约地址
+                            tx.setToAddr(receipt.getContractAddress());
+                        }
                     }
                     //合约地址存储
                     tx.setContractAddress(receipt.getContractAddress());
@@ -320,7 +322,9 @@ public class EvmDataServiceImpl implements EvmDataService {
                 tx.setInputMethod(input);
                 tx.setInputParams(input);
             }
-        }else {
+        }else if(input.equals("0x")){
+            tx.setInputMethod("Transfer");
+        }{
             tx.setInputParams(input);
         }
     }
