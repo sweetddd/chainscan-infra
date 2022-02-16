@@ -42,6 +42,7 @@ import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -148,13 +149,20 @@ public class EvmDataServiceImpl implements EvmDataService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveEvmData(EvmData data) {
-        int chainId = data.getChainId();
-
+        int   chainId = data.getChainId();
+        int   gasUsed = 0;
         Block block = buildBlock(data, chainId);
+
+        List<Transaction> txList = buildTransactionList(data, chainId);
+
+        for (Transaction transaction : txList) {
+            gasUsed += transaction.getGasUsed().intValue();
+        }
+        block.setGasUsed(new BigInteger(String.valueOf(gasUsed)));
+
         blockDao.save(block);
         log.info("[save]block={},block saved", data.getBlock().getNumber());
 
-        List<Transaction> txList = buildTransactionList(data, chainId);
         if (!CollectionUtils.isEmpty(txList)) {
             transactionDao.saveAll(txList);
             log.info("[save]block={},txs saved.size={}", data.getBlock().getNumber(), txList.size());
@@ -193,7 +201,6 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setValidator(data.getBlock().getMiner());
         block.setChainType(CHAIN_TYPE);
         block.setStatus(0);
-
         return block;
     }
 
