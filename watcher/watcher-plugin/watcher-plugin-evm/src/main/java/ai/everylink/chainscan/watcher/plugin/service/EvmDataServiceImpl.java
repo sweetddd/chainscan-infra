@@ -192,7 +192,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setDifficulty(data.getBlock().getDifficulty().toString());
         block.setTotalDifficulty(data.getBlock().getTotalDifficulty().toString());
         block.setBlockSize(data.getBlock().getSize().intValue());
-        block.setGasUsed(data.getBlock().getGasUsed());
+       // block.setGasUsed(data.getBlock().getGasUsed());
         block.setGasLimit(data.getBlock().getGasLimit());
         block.setExtraData(data.getBlock().getExtraData());
         block.setCreateTime(new Date());
