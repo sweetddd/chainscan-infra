@@ -34,6 +34,7 @@ import java.util.List;
  * @since 2022-01-27
  */
 @Component
+@Deprecated
 public class EvmBlockStatusWatcher implements IWatcher {
 
     private static Logger logger = LoggerFactory.getLogger(EvmBlockStatusWatcher.class);
@@ -48,7 +49,7 @@ public class EvmBlockStatusWatcher implements IWatcher {
     @Override
     public List<Object> scanBlock() {
         init();
-        evmDataService.processUnconfirmedVMBlocks(CHILD_BLOCK_NUM);
+//        evmDataService.processUnconfirmedVMBlocks(CHILD_BLOCK_NUM);
         return Lists.newArrayList();
     }
 
