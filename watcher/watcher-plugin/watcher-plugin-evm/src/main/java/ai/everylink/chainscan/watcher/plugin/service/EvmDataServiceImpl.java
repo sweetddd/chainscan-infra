@@ -121,18 +121,18 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setGasUsed(new BigInteger(String.valueOf(gasUsed)));
 
         // block reward = sum(tx's fee) * 0.2
-        Long sumTxFee = 0L;
+        BigInteger sumTxsFee = BigInteger.valueOf(0);
         for (Transaction tx : txList) {
             if (!org.springframework.util.StringUtils.isEmpty(tx.getTxFee())) {
                 try {
-                    sumTxFee += Long.parseLong(tx.getTxFee());
+                    sumTxsFee = sumTxsFee.add(new BigInteger(tx.getTxFee()));
                 } catch (Throwable e) {
                     // ignore
                 }
             }
         }
-        sumTxFee = sumTxFee * 20 / 100;
-        block.setReward(sumTxFee + "");
+        sumTxsFee = sumTxsFee.multiply(BigInteger.valueOf(20)).divide(BigInteger.valueOf(100));
+        block.setReward(sumTxsFee.toString());
 
 
         blockDao.save(block);
