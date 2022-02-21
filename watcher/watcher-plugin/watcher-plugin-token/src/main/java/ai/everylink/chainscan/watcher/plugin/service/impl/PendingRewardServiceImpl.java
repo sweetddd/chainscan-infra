@@ -119,7 +119,7 @@ public class PendingRewardServiceImpl implements PendingRewardService {
             String contract = tokens.get(0).getAddress();
             //获取MOBI合约交易缓冲
             BigInteger distributionReserve =   vm30Utils.distributionReserve(web3j,contract);
-            pendingReward.setMobiDistributionReserve(distributionReserve.longValue());
+            pendingReward.setCposDistributionReserve(distributionReserve.longValue());
         }
         pendingReward.setDistributionReserveUnit(distributionReserveUnit);
         String pendingRewards = vmChainUtil.getPendingRewards();
@@ -129,7 +129,13 @@ public class PendingRewardServiceImpl implements PendingRewardService {
         pendingReward.setBufferRewards(Long.valueOf(bufferRewards));
         pendingReward.setBufferRewardsUnit(bufferRewardsUnit);
         pendingReward.setCreateTime(new Date());
-        pendingRewardDao.save(pendingReward);
+        pendingReward.setId(1L);
+        int size = pendingRewardDao.findAll().size();
+        if(size > 0){
+             pendingRewardDao.updateById(pendingReward.getCposDistributionReserve(),pendingReward.getStakingReserve(),pendingReward.getBufferRewards(),pendingReward.getId());
+        }else {
+            pendingRewardDao.save(pendingReward);
+        }
     }
 
     public static void main(String[] args) {

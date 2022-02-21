@@ -15,8 +15,8 @@ public class PendingReward {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "mobi_distribution_reserve", nullable = false)
-    private Long mobiDistributionReserve = 0L;
+    @Column(name = "cpos_distribution_reserve", nullable = false)
+    private Long cposDistributionReserve = 0L;
 
     @Column(name = "staking_reserve", nullable = false)
     private Long stakingReserve = 0L;

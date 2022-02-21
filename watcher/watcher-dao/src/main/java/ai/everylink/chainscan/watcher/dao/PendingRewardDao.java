@@ -20,6 +20,10 @@ package ai.everylink.chainscan.watcher.dao;
 import ai.everylink.chainscan.watcher.entity.PendingReward;
 import ai.everylink.chainscan.watcher.entity.TokenInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * PendingReward
@@ -28,4 +32,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @since 2021-12-30
  */
 public interface PendingRewardDao extends JpaRepository<PendingReward, String> {
+
+    /**
+     * 更新  PendingRewar
+     * @param cposDistributionReserve
+     * @param stakingReserve
+     * @param bufferRewards
+     * @param id
+     * @return
+     */
+    @Query(value = "update pending_rewards set cpos_distribution_reserve = :cposDistributionReserve,staking_reserve = :stakingReserve,buffer_rewards = :bufferRewards where id = :id", nativeQuery = true)
+    @Modifying
+    @Transactional
+    int updateById(@Param("cposDistributionReserve") Long cposDistributionReserve, @Param("stakingReserve") Long stakingReserve, @Param("bufferRewards") Long bufferRewards, @Param("id") Long id);
 }
