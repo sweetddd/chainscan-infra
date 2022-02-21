@@ -63,7 +63,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
     private Web3j web3j;
 
-    @Value("${cinfigMap.vmChainUrl:}")
+    @Value("${watcher.vmChainUrl:}")
     private String vmChainUrl;
 
     @Autowired
