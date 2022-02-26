@@ -57,7 +57,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: database-chainscan
-                key: database-url
+                key: url
           - name: "spring.datasource.username"
             valueFrom:
               secretKeyRef:
