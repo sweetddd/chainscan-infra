@@ -25,6 +25,7 @@ import ai.everylink.chainscan.watcher.core.util.SlackNotifyUtils;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
 import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
+import ai.everylink.chainscan.watcher.plugin.config.WatcherConfig;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
@@ -168,6 +169,7 @@ public class EvmWatcher implements IWatcher {
         step = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyStep();
         chainId = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyChainId();
         currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
+        logger.info("[config_network]dtx.url=", SpringApplicationUtils.getBean(WatcherConfig.class).getDtxRpcUrl());
         logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
     }
 
