@@ -68,11 +68,16 @@ spec:
               secretKeyRef:
                 name: database-chainscan
                 key: password
-          - name: "coin.web3Urls"
+          - name: "coin.ether.api"
             valueFrom:
               configMapKeyRef:
                 name: chainscan-watcher-config
-                key: coin.web3Urls
+                key: ether.api
+          - name: "coin.dtx.api"
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: dtx.api
           - name: "coin.L1Symbol"
             valueFrom:
               configMapKeyRef:

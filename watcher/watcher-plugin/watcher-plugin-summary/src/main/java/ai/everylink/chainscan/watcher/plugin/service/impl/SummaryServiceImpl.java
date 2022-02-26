@@ -79,11 +79,11 @@ public class SummaryServiceImpl implements SummaryService {
     @Value("#{'${coin.rewardCoinNams}'.split(',')}")
     private List<String> rewardCoinNams;
 
-    @Value("#{'${coin.web3Urls}'.split(',')}")
-    private List<String> web3Urls;
+    @Value("${coin.ether.api}")
+    private String etherApi;
 
-    @Value("${watcher.rinkebyUrl:}")
-    private String rinkebyUrl;
+    @Value("${coin.dtx.api}")
+    private String dtxApi;
 
     @Value("${watcher.L2Url:}")
     private String L2Url;
@@ -116,8 +116,8 @@ public class SummaryServiceImpl implements SummaryService {
     private void initWeb3j() {
         HashMap               web3jMaps = new HashMap<Long, Web3j>();
         HashMap<Long, String> webMap    = new HashMap<>();
-        webMap.put(chainIds.get(0), web3Urls.get(0));
-        webMap.put(chainIds.get(1), web3Urls.get(1));
+        webMap.put(chainIds.get(0), etherApi);
+        webMap.put(chainIds.get(1), dtxApi);
         ArrayList<Web3j> web3jsList = new ArrayList<>();
         try {
             for (Long chainId : webMap.keySet()) {
