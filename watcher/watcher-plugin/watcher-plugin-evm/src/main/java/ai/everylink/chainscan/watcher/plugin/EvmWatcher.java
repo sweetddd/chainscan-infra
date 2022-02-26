@@ -27,6 +27,7 @@ import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
 import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.RateLimiter;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +91,7 @@ public class EvmWatcher implements IWatcher {
         logger.info("loop scan begin.curNum={},netNum={}", currentBlockHeight, networkBlockHeight);
         if (networkBlockHeight <= 0) {
             logger.info("maybe the chain is down.");
-//            sendVmAlertMsgToSlack();
+            sendVmAlertMsgToSlack();
             return Lists.newArrayList();
         }
 
@@ -103,20 +104,19 @@ public class EvmWatcher implements IWatcher {
                         : networkBlockHeight;
 
                 blockList = replayBlock(startBlockNumber, currentBlockHeight);
-//                blockList = replayBlock(9716550L, 9716850L);
                 logger.info("Scan block from {} to {},resultSize={}", startBlockNumber, currentBlockHeight, blockList.size());
                 if (CollectionUtils.isEmpty(blockList)) {
                     logger.info("扫块失败！！！");
                     currentBlockHeight = startBlockNumber - 1;
 
                     // 发送slack通知
-//                    sendVmAlertMsgToSlack();
+                    sendVmAlertMsgToSlack();
 
                     return Lists.newArrayList();
                 }
             } else {
                 logger.info("maybe the chain was reset.");
-//                sendVmAlertMsgToSlack();
+                sendVmAlertMsgToSlack();
             }
         } catch (Throwable e) {
             currentBlockHeight = startBlockNumber - 1;
@@ -158,7 +158,7 @@ public class EvmWatcher implements IWatcher {
     @Override
     public String getCron() {
 //        return "0 0 0/1 * * ? ";
-       return "*/1 * * * * ?";
+       return "*/10 * * * * ?";
 //        return "0 0/10 * * * ? ";
     }
 
@@ -266,8 +266,13 @@ public class EvmWatcher implements IWatcher {
         return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
     }
 
+    private static final RateLimiter slackNotifiyLimiter = RateLimiter.create(0.002);
     private static final String SLACK_WEBHOOK = "https://hooks.slack.com/services/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";
     private void sendVmAlertMsgToSlack() {
+        // slack notification limiter
+        if (!slackNotifiyLimiter.tryAcquire()) {
+            return;
+        }
         Date lastBlockCreateTime = evmDataService.getMaxBlockCreationTime(chainId);
         if (lastBlockCreateTime == null) {
             return;

@@ -4,7 +4,7 @@ metadata:
   name: $APP_NAME-sandbox
   namespace: paas
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: $APP_NAME-sandbox
@@ -56,17 +56,17 @@ spec:
           - name: "spring.datasource.url"
             valueFrom:
               secretKeyRef:
-                name: database-watcher
-                key: database-url
+                name: database-chainscan
+                key: url
           - name: "spring.datasource.username"
             valueFrom:
               secretKeyRef:
-                name: database-watcher
+                name: database-chainscan
                 key: username
           - name: "spring.datasource.password"
             valueFrom:
               secretKeyRef:
-                name: database-watcher
+                name: database-chainscan
                 key: password
           - name: "coin.web3Urls"
             valueFrom:
@@ -122,22 +122,22 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: chainscan-watcher-config
-                key: evm.vmChainUrl
+                key: dtx.api
           - name: "watcher.L2Url"
             valueFrom:
               configMapKeyRef:
                 name: chainscan-watcher-config
-                key: watcher.L2Url
+                key: layer2.api
           - name: "watcher.rinkebyUrl"
             valueFrom:
               configMapKeyRef:
                 name: chainscan-watcher-config
-                key: watcher.rinkebyUrl
+                key: ether.api
           - name: "watcher.vmChainUrl"
             valueFrom:
               configMapKeyRef:
                 name: chainscan-watcher-config
-                key: watcher.vmChainUrl
+                key: dtx.api
       volumes:
       - name: host-time
         hostPath:

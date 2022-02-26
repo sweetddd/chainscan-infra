@@ -28,42 +28,42 @@ spec:
           - name: DB_HOST
             valueFrom:
               secretKeyRef:
-                name: database-contribution
-                key: url
+                name: database-chainscan
+                key: db-host
           - name: DB_PORT
             valueFrom:
               secretKeyRef:
-                name: database-contribution
-                key: port
+                name: database-chainscan
+                key: db-port
           - name: DB_USERNAME
             valueFrom:
               secretKeyRef:
-                name: database-contribution
+                name: database-chainscan
                 key: username
           - name: DB_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: database-contribution
+                name: database-chainscan
                 key: password
           - name: DB_NAME
             valueFrom:
               secretKeyRef:
-                name: database-contribution
-                key: db-name
+                name: database-chainscan
+                key: contribution-plugin-db-name
           - name: vmWeb3Url
             valueFrom:
               configMapKeyRef:
-                name: watcher-contribution-config
-                key: vm-web3-url
+                name: chainscan-watcher-config
+                key: ether.api
           - name: ethWeb3Url
             valueFrom:
               configMapKeyRef:
-                name: watcher-contribution-config
-                key: eth-web3-url
+                name: chainscan-watcher-config
+                key: dtx.api
           - name: feeAccountPrivateKey
             valueFrom:
               configMapKeyRef:
-                name: watcher-contribution-config
+                name: chainscan-watcher-config
                 key: fee-account-private-key
         resources:
           requests:
