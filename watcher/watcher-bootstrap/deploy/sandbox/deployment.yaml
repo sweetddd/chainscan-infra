@@ -143,21 +143,6 @@ spec:
               configMapKeyRef:
                 name: network-config
                 key: dtx.rpc.api
-          - name: "dtx.rpc.api"
-            valueFrom:
-              configMapKeyRef:
-                name: network-config
-                key: dtx.rpc.api
-          - name: "test.key"
-            valueFrom:
-              configMapKeyRef:
-                name: chainscan-watcher-config
-                key: test.key
-          - name: "test.key2"
-            valueFrom:
-              configMapKeyRef:
-                name: chainscan-watcher-config
-                key: test.key
       volumes:
       - name: host-time
         hostPath:
