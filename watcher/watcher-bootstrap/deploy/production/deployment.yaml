@@ -71,13 +71,13 @@ spec:
           - name: "coin.ether.api"
             valueFrom:
               configMapKeyRef:
-                name: chainscan-watcher-config
-                key: ether.api
+                name: network-config
+                key: ether.rpc.api
           - name: "coin.dtx.api"
             valueFrom:
               configMapKeyRef:
-                name: chainscan-watcher-config
-                key: dtx.api
+                name: network-config
+                key: dtx.rpc.api
           - name: "coin.L1Symbol"
               valueFrom:
                 configMapKeyRef:
@@ -126,8 +126,8 @@ spec:
           - name: "evm.vmChainUrl"
             valueFrom:
               configMapKeyRef:
-                name: chainscan-watcher-config
-                key: dtx.api
+                name: network-config
+                key: dtx.rpc.api
           - name: "watcher.L2Url"
             valueFrom:
               configMapKeyRef:
@@ -136,13 +136,13 @@ spec:
           - name: "watcher.rinkebyUrl"
             valueFrom:
               configMapKeyRef:
-                name: chainscan-watcher-config
-                key: ether.api
+                name: network-config
+                key: ether.rpc.api
           - name: "watcher.vmChainUrl"
             valueFrom:
               configMapKeyRef:
-                name: chainscan-watcher-config
-                key: dtx.api
+                name: network-config
+                key: dtx.rpc.api
       volumes:
       - name: host-time
         hostPath:
