@@ -18,9 +18,11 @@
 package ai.everylink.chainscan.watcher.plugin.config;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -28,11 +30,31 @@ import org.springframework.context.annotation.Configuration;
  * @author david.zhang@everylink.ai
  * @since 2021-11-26
  */
-@Configuration
 @Data
+@Component
+@Slf4j
 public class WatcherConfig {
 
-    @Value("${watcher.vmChainUrl}")
+    public WatcherConfig () {
+        log.info("[WatcherConfig]constructor called.");
+    }
+
+    @Value("${dtx.rpc.api}")
     private String dtxRpcUrl;
+
+    @Value("${dtx.rpc.api:}")
+    private String dtxRpcUrlmh;
+
+    @Value("${test.key}")
+    private String testKey;
+
+    @Value("${test.key:}")
+    private String testKeymh;
+
+    @Value("${test.key2}")
+    private String testKey2;
+
+    @Value("${test.key2:}")
+    private String testKey2mh;
 
 }
