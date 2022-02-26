@@ -169,13 +169,7 @@ public class EvmWatcher implements IWatcher {
         step = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyStep();
         chainId = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyChainId();
         currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
-        logger.info("[config_network]dtx.rpc.api=", SpringApplicationUtils.getBean(WatcherConfig.class).getDtxRpcUrl());
-        logger.info("[config_network]dtx.rpc.api:=", SpringApplicationUtils.getBean(WatcherConfig.class).getDtxRpcUrlmh());
-        logger.info("[config_network]test.key=", SpringApplicationUtils.getBean(WatcherConfig.class).getTestKey());
-        logger.info("[config_network]test.key:=", SpringApplicationUtils.getBean(WatcherConfig.class).getTestKeymh());
-        logger.info("[config_network]test.key2=", SpringApplicationUtils.getBean(WatcherConfig.class).getTestKey2());
-        logger.info("[config_network]test.key2:=", SpringApplicationUtils.getBean(WatcherConfig.class).getTestKey2mh());
-
+        SpringApplicationUtils.getBean(WatcherConfig.class).printConfig();
 
         logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
     }
