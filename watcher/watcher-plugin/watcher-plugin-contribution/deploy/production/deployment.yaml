@@ -29,7 +29,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: database-contribution
-                key: url
+                key: port
           - name: DB_PORT
             valueFrom:
               secretKeyRef:

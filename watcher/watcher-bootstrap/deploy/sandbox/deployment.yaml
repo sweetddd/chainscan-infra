@@ -4,7 +4,7 @@ metadata:
   name: $APP_NAME-sandbox
   namespace: paas
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: $APP_NAME-sandbox
@@ -47,7 +47,7 @@ spec:
           - name: TZ
             value: UTC
           - name: "evm.chain.rinkebyUrl"
-            value: "http://vmchain-dev-node-0-sandbox.chain-sandbox.svc.cluster.local:9934"
+            value: "http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
           - name: "nacos.config.server-addr"
             valueFrom:
               configMapKeyRef:
@@ -56,23 +56,28 @@ spec:
           - name: "spring.datasource.url"
             valueFrom:
               secretKeyRef:
-                name: database-watcher
-                key: database-url
+                name: database-chainscan
+                key: url
           - name: "spring.datasource.username"
             valueFrom:
               secretKeyRef:
-                name: database-watcher
+                name: database-chainscan
                 key: username
           - name: "spring.datasource.password"
             valueFrom:
               secretKeyRef:
-                name: database-watcher
+                name: database-chainscan
                 key: password
-          - name: "coin.web3Urls"
+          - name: "coin.ether.api"
             valueFrom:
               configMapKeyRef:
-                name: chainscan-watcher-config
-                key: coin.web3Urls
+                name: network-config
+                key: ether.rpc.api
+          - name: "coin.dtx.api"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: dtx.rpc.api
           - name: "coin.L1Symbol"
             valueFrom:
               configMapKeyRef:
@@ -121,23 +126,23 @@ spec:
           - name: "evm.vmChainUrl"
             valueFrom:
               configMapKeyRef:
-                name: chainscan-watcher-config
-                key: evm.vmChainUrl
+                name: network-config
+                key: dtx.rpc.api
           - name: "watcher.L2Url"
             valueFrom:
               configMapKeyRef:
                 name: chainscan-watcher-config
-                key: watcher.L2Url
+                key: layer2.api
           - name: "watcher.rinkebyUrl"
             valueFrom:
               configMapKeyRef:
-                name: chainscan-watcher-config
-                key: watcher.rinkebyUrl
+                name: network-config
+                key: ether.rpc.api
           - name: "watcher.vmChainUrl"
             valueFrom:
               configMapKeyRef:
-                name: chainscan-watcher-config
-                key: watcher.vmChainUrl
+                name: network-config
+                key: dtx.rpc.api
       volumes:
       - name: host-time
         hostPath:
