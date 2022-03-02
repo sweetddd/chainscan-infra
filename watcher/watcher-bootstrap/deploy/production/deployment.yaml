@@ -78,46 +78,6 @@ spec:
               configMapKeyRef:
                 name: network-config
                 key: dtx.rpc.api
-          - name: "coin.L1Symbol"
-              valueFrom:
-                configMapKeyRef:
-                  name: chainscan-watcher-config
-                  key: coin.l1-symbol
-          - name: "coin.lockCoinNams"
-            valueFrom:
-              configMapKeyRef:
-                name: chainscan-watcher-config
-                key: coin.lock-coin-nams
-          - name: "coin.burntCoinNams"
-            valueFrom:
-              configMapKeyRef:
-                name: chainscan-watcher-config
-                key: coin.burnt-coin-nams
-          - name: "coin.rewardCoinNams"
-            valueFrom:
-              configMapKeyRef:
-                name: chainscan-watcher-config
-                key: coin.reward-coin-nams
-          - name: "coin.pendingRewardCion"
-            valueFrom:
-              configMapKeyRef:
-                name: chainscan-watcher-config
-                key: coin.pending-reward-cion
-          - name: "coin.distributionReserveUnit"
-            valueFrom:
-              configMapKeyRef:
-                name: chainscan-watcher-config
-                key: coin.distribution-reserve-unit
-          - name: "coin.stakingReserveUnit"
-            valueFrom:
-              configMapKeyRef:
-                name: chainscan-watcher-config
-                key: coin.staking-reserve-unit
-          - name: "coin.bufferRewardsUnit"
-            valueFrom:
-              configMapKeyRef:
-                name: chainscan-watcher-config
-                key: coin.buffer-reserve-unit
           - name: "coin.chainIds"
             valueFrom:
               configMapKeyRef:

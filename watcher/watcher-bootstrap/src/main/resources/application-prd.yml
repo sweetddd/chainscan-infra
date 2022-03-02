@@ -38,16 +38,7 @@ logging:
         ai.everylink.openapi: info
 
 coin:
-  L1Symbol: "DTX"
-  lockCoinNams: "DNA option,DNA,DTX"
-  burntCoinNams: "DNA"
-  rewardCoinNams: "DNA"
-  pendingRewardCion: "DNA"
-  distributionReserveUnit: "USDT"
-  stakingReserveUnit: "DNA"
-  bufferRewardsUnit: "DNA"
   chainIds: "4,97"
-  web3Urls: "http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf,http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
 evm:
   vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
 watcher:
