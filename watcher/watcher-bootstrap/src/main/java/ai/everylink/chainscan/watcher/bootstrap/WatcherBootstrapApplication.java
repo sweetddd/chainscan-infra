@@ -49,7 +49,6 @@ public class WatcherBootstrapApplication {
      */
     public static void main(final String[] args) {
         SpringApplication.run(WatcherBootstrapApplication.class, args);
-
         loopScan();
     }
 
