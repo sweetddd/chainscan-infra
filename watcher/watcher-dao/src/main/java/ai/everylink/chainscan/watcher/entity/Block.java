@@ -96,9 +96,6 @@ public class Block {
     @Column(name = "chain_type")
     private String chainType;
 
-    @Column(name = "params")
-    private String params;
-
     @Column(name = "finalized")
     private int finalized;
 
