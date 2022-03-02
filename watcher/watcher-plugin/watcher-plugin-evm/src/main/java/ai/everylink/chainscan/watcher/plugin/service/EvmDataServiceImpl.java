@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class EvmDataServiceImpl implements EvmDataService {
 
-    private static final String CHAIN_TYPE = "frontier";
+    private static final String CHAIN_TYPE = "EVM_PoS";
 
     private Web3j web3j;
 
