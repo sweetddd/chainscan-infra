@@ -82,7 +82,14 @@ public class EvmDataServiceImpl implements EvmDataService {
             builder.writeTimeout(30 * 1000, TimeUnit.MILLISECONDS);
             builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
             OkHttpClient httpClient  = builder.build();
-            HttpService  httpService = new HttpService(SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyUrl(), httpClient, false);
+
+            String rpcUrl = System.getenv("watcher.vmChainUrl");
+            if (rpcUrl == null) {
+                rpcUrl = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyUrl();
+            }
+            log.info("[rpc_url]url=" + rpcUrl);
+
+            HttpService  httpService = new HttpService(rpcUrl, httpClient, false);
             web3j = Web3j.build(httpService);
         } catch (Exception e) {
             log.error("初始化web3j异常", e);
