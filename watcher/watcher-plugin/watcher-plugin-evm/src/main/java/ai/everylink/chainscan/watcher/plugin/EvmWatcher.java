@@ -169,7 +169,30 @@ public class EvmWatcher implements IWatcher {
         chainId = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyChainId();
         currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
 
+        logger.info("[get_env]try to get env");
+
+        logger.info("[get_env]dtx.rpc.api1=" + getEnv1("watcher.vmChainUrl"));
+        logger.info("[get_env]dtx.rpc.api2=" + getEnv2("watcher.vmChainUrl"));
+        logger.info("[get_env]ether.rpc.api1=" + getEnv1("watcher.rinkebyUrl"));
+        logger.info("[get_env]ether.rpc.api2=" + getEnv1("watcher.rinkebyUrl"));
+
         logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
+    }
+
+    private String getEnv1(String key) {
+        String ret = System.getenv(key);
+        if (ret == null) {
+            return "none1";
+        }
+        return ret;
+    }
+
+    private String getEnv2(String key) {
+        String ret = System.getProperty(key);
+        if (ret == null) {
+            return "none2";
+        }
+        return ret;
     }
 
     private void initService() {
