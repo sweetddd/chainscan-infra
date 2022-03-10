@@ -11,3 +11,8 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 
+**/node_modules
+.DS_Store
+npm-debug.log*
+yarn-error.log
+.history
