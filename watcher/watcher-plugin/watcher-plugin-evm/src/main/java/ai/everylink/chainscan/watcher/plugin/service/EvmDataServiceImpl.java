@@ -309,6 +309,7 @@ public class EvmDataServiceImpl implements EvmDataService {
             }
         }else if(input.equals("0x")){
             tx.setInputMethod("Transfer");
+        }else {
             tx.setInputParams(DecodUtils.getParams(input));
         }
     }
