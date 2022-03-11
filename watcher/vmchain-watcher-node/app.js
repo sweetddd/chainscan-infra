@@ -14,6 +14,7 @@ const useMysql = app => {
   app.mysql = app.mysql.createInstance(mysqlConfig);
 };
 
+
 module.exports = app => {
   app.beforeStart(async () => {
     useMysql(app);

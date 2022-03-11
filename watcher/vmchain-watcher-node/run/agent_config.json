@@ -79,7 +79,7 @@
     "onerror": {
       "errorPageUrl": "",
       "appErrorFilter": null,
-      "templatePath": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-onerror/lib/onerror_page.mustache"
+      "templatePath": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-onerror/lib/onerror_page.mustache"
     },
     "i18n": {
       "defaultLocale": "en_US",
@@ -92,8 +92,8 @@
     "watcher": {
       "type": "development",
       "eventSources": {
-        "default": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-watcher/lib/event-sources/default",
-        "development": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-watcher/lib/event-sources/development"
+        "default": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-watcher/lib/event-sources/default",
+        "development": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-watcher/lib/event-sources/development"
       }
     },
     "customLogger": {
@@ -117,7 +117,7 @@
       "fileExtensions": [],
       "whitelist": null,
       "allowArrayField": false,
-      "tmpdir": "/var/folders/hf/8qr_6zf54d39xgmcxrvyszd80000gn/T/egg-multipart-tmp/vmchain-watcher-server",
+      "tmpdir": "/var/folders/f9/50k_k08n57d7nbkl655p8hr40000gn/T/egg-multipart-tmp/vmchain-watcher-server",
       "cleanSchedule": {
         "cron": "0 30 4 * * *",
         "disable": false
@@ -142,14 +142,14 @@
     },
     "static": {
       "prefix": "/public/",
-      "dir": "/Users/apple/workspace/everylink/vmchain-watcher/app/public",
+      "dir": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/app/public",
       "dynamic": true,
       "preload": false,
       "buffer": false,
       "maxFiles": 1000
     },
     "view": {
-      "root": "/Users/apple/workspace/everylink/vmchain-watcher/app/view",
+      "root": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/app/view",
       "cache": false,
       "defaultExtension": ".html",
       "defaultViewEngine": "",
@@ -186,12 +186,18 @@
         "declarations": true
       },
       "dependencies": {
-        "@polkadot/api": "^5.8.3",
+        "@polkadot/api": "5.8.3",
+        "add": "^2.0.6",
         "egg": "^2.15.1",
         "egg-cors": "^2.2.3",
         "egg-mysql": "^3.0.0",
         "egg-scripts": "^2.11.0",
-        "request": "^2.88.2"
+        "ethereumjs-tx": "2.1.2",
+        "ethers": "5.5.3",
+        "request": "^2.88.2",
+        "web3": "^1.7.1",
+        "zksync": "^0.11.1",
+        "zksync-crypto": "0.6.0"
       },
       "devDependencies": {
         "autod": "^3.0.1",
@@ -207,9 +213,9 @@
         "node": ">=10.0.0"
       },
       "scripts": {
-        "start": "egg-scripts start --daemon --title=egg-server-",
+        "start": "egg-scripts start --port=7011 --title=egg-server-",
         "stop": "egg-scripts stop --title=egg-server-",
-        "dev": "egg-bin dev",
+        "dev": "egg-bin --port=7011 dev",
         "debug": "egg-bin debug",
         "test": "npm run lint -- --fix && npm run test-local",
         "test-local": "egg-bin test",
@@ -228,9 +234,9 @@
       "author": "",
       "license": "MIT"
     },
-    "baseDir": "/Users/apple/workspace/everylink/vmchain-watcher",
-    "HOME": "/Users/apple",
-    "rundir": "/Users/apple/workspace/everylink/vmchain-watcher/run",
+    "baseDir": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node",
+    "HOME": "/Users/inkoukusunoki",
+    "rundir": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/run",
     "dump": {
       "ignore": "<Set>"
     },
@@ -262,7 +268,7 @@
       "onerror": "<Function onerror>"
     },
     "logger": {
-      "dir": "/Users/apple/workspace/everylink/vmchain-watcher/logs/vmchain-watcher-server",
+      "dir": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/logs/vmchain-watcher-server",
       "encoding": "utf8",
       "env": "local",
       "level": "INFO",
@@ -341,8 +347,8 @@
         "jsonp"
       ],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-onerror",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-onerror",
       "version": "2.1.0"
     },
     "session": {
@@ -352,8 +358,8 @@
       "dependencies": [],
       "optionalDependencies": [],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-session",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-session",
       "version": "3.3.0"
     },
     "i18n": {
@@ -363,8 +369,8 @@
       "dependencies": [],
       "optionalDependencies": [],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-i18n",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-i18n",
       "version": "2.1.1"
     },
     "watcher": {
@@ -374,8 +380,8 @@
       "dependencies": [],
       "optionalDependencies": [],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-watcher",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-watcher",
       "version": "3.1.1"
     },
     "multipart": {
@@ -387,8 +393,8 @@
         "schedule"
       ],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-multipart",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-multipart",
       "version": "2.13.1"
     },
     "security": {
@@ -400,8 +406,8 @@
         "session"
       ],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-security",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-security",
       "version": "2.9.0"
     },
     "development": {
@@ -415,8 +421,8 @@
       "env": [
         "local"
       ],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-development",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-development",
       "version": "2.7.0"
     },
     "logrotator": {
@@ -428,8 +434,8 @@
       ],
       "optionalDependencies": [],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-logrotator",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-logrotator",
       "version": "3.1.0"
     },
     "schedule": {
@@ -439,8 +445,8 @@
       "dependencies": [],
       "optionalDependencies": [],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-schedule",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-schedule",
       "version": "3.6.6"
     },
     "static": {
@@ -450,8 +456,8 @@
       "dependencies": [],
       "optionalDependencies": [],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-static",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-static",
       "version": "2.2.0"
     },
     "jsonp": {
@@ -463,8 +469,8 @@
         "security"
       ],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-jsonp",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-jsonp",
       "version": "2.0.0"
     },
     "view": {
@@ -474,8 +480,8 @@
       "dependencies": [],
       "optionalDependencies": [],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-view",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-view",
       "version": "2.1.3"
     },
     "mysql": {
@@ -485,8 +491,8 @@
       "dependencies": [],
       "optionalDependencies": [],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-mysql",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-mysql",
       "version": "3.0.0"
     },
     "cors": {
@@ -496,8 +502,8 @@
       "dependencies": [],
       "optionalDependencies": [],
       "env": [],
-      "from": "/Users/apple/workspace/everylink/vmchain-watcher/config/plugin.js",
-      "path": "/Users/apple/workspace/everylink/vmchain-watcher/node_modules/egg-cors",
+      "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/config/plugin.js",
+      "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-cors",
       "version": "2.2.3"
     }
   }

@@ -78,21 +78,11 @@ spec:
               configMapKeyRef:
                 name: network-config
                 key: dtx.rpc.api
-          - name: "coin.chainIds"
-            valueFrom:
-              configMapKeyRef:
-                name: chainscan-watcher-config
-                key: coin.chain-ids
           - name: "evm.vmChainUrl"
             valueFrom:
               configMapKeyRef:
                 name: network-config
                 key: dtx.rpc.api
-          - name: "watcher.L2Url"
-            valueFrom:
-              configMapKeyRef:
-                name: chainscan-watcher-config
-                key: layer2.api
           - name: "watcher.rinkebyUrl"
             valueFrom:
               configMapKeyRef:

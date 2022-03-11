@@ -7,14 +7,18 @@
     "declarations": true
   },
   "dependencies": {
-    "@polkadot/api": "^5.8.3",
+    "@polkadot/api": "5.8.3",
+    "add": "^2.0.6",
     "egg": "^2.15.1",
     "egg-cors": "^2.2.3",
     "egg-mysql": "^3.0.0",
     "egg-scripts": "^2.11.0",
-    "ethers": "^5.5.3",
+    "ethereumjs-tx": "2.1.2",
+    "ethers": "5.5.3",
     "request": "^2.88.2",
-    "zksync": "^0.11.1"
+    "web3": "^1.7.1",
+    "zksync": "^0.11.1",
+    "zksync-crypto": "0.6.0"
   },
   "devDependencies": {
     "autod": "^3.0.1",
