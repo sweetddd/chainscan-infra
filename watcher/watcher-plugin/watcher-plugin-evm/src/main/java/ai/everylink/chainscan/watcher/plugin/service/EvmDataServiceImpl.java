@@ -114,6 +114,9 @@ public class EvmDataServiceImpl implements EvmDataService {
 
         List<Transaction> txList = buildTransactionList(data, chainId);
 
+        if(txList.size() > 0){
+            System.out.println("1");
+        }
         // block gas used
         for (Transaction transaction : txList) {
             gasUsed += transaction.getGasUsed().intValue();
@@ -306,8 +309,7 @@ public class EvmDataServiceImpl implements EvmDataService {
             }
         }else if(input.equals("0x")){
             tx.setInputMethod("Transfer");
-        }{
-            tx.setInputParams(input);
+            tx.setInputParams(DecodUtils.getParams(input));
         }
     }
 
