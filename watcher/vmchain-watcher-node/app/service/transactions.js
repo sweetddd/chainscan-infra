@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 const Service = require('egg').Service;
-const TABLE = 'transaction_cops';
+const TABLE = 'transaction';
 const { env } = require('process');
 
 
