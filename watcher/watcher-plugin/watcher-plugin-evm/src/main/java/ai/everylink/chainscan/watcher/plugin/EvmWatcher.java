@@ -92,7 +92,7 @@ public class EvmWatcher implements IWatcher {
         logger.info("loop scan begin.curNum={},netNum={}", currentBlockHeight, networkBlockHeight);
         if (networkBlockHeight <= 0) {
             logger.info("[slack_alert]chain block height is 0, maybe the chain is down.");
-            sendVmAlertMsgToSlack();
+//            sendVmAlertMsgToSlack();
             return Lists.newArrayList();
         }
 
@@ -117,7 +117,7 @@ public class EvmWatcher implements IWatcher {
                 }
             } else {
                 logger.info("[slack_alert]当前块高超过链上块高，maybe the chain was reset.");
-                sendVmAlertMsgToSlack();
+//                sendVmAlertMsgToSlack();
             }
         } catch (Throwable e) {
             currentBlockHeight = startBlockNumber - 1;
