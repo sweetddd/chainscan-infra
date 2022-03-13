@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: $APP_NAME-sandbox
-        image:  $REGISTRY/$APP_NAME:SNAPSHOT-78
+        image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
             path: /healthz
