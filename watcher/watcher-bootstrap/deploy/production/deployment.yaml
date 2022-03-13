@@ -46,8 +46,6 @@ spec:
             value: "prd"
           - name: TZ
             value: UTC
-          - name: "slack.notify.switch"
-            value: "on"
           - name: "evm.chain.rinkebyUrl"
             value: "https://vmtestnet.chainfra.io/v1/df8371a1d8cbc835147df382bb1144a9"
           - name: "nacos.config.server-addr"

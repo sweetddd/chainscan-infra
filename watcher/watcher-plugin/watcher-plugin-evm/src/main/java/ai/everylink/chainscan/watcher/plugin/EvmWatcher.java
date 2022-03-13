@@ -280,12 +280,6 @@ public class EvmWatcher implements IWatcher {
     private static final RateLimiter slackNotifiyLimiter = RateLimiter.create(0.001);
     private static final String SLACK_WEBHOOK = "https://hooks.slack.com/services/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";
     private void sendVmAlertMsgToSlack() {
-        String slackSwitch = System.getenv("slack.notify.switch");
-        if (slackSwitch != null && !slackSwitch.equalsIgnoreCase("on")) {
-            logger.info("[slack_alert]slack notify is off");
-            return;
-        }
-
         // slack notification limiter
         if (!slackNotifiyLimiter.tryAcquire()) {
             return;
