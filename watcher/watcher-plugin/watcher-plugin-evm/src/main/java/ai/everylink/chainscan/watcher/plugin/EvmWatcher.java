@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.response.*;
@@ -279,6 +280,12 @@ public class EvmWatcher implements IWatcher {
     private static final RateLimiter slackNotifiyLimiter = RateLimiter.create(0.001);
     private static final String SLACK_WEBHOOK = "https://hooks.slack.com/services/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";
     private void sendVmAlertMsgToSlack() {
+        String slackSwitch = System.getenv("slack.notify.switch");
+        if (slackSwitch != null && !slackSwitch.equalsIgnoreCase("on")) {
+            logger.info("[slack_alert]slack notify is off");
+            return;
+        }
+
         // slack notification limiter
         if (!slackNotifiyLimiter.tryAcquire()) {
             return;

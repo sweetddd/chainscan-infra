@@ -46,6 +46,8 @@ spec:
             value: "test"
           - name: TZ
             value: UTC
+          - name: "slack.notify.switch"
+            value: "on"
           - name: "evm.chain.rinkebyUrl"
             value: "http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
           - name: "nacos.config.server-addr"
