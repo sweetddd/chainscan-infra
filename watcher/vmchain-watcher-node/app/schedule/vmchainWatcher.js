@@ -8,10 +8,10 @@ const { blake2AsHex } = require('@polkadot/util-crypto');
 const { hexToU8a, isHex, stringToU8a,hexToBn,numberToHex } =  require('@polkadot/util');
 
 
-const vmWeb3Url = process.env.vmWeb3Url;
-//const vmWeb3Url = 'http://vmdev.infra.powx.io';
-//const vmWeb3Url = 'http://vmchain-dev-node-0-sandbox.chain-sandbox.svc.cluster.local:9934';
-const wsProvider = new HttpProvider(vmWeb3Url);
+const DTX_WEB3J_URL = process.env.DTX_WEB3J_URL;
+//const DTX_WEB3J_URL = 'http://vmdev.infra.powx.io';
+//const DTX_WEB3J_URL = 'http://vmchain-dev-node-0-sandbox.chain-sandbox.svc.cluster.local:9934';
+const wsProvider = new HttpProvider(DTX_WEB3J_URL);
 let context = fs.readFileSync('./config/types.json');
 
 const typesData = JSON.parse(context);

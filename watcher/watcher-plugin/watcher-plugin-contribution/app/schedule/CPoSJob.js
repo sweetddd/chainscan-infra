@@ -5,13 +5,13 @@ const GlobalConstants = require("./../../app/bridge/constants");
 const { ApiPromise, WsProvider, HttpProvider } = require("@polkadot/api");
 const fs = require("fs");
 
-const vmWeb3Url = process.env.vmWeb3Url;
+const DTX_WEB3J_URL = process.env.DTX_WEB3J_URL;
 const ethWeb3Url = process.env.ethWeb3Url;
 const feeAccountPrivateKey = process.env.feeAccountPrivateKey;
 
 
 
-const wsProvider = new HttpProvider(process.env.vmWeb3Url);
+const wsProvider = new HttpProvider(process.env.DTX_WEB3J_URL);
 let context = fs.readFileSync('./config/types.json');
 
 const typesData = JSON.parse(context);
@@ -162,7 +162,7 @@ const rinkebyWithdraw = async function(name, reverse) {
 const vmWithdraw = async function(name, reverse) {
     try {
         // let ethPrivateKey = "0xa53578fe8f9a1678be99f58dbe3e189743f5cb2149ba77d004c6819d0dd25104";
-        const web3Wallet = new web3(vmWeb3Url);
+        const web3Wallet = new web3(DTX_WEB3J_URL);
         const provider = new ethers.providers.Web3Provider(web3Wallet.eth.currentProvider);
         const syncProvider = await zksync.Provider.newHttpProvider(L2Address[name], 1000);
         const ethWallet = new ethers.Wallet(ethPrivateKey, provider);
@@ -197,7 +197,7 @@ const vmWithdraw = async function(name, reverse) {
 const bridge = async function(amount) {
     // 一层rinkeby
     const decimals = 6;
-    const wallet = new web3(vmWeb3Url);
+    const wallet = new web3(DTX_WEB3J_URL);
     const provider = new ethers.providers.Web3Provider(
         wallet.eth.currentProvider
     );

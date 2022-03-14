@@ -50,7 +50,7 @@ spec:
               secretKeyRef:
                 name: database-chainscan
                 key: chainscan-cpos-db-name
-          - name: vmWeb3Url
+          - name: DTX_WEB3J_URL
             valueFrom:
               configMapKeyRef:
                 name: watcher-contribution-config
