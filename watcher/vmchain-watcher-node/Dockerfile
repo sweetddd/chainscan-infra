@@ -10,7 +10,7 @@ RUN yarn add ethers@5.5.3
 RUN yarn add zksync-crypto@0.6.0
 RUN yarn add ethereumjs-tx@2.1.2
 RUN yarn add web3
-RUN npm install
+RUN yarn
 
 # 启动服务，默认挂载到7011端口
 EXPOSE 7011
