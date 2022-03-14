@@ -54,7 +54,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: watcher-contribution-config
-                key: vm-web3-url
+                key: dtx-web3-url
 
         resources:
           requests:
