@@ -12,7 +12,12 @@ class SlackMessage {
    * Message id。消息唯一ID，每个消息的id必须不同。可以使用UUID，也可以使用System.nanoTime等，只要保证全局唯一就行。
   */
   private String id;
- 
+
+  /**
+   * Account id。固定传"SLACK_ACCOUNT_001"
+   */
+  private String account = "SLACK_ACCOUNT_001";
+
   /**
    * Template name。固定传"DTX_WATCHER_ALERT_TMPL"
   */
