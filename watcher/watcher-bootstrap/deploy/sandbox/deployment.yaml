@@ -69,10 +69,10 @@ spec:
                 name: database-chainscan
                 key: password
           - name: "watcher.rocketmq.server.addr"
-              valueFrom:
-                configMapKeyRef:
-                  name: chainscan-watcher-config
-                  key: watcher.rocketmq.server.addr
+            valueFrom:
+              configMapKeyRef:
+                name: chainscan-watcher-config
+                key: watcher.rocketmq.server.addr
           - name: "coin.ether.api"
             valueFrom:
               configMapKeyRef:
