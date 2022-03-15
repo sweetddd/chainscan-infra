@@ -59,6 +59,7 @@ async function baseBlock(ctx,api,maxBlockNumber){
 
     if(!newBlock.toString()){
         console.log("no mobi data")
+        next_schedule = true;
     }else{
         try {
             let newBlockJson = JSON.parse(newBlock.toString());
