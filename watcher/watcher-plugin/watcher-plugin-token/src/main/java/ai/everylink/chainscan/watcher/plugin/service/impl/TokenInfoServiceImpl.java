@@ -126,9 +126,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * @param toAddr
      */
     private void addToken(String toAddr, String fromAddr) {
-        if(toAddr.equals("0x232e58e5dcefdd77779838f56b1e385d61262230")){
-            System.out.println(toAddr);
-        }
         String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
         String     name     = vm30Utils.name(web3j, toAddr).toString();
         BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
