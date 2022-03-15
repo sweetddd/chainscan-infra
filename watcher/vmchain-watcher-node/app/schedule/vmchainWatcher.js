@@ -44,11 +44,9 @@ async function scanBlock(ctx,api){
     if(!maxBlockNumber){
         maxBlockNumber=1;
     }
-    // console.log('maxBlockNumber')
-    // console.log('maxBlockNumber')
-    // console.log('maxBlockNumber')
-    // console.log('maxBlockNumber')
-    // console.log(maxBlockNumber)
+    
+    console.log('maxBlockNumber')
+    console.log(maxBlockNumber)
     await baseBlock(ctx,api,maxBlockNumber);
     await baseBlock(ctx,api,maxBlockNumber+1);
 
@@ -84,13 +82,17 @@ async function baseBlock(ctx,api,maxBlockNumber){
             next_schedule = true;
             
         } catch (error) {
+            console.log('error')
             console.log(error.message);
             let currentMaxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
             if(!currentMaxBlockNumber){
                 next_schedule = true;
                 return
             }
-            baseBlock(ctx,api,maxBlockNumber)
+            setTimeout(()=>{
+                baseBlock(ctx,api,maxBlockNumber)
+            },2000);
+            
         }
         
     }
