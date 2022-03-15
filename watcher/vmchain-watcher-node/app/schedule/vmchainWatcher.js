@@ -85,6 +85,11 @@ async function baseBlock(ctx,api,maxBlockNumber){
             
         } catch (error) {
             console.log(error.message);
+            let currentMaxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
+            if(!currentMaxBlockNumber){
+                next_schedule = true;
+                return
+            }
             baseBlock(ctx,api,maxBlockNumber)
         }
         
