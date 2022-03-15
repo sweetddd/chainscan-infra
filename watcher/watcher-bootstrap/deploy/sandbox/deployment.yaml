@@ -71,8 +71,8 @@ spec:
           - name: "watcher.rocketmq.server.addr"
             valueFrom:
               configMapKeyRef:
-                name: chainscan-watcher-config
-                key: watcher.rocketmq.server.addr
+                name: rocketmq-config
+                key: rocketmq.server.addr
           - name: "coin.ether.api"
             valueFrom:
               configMapKeyRef:
