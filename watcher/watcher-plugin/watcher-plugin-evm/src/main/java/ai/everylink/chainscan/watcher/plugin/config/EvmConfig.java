@@ -46,4 +46,6 @@ public class EvmConfig {
 
     private String rinkebyRpcSecret;
 
+    private String rocketmqSrvAddr;
+
 }

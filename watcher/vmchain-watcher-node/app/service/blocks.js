@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const Service = require('egg').Service;
 const TABLE = 'block';
-const dividend_block = 144;
+const dividend_block = 6;
 const { env } = require('process');
 
 class BlockService extends Service {

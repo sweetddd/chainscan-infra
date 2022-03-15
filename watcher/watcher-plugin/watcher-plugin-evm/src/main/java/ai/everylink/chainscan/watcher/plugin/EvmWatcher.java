@@ -21,10 +21,10 @@ import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.OkHttpUtil;
-import ai.everylink.chainscan.watcher.core.util.SlackNotifyUtils;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
 import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
+import ai.everylink.chainscan.watcher.plugin.rocketmq.SlackUtils;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
@@ -92,7 +92,6 @@ public class EvmWatcher implements IWatcher {
         logger.info("loop scan begin.curNum={},netNum={}", currentBlockHeight, networkBlockHeight);
         if (networkBlockHeight <= 0) {
             logger.info("[slack_alert]chain block height is 0, maybe the chain is down.");
-//            sendVmAlertMsgToSlack();
             return Lists.newArrayList();
         }
 
@@ -117,7 +116,6 @@ public class EvmWatcher implements IWatcher {
                 }
             } else {
                 logger.info("[slack_alert]当前块高超过链上块高，maybe the chain was reset.");
-//                sendVmAlertMsgToSlack();
             }
         } catch (Throwable e) {
             currentBlockHeight = startBlockNumber - 1;
@@ -158,9 +156,7 @@ public class EvmWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-//        return "0 0 0/1 * * ? ";
        return "*/10 * * * * ?";
-//        return "0 0/10 * * * ? ";
     }
 
     private void init() {
@@ -169,7 +165,7 @@ public class EvmWatcher implements IWatcher {
         step = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyStep();
         chainId = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyChainId();
         currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
-
+        logger.info("[EvmWatcher]got rocketmq name srv addr:{}", SlackUtils.getNamesrvAddr());
         logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
     }
 
@@ -278,7 +274,6 @@ public class EvmWatcher implements IWatcher {
     }
 
     private static final RateLimiter slackNotifiyLimiter = RateLimiter.create(0.001);
-    private static final String SLACK_WEBHOOK = "https://hooks.slack.com/services/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";
     private void sendVmAlertMsgToSlack() {
         // slack notification limiter
         if (!slackNotifiyLimiter.tryAcquire()) {
@@ -294,14 +289,8 @@ public class EvmWatcher implements IWatcher {
             return;
         }
 
-        // 发送slack通知
-        logger.error("[slack_alert]最后出块时间: " + lastBlockCreateTime + ", 和当前时间间隔(分钟): " + (diff/1000/60));
-        logger.info("long time that no block produce: {} seconds", diff/1000);
-        String json = "{\"text\":\"VM链长时间未出块，请关注！最后出块于(" + diff/1000/60 + ")分钟前\"}";
-        SlackNotifyUtils.SlackNotifyResult result = SlackNotifyUtils.sendSlackNotification(SLACK_WEBHOOK, json);
-        logger.info("send slack notification result: {}", result.success);
-        if (!result.success && result.e != null) {
-            logger.error("send slack notification fail: " + result.e.getMessage(), result.e);
-        }
+        SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警",
+                "VM链长时间未出块，请关注！最后出块于(\"" + diff/1000/60 + "\")分钟前");
+
     }
 }
