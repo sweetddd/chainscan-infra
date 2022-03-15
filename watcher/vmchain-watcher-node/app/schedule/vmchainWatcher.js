@@ -44,11 +44,9 @@ async function scanBlock(ctx,api){
     if(!maxBlockNumber){
         maxBlockNumber=1;
     }
-    // console.log('maxBlockNumber')
-    // console.log('maxBlockNumber')
-    // console.log('maxBlockNumber')
-    // console.log('maxBlockNumber')
-    // console.log(maxBlockNumber)
+    
+    console.log('maxBlockNumber')
+    console.log(maxBlockNumber)
     await baseBlock(ctx,api,maxBlockNumber);
     await baseBlock(ctx,api,maxBlockNumber+1);
 
@@ -61,6 +59,7 @@ async function baseBlock(ctx,api,maxBlockNumber){
 
     if(!newBlock.toString()){
         console.log("no mobi data")
+        next_schedule = true;
     }else{
         try {
             let newBlockJson = JSON.parse(newBlock.toString());
@@ -84,8 +83,17 @@ async function baseBlock(ctx,api,maxBlockNumber){
             next_schedule = true;
             
         } catch (error) {
+            console.log('error')
             console.log(error.message);
-            baseBlock(ctx,api,maxBlockNumber)
+            let currentMaxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
+            if(!currentMaxBlockNumber){
+                next_schedule = true;
+                return
+            }
+            setTimeout(()=>{
+                baseBlock(ctx,api,maxBlockNumber)
+            },5000);
+            
         }
         
     }
