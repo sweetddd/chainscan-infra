@@ -98,10 +98,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
     @Override
     public void tokenScan() {
-        Transaction txQuery = new Transaction();
-        txQuery.setTokenTag(0);
-        Example<Transaction> example = Example.of(txQuery);
-        List<Transaction>    all     = transactionDao.findAll(example);
+        List<Transaction>    all     = transactionDao.findByTokenTag(0);
         for (Transaction transaction : all) {
             String method   = transaction.getInputMethod();
             String value    = transaction.getValue();
@@ -113,8 +110,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             }
             //账户信息余额更新;
             if (method != null) {
-                if (method.equals("mint(") || method.equals("transfer(") || method.equals("transferFrom(")
-                        || method.equals("burn(") || method.equals("burnFrom(")) {
+                if (method.contains("mint(") || method.contains("transfer(") || method.contains("transferFrom(")
+                        || method.contains("burn(") || method.contains("burnFrom(")) {
                     saveOrUpdateBalance(fromAddr, toAddr); //监控此方法更新用户余额信息;
                 }
             }
@@ -129,26 +126,30 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * @param toAddr
      */
     private void addToken(String toAddr, String fromAddr) {
+        if(toAddr.equals("0x232e58e5dcefdd77779838f56b1e385d61262230")){
+            System.out.println(toAddr);
+        }
         String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
         String     name     = vm30Utils.name(web3j, toAddr).toString();
         BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
-        if (symbol != null && name != null) {
+        if (StringUtils.isNotBlank(symbol) && StringUtils.isNotBlank(name)) {
             TokenInfo tokenQuery = new TokenInfo();
+            tokenQuery.setAddress(toAddr);
+            Example<TokenInfo> exp    = Example.of(tokenQuery);
+            List<TokenInfo>    tokens = tokenInfoDao.findAll(exp);
             tokenQuery.setTokenName(name);
             tokenQuery.setTokenSymbol(symbol);
             tokenQuery.setDecimals(decimals);
-            Example<TokenInfo> exp    = Example.of(tokenQuery);
-            List<TokenInfo>    tokens = tokenInfoDao.findAll(exp);
+            checkTokenType(toAddr, fromAddr, tokenQuery);
             if (tokens.size() < 1) {
                 //判断合约类型
                 checkTokenType(toAddr, fromAddr, tokenQuery);
-                //增加账户与token关系数据;
-                saveOrUpdateBalance(fromAddr, toAddr);
-                tokenQuery.setTokenType(1);
                 tokenQuery.setAddress(toAddr);
                 tokenQuery.setCreateTime(new Date());
                 tokenInfoDao.save(tokenQuery);
             }
+            //增加账户与token关系数据;
+            saveOrUpdateBalance(fromAddr, toAddr);
         }
     }
 
@@ -159,23 +160,34 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * @param contract
      */
     private void saveOrUpdateBalance(String fromAddr, String contract) {
-        String symbol = vm30Utils.symbol(web3j, contract).toString();
+        assert !fromAddr.equals(contract);
+
+        String symbol = "";
+        TokenInfo tokenQuery = new TokenInfo();
+        tokenQuery.setAddress(contract);
+        Example<TokenInfo> tokenExp    = Example.of(tokenQuery);
+        List<TokenInfo>    tokens = tokenInfoDao.findAll(tokenExp);
+        if(tokens.size() > 0 ){
+            symbol = tokens.get(0).getTokenSymbol();
+        }
+        assert StringUtils.isNotBlank(symbol);
         //查询账户余额
         BigInteger          amount  = vm30Utils.balanceOf(web3j, contract, fromAddr);
         TokenAccountBalance balance = new TokenAccountBalance();
         balance.setAccount(fromAddr);
+        balance.setContract(contract);
         balance.setToken(symbol);
         Example<TokenAccountBalance> exp      = Example.of(balance);
         List<TokenAccountBalance>    balances = tokenAccountBalanceDao.findAll(exp);
         if (balances.size() < 1) {
             balance.setContract(contract);
-            balance.setBalance(amount.longValue());
+            balance.setBalance(amount.toString());
             tokenAccountBalanceDao.save(balance);
         } else if (balances.size() == 1) {
             TokenAccountBalance tokenAccountBalance = balances.get(0);
-            tokenAccountBalance.setBalance(amount.longValue());
+            tokenAccountBalance.setBalance(amount.toString());
             //更新账户余额
-            tokenAccountBalanceDao.updateBalance(tokenAccountBalance.getId(), amount.longValue());
+            tokenAccountBalanceDao.updateBalance(tokenAccountBalance.getId(), amount);
         }
 
     }
@@ -252,11 +264,13 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             parames.add(new Address(fromAddr));
             boolean isApprovedForAll = vm30Utils.querryFunction(web3j, parames, "isApprovedForAll", fromAddr, contract);
 
-            if (transfer && allowance && totalSupply && balanceOf && transferFrom) {
-                tokenInfo.setTokenType(1);
-            } else if (balanceOf && ownerOf && safeTransferFrom && transferFrom
-                    && approve && setApprovalForAll && getApproved && isApprovedForAll) {
+            boolean erc20 = transfer && allowance && totalSupply && balanceOf && transferFrom;
+            boolean erc721 = balanceOf && ownerOf && safeTransferFrom && transferFrom && approve && setApprovalForAll && getApproved && isApprovedForAll;
+
+            if ( erc721) {
                 tokenInfo.setTokenType(2);
+            } else if (erc20) {
+                tokenInfo.setTokenType(1);
             } else {
                 tokenInfo.setTokenType(0);
             }

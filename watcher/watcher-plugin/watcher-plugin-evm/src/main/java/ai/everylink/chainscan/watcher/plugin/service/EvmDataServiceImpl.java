@@ -258,7 +258,7 @@ public class EvmDataServiceImpl implements EvmDataService {
             } catch (IOException e) {
                 log.error("[save]error occurred when query tx receipt. tx=" + item.getHash() + ",msg=" + e.getMessage(), e);
             }
-
+            tx.setTokenTag(0);
             tx.setChainType(CHAIN_TYPE);
             inputParams(tx);
             txList.add(tx);

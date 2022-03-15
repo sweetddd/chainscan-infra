@@ -24,6 +24,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
+
 /**
  * CoinDao
  *
@@ -40,5 +42,5 @@ public interface TokenAccountBalanceDao extends JpaRepository<TokenAccountBalanc
     @Query(value = "update token_account_balance set balance=:balance where id=:id", nativeQuery = true)
     @Modifying
     @Transactional
-    public void updateBalance(@Param("id")Long id,  @Param("balance")long balance);
+    public void updateBalance(@Param("id")Long id,  @Param("balance") BigInteger balance);
 }
