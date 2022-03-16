@@ -133,9 +133,9 @@ public class VM30 extends Contract {
     }
 
     public RemoteCall<Utf8String> tokenURL(BigInteger tokenId) {
-        Function function = new Function("tokenURL",
+        Function function = new Function("tokenURI",
                 Arrays.<Type>asList(
-                        new Uint256(1)),
+                        new Uint256(tokenId)),
                 Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {
                 }));
         return executeRemoteCallSingleValueReturn(function, Utf8String.class);
@@ -190,6 +190,22 @@ public class VM30 extends Contract {
                 Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
                 }));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
+    }
+
+    public RemoteCall<BigInteger> tokenOfOwnerByIndex(String _owner,int index) {
+        Function function = new Function("tokenOfOwnerByIndex",
+                Arrays.<Type>asList(new Address(_owner),new Uint256(index)),
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
+                }));
+        return executeRemoteCallSingleValueReturn(function, BigInteger.class);
+    }
+
+    public RemoteCall<Utf8String> tokenURI(BigInteger tokenId) {
+        Function function = new Function("tokenURI",
+                Arrays.<Type>asList(new Uint256(tokenId)),
+                Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {
+                }));
+        return executeRemoteCallSingleValueReturn(function, Utf8String.class);
     }
 
     /**

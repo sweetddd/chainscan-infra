@@ -17,23 +17,30 @@
 
 package ai.everylink.chainscan.watcher.dao;
 
-import ai.everylink.chainscan.watcher.entity.TokenInfo;
+import ai.everylink.chainscan.watcher.entity.NftAccount;
+import ai.everylink.chainscan.watcher.entity.Token;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigInteger;
 
 /**
- * CoinDao
+ * NftAccountDao
  *
  * @author brett
- * @since 2021-12-30
+ * @since 2021-12-14
  */
-public interface TokenInfoDao extends JpaRepository<TokenInfo, String> {
+public interface NftAccountDao extends JpaRepository<NftAccount, String> {
 
     /**
-     *
+     * 删除账户在合约上的NFT信息
+     * @param fromAddr
      * @param contract
-     * @return
      */
-    @Query(value = "select * from token_info where  address=:contract", nativeQuery = true)
-    public TokenInfo findAllByAddress(String contract);
+    @Query(value = "delete from nft_account   where  account=(?1) and contract=(?2)", nativeQuery = true)
+    @Modifying
+    @Transactional
+    public void deleteNftAccount(String fromAddr, String contract);
 }

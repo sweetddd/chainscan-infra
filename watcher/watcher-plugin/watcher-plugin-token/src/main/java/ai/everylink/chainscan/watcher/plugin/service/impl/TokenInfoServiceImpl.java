@@ -20,9 +20,11 @@ package ai.everylink.chainscan.watcher.plugin.service.impl;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.util.VM30Utils;
 import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
+import ai.everylink.chainscan.watcher.dao.NftAccountDao;
 import ai.everylink.chainscan.watcher.dao.TokenAccountBalanceDao;
 import ai.everylink.chainscan.watcher.dao.TokenInfoDao;
 import ai.everylink.chainscan.watcher.dao.TransactionDao;
+import ai.everylink.chainscan.watcher.entity.NftAccount;
 import ai.everylink.chainscan.watcher.entity.TokenAccountBalance;
 import ai.everylink.chainscan.watcher.entity.TokenInfo;
 import ai.everylink.chainscan.watcher.entity.Transaction;
@@ -34,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.*;
 import org.web3j.abi.datatypes.primitive.Byte;
@@ -44,6 +47,7 @@ import org.web3j.protocol.core.methods.response.EthGetCode;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
+import java.beans.Transient;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
@@ -74,6 +78,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
     @Autowired
     private TokenInfoDao tokenInfoDao;
+
+    @Autowired
+    private NftAccountDao nftAccountDao;
 
     @Autowired
     private TokenAccountBalanceDao tokenAccountBalanceDao;
@@ -112,7 +119,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             if (method != null) {
                 if (method.contains("mint(") || method.contains("transfer(") || method.contains("transferFrom(")
                         || method.contains("burn(") || method.contains("burnFrom(")) {
-                    saveOrUpdateBalance(fromAddr, toAddr); //监控此方法更新用户余额信息;
+                    //监控此方法更新用户余额信息;
+                    saveOrUpdateBalance(fromAddr, toAddr);
+                    updateNftAccount(fromAddr, toAddr);
                 }
             }
             transactionDao.updateTokenTag(transaction.getId());
@@ -147,6 +156,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             }
             //增加账户与token关系数据;
             saveOrUpdateBalance(fromAddr, toAddr);
+            updateNftAccount(fromAddr, toAddr);
         }
     }
 
@@ -160,12 +170,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         assert !fromAddr.equals(contract);
 
         String symbol = "";
-        TokenInfo tokenQuery = new TokenInfo();
-        tokenQuery.setAddress(contract);
-        Example<TokenInfo> tokenExp    = Example.of(tokenQuery);
-        List<TokenInfo>    tokens = tokenInfoDao.findAll(tokenExp);
-        if(tokens.size() > 0 ){
-            symbol = tokens.get(0).getTokenSymbol();
+        TokenInfo    tokens = tokenInfoDao.findAllByAddress(contract);
+        if(tokens != null ){
+            symbol = tokens.getTokenSymbol();
         }
         assert StringUtils.isNotBlank(symbol);
         //查询账户余额
@@ -188,6 +195,39 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         }
 
     }
+
+
+    /**
+     * 更新用户 NFT账户信息;
+     * @param fromAddr
+     * @param contract
+     */
+    @Transactional
+    public void updateNftAccount(String fromAddr, String contract) {
+        TokenInfo   tokens = tokenInfoDao.findAllByAddress(contract);
+        assert tokens != null && tokens.getTokenType()==2;
+        NftAccount nftAccountQuer = new NftAccount();
+        nftAccountQuer.setAccount(fromAddr);
+        nftAccountQuer.setContract(contract);
+        nftAccountDao.deleteNftAccount(fromAddr,contract); //清楚账户的NFT旧信息;
+        //批量获取nft的数据信息;
+        BigInteger count  = vm30Utils.balanceOf(web3j, contract, fromAddr);
+        ArrayList<NftAccount> nfts = new ArrayList<>();
+        for (int i = 0; i < count.intValue(); i++) {
+            NftAccount nftAccount = new NftAccount();
+            nftAccount.setContractName(tokens.getTokenName());
+            nftAccount.setAccount(fromAddr);
+            nftAccount.setContract(contract);
+            //tokenOfOwnerByIndex
+            BigInteger tokenId  = vm30Utils.tokenOfOwnerByIndex(web3j, contract, fromAddr,i);
+            Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
+            nftAccount.setNftData(tokenURL.toString());
+            nftAccount.setNftId(tokenId.longValue());
+            nfts.add(nftAccount);
+        }
+        nftAccountDao.saveAll(nfts);
+    }
+
 
     /**
      * 校验tokenType

@@ -214,6 +214,46 @@ public class VM30Utils {
     }
 
     /**
+     * 查询ERC721 合约的所有NFT的tokenId
+     * @param web3j
+     * @param contractAddress
+     * @param address
+     * @return
+     */
+    @SneakyThrows
+    public BigInteger tokenOfOwnerByIndex(Web3j web3j, String contractAddress, String address,int index) {
+        VM30       contract = getContranct(web3j, contractAddress);
+        BigInteger tokenId  = new BigInteger("0");
+        try {
+            tokenId = contract.tokenOfOwnerByIndex(address,index).send();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.debug("获取tokenId失败:" + contractAddress);
+        }
+        return tokenId;
+    }
+
+    /**
+     * 更具tokenId 查询NFT的元数据
+     * @param web3j
+     * @param tokenId
+     * @return
+     */
+    @SneakyThrows
+    public String tokenURI(Web3j web3j, String contractAddress, BigInteger tokenId) {
+        VM30       contract = getContranct(web3j, contractAddress);
+        String tokenURI  = "";
+        try {
+            tokenURI= contract.tokenURL(tokenId).send().toString();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.debug("获取tokenURI失败:" + contractAddress);
+        }
+        return tokenURI;
+    }
+
+
+    /**
      * 查询指定合约, 转账接口
      *
      * @param web3j
