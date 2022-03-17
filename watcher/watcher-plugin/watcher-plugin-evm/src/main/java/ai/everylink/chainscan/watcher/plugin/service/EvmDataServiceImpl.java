@@ -242,7 +242,6 @@ public class EvmDataServiceImpl implements EvmDataService {
                         tx.setStatus("0x0");
                         //fail
                         String failMsg = getFailMsg(item);
-                        log.info("failMsg = {}",failMsg);
 
                         tx.setFailMsg(failMsg);
 
@@ -296,10 +295,8 @@ public class EvmDataServiceImpl implements EvmDataService {
                     Arrays.asList(tr, defaultBlockParameter),
                     httpService,
                     org.web3j.protocol.core.methods.response.EthCall.class).send();
-            log.error("send.getError() = " + send.getError());
 
             if (null != send.getError() && !StringUtils.isEmpty(send.getError().getMessage())){
-                log.error("send.getMessage() = " + send.getError().getMessage());
 
                 return send.getError().getMessage();
             }
