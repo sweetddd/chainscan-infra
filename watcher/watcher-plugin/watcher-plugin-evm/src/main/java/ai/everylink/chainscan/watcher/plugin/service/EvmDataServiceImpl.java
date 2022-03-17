@@ -93,7 +93,7 @@ public class EvmDataServiceImpl implements EvmDataService {
 
             String rpcUrl = System.getenv("watcher.vmChainUrl");
             if (rpcUrl == null) {
-                rpcUrl = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyUrl();
+                rpcUrl = SpringApplicationUtils.getBean(EvmConfig.class).getDtxUrl();
             }
             log.info("[rpc_url]url=" + rpcUrl);
 
