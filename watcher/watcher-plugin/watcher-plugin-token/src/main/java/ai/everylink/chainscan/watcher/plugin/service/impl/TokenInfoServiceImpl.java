@@ -152,6 +152,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 checkTokenType(toAddr, fromAddr, tokenQuery);
                 tokenQuery.setAddress(toAddr);
                 tokenQuery.setCreateTime(new Date());
+                tokenQuery.setCreateTime(new Date());
                 tokenInfoDao.save(tokenQuery);
             }
             //增加账户与token关系数据;
