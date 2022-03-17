@@ -1,19 +1,6 @@
 package ai.everylink.chainscan.watcher.core.util;
 
-import io.emeraldpay.polkaj.api.*;
-import io.emeraldpay.polkaj.apihttp.JavaHttpAdapter;
-import io.emeraldpay.polkaj.apiws.JavaHttpSubscriptionAdapter;
-import io.emeraldpay.polkaj.json.BlockJson;
-import io.emeraldpay.polkaj.json.BlockResponseJson;
-import io.emeraldpay.polkaj.json.RuntimeVersionJson;
-import io.emeraldpay.polkaj.json.SystemHealthJson;
 import io.emeraldpay.polkaj.scale.ScaleCodecReader;
-import io.emeraldpay.polkaj.scale.ScaleExtract;
-import io.emeraldpay.polkaj.scaletypes.*;
-import io.emeraldpay.polkaj.ss58.SS58Type;
-import io.emeraldpay.polkaj.types.Address;
-import io.emeraldpay.polkaj.types.ByteData;
-import io.emeraldpay.polkaj.types.Hash256;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;

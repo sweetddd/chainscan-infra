@@ -295,13 +295,8 @@ public class EvmDataServiceImpl implements EvmDataService {
                     httpService,
                     org.web3j.protocol.core.methods.response.EthCall.class).send();
 
-            if (null != send.getError() && !StringUtils.isEmpty(send.getError().getData())){
-                String code = send.getError().getData();
-                if (code.length() > 135){
-                    code = code.substring(134);
-                }
-                String s = HexUtils.toStringHex2(code);
-                return s;
+            if (null != send.getError() && !StringUtils.isEmpty(send.getError().getMessage())){
+                return send.getError().getMessage();
             }
 
         }catch (Exception e){
