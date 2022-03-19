@@ -262,6 +262,10 @@ public class EvmDataServiceImpl implements EvmDataService {
                             //设置to地址为合约地址
                             tx.setToAddr(receipt.getContractAddress());
                         }
+                        if(function.equals("0x60e06040") && receipt.getContractAddress() != null){
+                            //设置to地址为合约地址
+                            tx.setToAddr(receipt.getContractAddress());
+                        }
                     }
                     //合约地址存储
                     tx.setContractAddress(receipt.getContractAddress());
