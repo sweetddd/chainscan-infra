@@ -24,11 +24,10 @@ import ai.everylink.chainscan.watcher.dao.NftAccountDao;
 import ai.everylink.chainscan.watcher.dao.TokenAccountBalanceDao;
 import ai.everylink.chainscan.watcher.dao.TokenInfoDao;
 import ai.everylink.chainscan.watcher.dao.TransactionDao;
-import ai.everylink.chainscan.watcher.entity.NftAccount;
-import ai.everylink.chainscan.watcher.entity.TokenAccountBalance;
-import ai.everylink.chainscan.watcher.entity.TokenInfo;
-import ai.everylink.chainscan.watcher.entity.Transaction;
+import ai.everylink.chainscan.watcher.dao.TransactionLogDao;
+import ai.everylink.chainscan.watcher.entity.*;
 import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
+import com.alibaba.fastjson.JSONArray;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +64,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class TokenInfoServiceImpl implements TokenInfoService {
 
+    private static String BRIDGE_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
     private Web3j web3j;
 
     @Value("${watcher.vmChainUrl:}")
@@ -75,6 +76,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
     @Autowired
     private TransactionDao transactionDao;
+
+    @Autowired
+    private TransactionLogDao transactionLogDao;
 
     @Autowired
     private TokenInfoDao tokenInfoDao;
@@ -105,7 +109,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
     @Override
     public void tokenScan() {
-        List<Transaction>    all     = transactionDao.findByTokenTag(0);
+        List<Transaction> all = transactionDao.findByTokenTag(0);
         for (Transaction transaction : all) {
             String method   = transaction.getInputMethod();
             String value    = transaction.getValue();
@@ -126,10 +130,36 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             }
             transactionDao.updateTokenTag(transaction.getId());
         }
+
+        // 事件监听;
+        for (Transaction transaction : all) {
+            List<TransactionLog> logs = transactionLogDao.findByTxHash(transaction.getTransactionHash());
+            for (TransactionLog transactionLog : logs) {
+                String    contract  = transactionLog.getAddress();
+                TokenInfo tokens    = tokenInfoDao.findAllByAddress(contract);
+                String    topics    = transactionLog.getTopics();
+                JSONArray topicList = JSONArray.parseArray(topics);
+
+                //断言: 为跨链;
+                if (topicList.get(0).equals(BRIDGE_TOPIC)) {
+                    // ERC20 跨链:
+                    if (tokens != null && tokens.getTokenType() == 1) {
+                        String address = topicList.get(2).toString().replace("000000000000000000000000","");
+                        saveOrUpdateBalance(address, contract);
+                    } else if (tokens != null && tokens.getTokenType() == 2) {
+                        // ERC721 跨链:
+                        String address = topicList.get(2).toString().replace("000000000000000000000000","");
+                        saveOrUpdateBalance(address, contract);
+                        updateNftAccount(address, contract);
+                    }
+                }
+            }
+        }
+
     }
 
-
     /**
+     * 2
      * 触发是否 增加token信息;
      *
      * @param toAddr
@@ -170,9 +200,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
     private void saveOrUpdateBalance(String fromAddr, String contract) {
         assert !fromAddr.equals(contract);
 
-        String symbol = "";
-        TokenInfo    tokens = tokenInfoDao.findAllByAddress(contract);
-        if(tokens != null ){
+        String    symbol = "";
+        TokenInfo tokens = tokenInfoDao.findAllByAddress(contract);
+        if (tokens != null) {
             symbol = tokens.getTokenSymbol();
         }
         assert StringUtils.isNotBlank(symbol);
@@ -200,27 +230,30 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
     /**
      * 更新用户 NFT账户信息;
+     *
      * @param fromAddr
      * @param contract
      */
     @Transactional
     public void updateNftAccount(String fromAddr, String contract) {
-        TokenInfo   tokens = tokenInfoDao.findAllByAddress(contract);
-        assert tokens != null && tokens.getTokenType()==2;
+        TokenInfo tokens = tokenInfoDao.findAllByAddress(contract);
+        if( tokens == null || tokens.getTokenType() != 2){
+            return;
+        }
         NftAccount nftAccountQuer = new NftAccount();
         nftAccountQuer.setAccount(fromAddr);
         nftAccountQuer.setContract(contract);
-        nftAccountDao.deleteNftAccount(fromAddr,contract); //清楚账户的NFT旧信息;
+        nftAccountDao.deleteNftAccount(fromAddr, contract); //清楚账户的NFT旧信息;
         //批量获取nft的数据信息;
-        BigInteger count  = vm30Utils.balanceOf(web3j, contract, fromAddr);
-        ArrayList<NftAccount> nfts = new ArrayList<>();
+        BigInteger            count = vm30Utils.balanceOf(web3j, contract, fromAddr);
+        ArrayList<NftAccount> nfts  = new ArrayList<>();
         for (int i = 0; i < count.intValue(); i++) {
             NftAccount nftAccount = new NftAccount();
             nftAccount.setContractName(tokens.getTokenName());
             nftAccount.setAccount(fromAddr);
             nftAccount.setContract(contract);
             //tokenOfOwnerByIndex
-            BigInteger tokenId  = vm30Utils.tokenOfOwnerByIndex(web3j, contract, fromAddr,i);
+            BigInteger tokenId  = vm30Utils.tokenOfOwnerByIndex(web3j, contract, fromAddr, i);
             Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
             nftAccount.setNftData(tokenURL.toString());
             nftAccount.setNftId(tokenId.longValue());
@@ -302,10 +335,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             parames.add(new Address(fromAddr));
             boolean isApprovedForAll = vm30Utils.querryFunction(web3j, parames, "isApprovedForAll", fromAddr, contract);
 
-            boolean erc20 = transfer && allowance && totalSupply && balanceOf && transferFrom;
+            boolean erc20  = transfer && allowance && totalSupply && balanceOf && transferFrom;
             boolean erc721 = balanceOf && ownerOf && safeTransferFrom && transferFrom && approve && setApprovalForAll && getApproved && isApprovedForAll;
 
-            if ( erc721) {
+            if (erc721) {
                 tokenInfo.setTokenType(2);
             } else if (erc20) {
                 tokenInfo.setTokenType(1);

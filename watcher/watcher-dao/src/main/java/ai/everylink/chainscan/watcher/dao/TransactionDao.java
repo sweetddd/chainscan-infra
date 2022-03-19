@@ -76,6 +76,6 @@ public interface TransactionDao extends JpaRepository<Transaction, Long> {
      * @param tokenTag
      * @return
      */
-    @Query(value = "select * from transaction where token_tag=:tokenTag", nativeQuery = true)
+    @Query(value = "select * from transaction where token_tag=:tokenTag order by create_time", nativeQuery = true)
     List<Transaction> findByTokenTag(int tokenTag);
 }

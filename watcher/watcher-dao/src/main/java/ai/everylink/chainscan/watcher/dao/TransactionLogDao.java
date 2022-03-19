@@ -45,4 +45,9 @@ public interface TransactionLogDao extends JpaRepository<TransactionLog, Long> {
     int deleteByTransactionHash(List<String> transactionHashList);
 
 
+    /**
+     * 查询指定hash的log
+     */
+    @Query(value = "select * from transaction_log where transaction_hash=:txHash", nativeQuery = true)
+    public List<TransactionLog>  findByTxHash(String txHash);
 }
