@@ -27,6 +27,9 @@ public class DecodUtils {
         put("0x40c10f19", "Function: mint(address _who, uint256 _value) ***");
         put("0x095ea7b3", "Function: approve(address _spender, uint256 _value) ***");
         put("0x05e2ca17", "Function: deposit(uint8 destinationChainID, bytes32 resourceID, bytes data) ***");
+        put("0xa44f5fe6", "Function: deposit(uint32 destinationChainID, bytes32 resourceID, bytes calldata data) ***");
+        put("0xee1c1c7b", "Function: depositETH(uint32 destinationChainID, bytes32 resourceID, bytes calldata data) ***");
+        put("0xfe4464a7", "Function: depositNFT(uint32 destinationChainID, bytes32 resourceID, bytes calldata data) ***");
         put("0x8c0c2631", "Function: adminSetBurnable(address handlerAddress, address tokenAddress) ***");
         put("0xd3fc9864", "Function: mint(address _to, uint256 _value, string symbol) ***");
         put("0x2f2ff15d", "Function: grantRole(bytes32 role, address account) ***");
@@ -120,7 +123,7 @@ public class DecodUtils {
 
     public static void main(String[] args) {
         try {
-            String inputData = "0xcb10f215000000000000000000000000c2aea54c49a59ca56cd654ff36a29ff8c0d906fc000000000000000000000000000003521ebe4a02bbc34786d860b355f5a5ce0000000000000000000000000061e9ceecb6e162457e9416ffb692c116446256dd";
+            String inputData = "0xa44f5fe60000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000003542ebe4a02bbc34786d860b355f5a5ce00000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000540000000000000000000000000000000000000000000000000000000005f5e10000000000000000000000000000000000000000000000000000000000000000146da573eec80f63c98b88ced15d32ca270787fb5a000000000000000000000000";
             String params    = getParams(inputData);
             System.out.println(params);
         } catch (Exception e) {
