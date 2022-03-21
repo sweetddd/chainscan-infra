@@ -1,5 +1,6 @@
 package ai.everylink.chainscan.watcher.plugin.util;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.web3j.abi.TypeDecoder;
@@ -9,6 +10,7 @@ import org.web3j.abi.datatypes.generated.Uint256;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static javax.swing.UIManager.put;
@@ -60,8 +62,8 @@ public class DecodUtils {
      */
     public static String getParams(String input) {
         String                  methodID  = input.substring(0, 10);
-        String                  sub       = input.substring(10, input.length());
-        HashMap<String, String> paramsMap = new HashMap<>();
+        String                        sub       = input.substring(10, input.length());
+        LinkedHashMap<String, Object> paramsMap = new LinkedHashMap<>();
         paramsMap.put("MethodID", methodID);
         int start = 0;
         for (int i = 1; i <= sub.length() / 64; i++) {
@@ -71,6 +73,7 @@ public class DecodUtils {
         Gson gson = new Gson();
         return gson.toJson(paramsMap);
     }
+
 
     /**
      * 解析地址信息
@@ -117,18 +120,9 @@ public class DecodUtils {
 
     public static void main(String[] args) {
         try {
-            String inputData = "0xa9059cbb0000000000000000000000005c5212ed85cc957c6b656d209a7be8812ab00e330000000000000000000000000000000000000000000000008d8dadf544fc0000";
-            String method    = inputData.substring(0, 10);
-            System.out.println(method);
-            String to        = inputData.substring(10, 74);
-            String value     = inputData.substring(74);
-            Method refMethod = null;
-            refMethod = TypeDecoder.class.getDeclaredMethod("decode", String.class, int.class, Class.class);
-            refMethod.setAccessible(true);
-            Address address = (Address) refMethod.invoke(null, to, 0, Address.class);
-            System.out.println(address.toString());
-            Uint256 amount = (Uint256) refMethod.invoke(null, value, 0, Uint256.class);
-            System.out.println(amount.getValue());
+            String inputData = "0xcb10f215000000000000000000000000c2aea54c49a59ca56cd654ff36a29ff8c0d906fc000000000000000000000000000003521ebe4a02bbc34786d860b355f5a5ce0000000000000000000000000061e9ceecb6e162457e9416ffb692c116446256dd";
+            String params    = getParams(inputData);
+            System.out.println(params);
         } catch (Exception e) {
             e.printStackTrace();
         }
