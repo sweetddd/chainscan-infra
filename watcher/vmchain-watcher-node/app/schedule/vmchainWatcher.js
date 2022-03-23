@@ -13,8 +13,8 @@ const DTX_WEB3J_URL = process.env.DTX_WEB3J_URL;
 //const DTX_WEB3J_URL = 'http://vmchain-dev-node-0-sandbox.chain-sandbox.svc.cluster.local:9934';
 const wsProvider = new HttpProvider(DTX_WEB3J_URL);
 let context = fs.readFileSync('./config/types.json');
-
 const typesData = JSON.parse(context);
+let api = null;
 
 
 
@@ -105,15 +105,17 @@ async function baseBlock(ctx,api,maxBlockNumber){
 
 
 async function vmchainWatcher(ctx) {
-    const time = new Date().getTime();
-    console.log(time);
+
     // Create our API with a default connection to the local node
-    // const api = await ApiPromise.create({
-    //     provider: wsProvider,
-    //     types: typesData,
-    // });
+    if(!api){
+        api = await ApiPromise.create({
+            provider: wsProvider,
+            types: typesData,
+        });
+    }
+    
 
 // numberToHex(0x1234, 32); // => 0x00001234
-    // await scanBlock(ctx,api);
+    await scanBlock(ctx,api);
 
 }
