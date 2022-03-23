@@ -49,7 +49,7 @@ public class Block {
     private Integer chainId;
 
     @Column(name = "block_timestamp")
-    private Date blockTimestamp;
+    private Long blockTimestamp;
 
     @Column(name = "parent_hash")
     private String parentHash;

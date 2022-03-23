@@ -174,7 +174,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setBlockNumber(data.getBlock().getNumber().longValue());
         block.setBlockHash(data.getBlock().getHash());
         block.setChainId(chainId);
-        block.setBlockTimestamp(convertTime(data.getBlock().getTimestamp().longValue()*1000));
+        block.setBlockTimestamp(data.getBlock().getTimestamp().longValue()*1000);
         block.setParentHash(data.getBlock().getParentHash());
         try {
             block.setNonce(data.getBlock().getNonce().toString());
@@ -213,7 +213,7 @@ public class EvmDataServiceImpl implements EvmDataService {
             tx.setChainId(chainId);
             tx.setTransactionIndex(item.getTransactionIndex().intValue());
             tx.setFailMsg("");
-            tx.setTxTimestamp(convertTime(data.getBlock().getTimestamp().longValue()*1000));
+            tx.setTxTimestamp(data.getBlock().getTimestamp().longValue()*1000);
             tx.setFromAddr(item.getFrom());
             if (Objects.nonNull(item.getTo())) {
                 tx.setToAddr(item.getTo());
