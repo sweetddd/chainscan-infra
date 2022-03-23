@@ -160,6 +160,7 @@ public class EvmWatcher implements IWatcher {
     }
 
     private void init() {
+        logger.info("[EvmWatcher]timeZone={}", Calendar.getInstance().getTimeZone());
         initWeb3j();
         initService();
         step = SpringApplicationUtils.getBean(EvmConfig.class).getDtxScanStep();
