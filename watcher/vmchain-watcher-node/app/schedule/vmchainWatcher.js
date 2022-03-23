@@ -8,8 +8,8 @@ const fs = require("fs");
 // const { hexToU8a, isHex, stringToU8a,hexToBn,numberToHex } =  require('@polkadot/util');
 
 
-const DTX_WEB3J_URL = process.env.DTX_WEB3J_URL;
-//const DTX_WEB3J_URL = 'http://vmdev.infra.powx.io';
+//const DTX_WEB3J_URL = process.env.DTX_WEB3J_URL;
+const DTX_WEB3J_URL = 'http://vmdev.infra.powx.io';
 //const DTX_WEB3J_URL = 'http://vmchain-dev-node-0-sandbox.chain-sandbox.svc.cluster.local:9934';
 const wsProvider = new HttpProvider(DTX_WEB3J_URL);
 let context = fs.readFileSync('./config/types.json');
@@ -45,16 +45,15 @@ async function scanBlock(ctx,api){
         maxBlockNumber=1;
     }
     
-    console.log('maxBlockNumber')
-    console.log(maxBlockNumber)
     await baseBlock(ctx,api,maxBlockNumber);
     await baseBlock(ctx,api,maxBlockNumber+1);
 
 }
 
 async function baseBlock(ctx,api,maxBlockNumber){
-    next_schedule = false;
+    console.log('maxBlockNumber')
     console.log(maxBlockNumber)
+    next_schedule = false;
     let newBlock =  await api.query.cposContribution.contributionBlocks(maxBlockNumber);
 
     if(!newBlock.toString()){
@@ -85,14 +84,15 @@ async function baseBlock(ctx,api,maxBlockNumber){
         } catch (error) {
             console.log('error')
             console.log(error.message);
-            let currentMaxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
-            if(!currentMaxBlockNumber){
-                next_schedule = true;
-                return
-            }
-            setTimeout(()=>{
-                baseBlock(ctx,api,maxBlockNumber)
-            },5000);
+            // let currentMaxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
+            // if(!currentMaxBlockNumber){
+            //     next_schedule = true;
+            //     return
+            // }
+            next_schedule = true;
+            // setTimeout(()=>{
+            //     baseBlock(ctx,api,maxBlockNumber)
+            // },5000);
             
         }
         

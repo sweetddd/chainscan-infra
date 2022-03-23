@@ -251,7 +251,8 @@
       "pageUrl": ""
     },
     "siteFile": {
-      "/favicon.ico": "<Buffer len: 6463>"
+      "/favicon.ico": "<Buffer len: 6463>",
+      "cacheControl": "public, max-age=2592000"
     },
     "bodyParser": {
       "enable": true,
@@ -493,7 +494,7 @@
       "env": [],
       "from": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/config/plugin.js",
       "path": "/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-mysql",
-      "version": "3.0.0"
+      "version": "3.1.0"
     },
     "cors": {
       "enable": true,
