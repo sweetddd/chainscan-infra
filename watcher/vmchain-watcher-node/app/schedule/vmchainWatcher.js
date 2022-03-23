@@ -35,22 +35,20 @@ module.exports = {
 let next_schedule = true;
 
 async function scanBlock(ctx,api){
-    const time = new Date().getTime();
-    console.log(time);
-    // console.log('next_schedule')
-    // console.log(next_schedule)
-    // if(!next_schedule){
-    //     return
-    // }
-    // let maxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
-    // if(!maxBlockNumber){
-    //     maxBlockNumber=1;
-    // }
+    console.log('next_schedule')
+    console.log(next_schedule)
+    if(!next_schedule){
+        return
+    }
+    let maxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
+    if(!maxBlockNumber){
+        maxBlockNumber=1;
+    }
     
-    // console.log('maxBlockNumber')
-    // console.log(maxBlockNumber)
-    // await baseBlock(ctx,api,maxBlockNumber);
-    // await baseBlock(ctx,api,maxBlockNumber+1);
+    console.log('maxBlockNumber')
+    console.log(maxBlockNumber)
+    await baseBlock(ctx,api,maxBlockNumber);
+    await baseBlock(ctx,api,maxBlockNumber+1);
 
 }
 
