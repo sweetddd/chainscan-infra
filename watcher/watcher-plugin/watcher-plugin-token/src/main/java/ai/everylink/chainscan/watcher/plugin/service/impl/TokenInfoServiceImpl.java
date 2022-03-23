@@ -20,13 +20,14 @@ package ai.everylink.chainscan.watcher.plugin.service.impl;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.util.VM30Utils;
 import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
+import ai.everylink.chainscan.watcher.dao.NftAccountDao;
 import ai.everylink.chainscan.watcher.dao.TokenAccountBalanceDao;
 import ai.everylink.chainscan.watcher.dao.TokenInfoDao;
 import ai.everylink.chainscan.watcher.dao.TransactionDao;
-import ai.everylink.chainscan.watcher.entity.TokenAccountBalance;
-import ai.everylink.chainscan.watcher.entity.TokenInfo;
-import ai.everylink.chainscan.watcher.entity.Transaction;
+import ai.everylink.chainscan.watcher.dao.TransactionLogDao;
+import ai.everylink.chainscan.watcher.entity.*;
 import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
+import com.alibaba.fastjson.JSONArray;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.web3j.abi.datatypes.*;
 import org.web3j.abi.datatypes.generated.*;
 import org.web3j.abi.datatypes.primitive.Byte;
@@ -44,6 +46,7 @@ import org.web3j.protocol.core.methods.response.EthGetCode;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
+import java.beans.Transient;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,6 +64,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class TokenInfoServiceImpl implements TokenInfoService {
 
+    private static String BRIDGE_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
     private Web3j web3j;
 
     @Value("${watcher.vmChainUrl:}")
@@ -73,7 +78,13 @@ public class TokenInfoServiceImpl implements TokenInfoService {
     private TransactionDao transactionDao;
 
     @Autowired
+    private TransactionLogDao transactionLogDao;
+
+    @Autowired
     private TokenInfoDao tokenInfoDao;
+
+    @Autowired
+    private NftAccountDao nftAccountDao;
 
     @Autowired
     private TokenAccountBalanceDao tokenAccountBalanceDao;
@@ -98,10 +109,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
     @Override
     public void tokenScan() {
-        Transaction txQuery = new Transaction();
-        txQuery.setTokenTag(0);
-        Example<Transaction> example = Example.of(txQuery);
-        List<Transaction>    all     = transactionDao.findAll(example);
+        List<Transaction> all = transactionDao.findByTokenTag(0);
         for (Transaction transaction : all) {
             String method   = transaction.getInputMethod();
             String value    = transaction.getValue();
@@ -113,17 +121,45 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             }
             //账户信息余额更新;
             if (method != null) {
-                if (method.equals("mint(") || method.equals("transfer(") || method.equals("transferFrom(")
-                        || method.equals("burn(") || method.equals("burnFrom(")) {
-                    saveOrUpdateBalance(fromAddr, toAddr); //监控此方法更新用户余额信息;
+                if (method.contains("mint(") || method.contains("transfer(") || method.contains("transferFrom(")
+                        || method.contains("burn(") || method.contains("burnFrom(")) {
+                    //监控此方法更新用户余额信息;
+                    saveOrUpdateBalance(fromAddr, toAddr);
+                    updateNftAccount(fromAddr, toAddr);
                 }
             }
             transactionDao.updateTokenTag(transaction.getId());
         }
+
+        // 事件监听;
+        for (Transaction transaction : all) {
+            List<TransactionLog> logs = transactionLogDao.findByTxHash(transaction.getTransactionHash());
+            for (TransactionLog transactionLog : logs) {
+                String    contract  = transactionLog.getAddress();
+                TokenInfo tokens    = tokenInfoDao.findAllByAddress(contract);
+                String    topics    = transactionLog.getTopics();
+                JSONArray topicList = JSONArray.parseArray(topics);
+
+                //断言: 为跨链;
+                if (topicList.get(0).equals(BRIDGE_TOPIC)) {
+                    // ERC20 跨链:
+                    if (tokens != null && tokens.getTokenType() == 1) {
+                        String address = topicList.get(2).toString().replace("000000000000000000000000","");
+                        saveOrUpdateBalance(address, contract);
+                    } else if (tokens != null && tokens.getTokenType() == 2) {
+                        // ERC721 跨链:
+                        String address = topicList.get(2).toString().replace("000000000000000000000000","");
+                        saveOrUpdateBalance(address, contract);
+                        updateNftAccount(address, contract);
+                    }
+                }
+            }
+        }
+
     }
 
-
     /**
+     * 2
      * 触发是否 增加token信息;
      *
      * @param toAddr
@@ -132,23 +168,26 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
         String     name     = vm30Utils.name(web3j, toAddr).toString();
         BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
-        if (symbol != null && name != null) {
+        if (StringUtils.isNotBlank(symbol) && StringUtils.isNotBlank(name)) {
             TokenInfo tokenQuery = new TokenInfo();
+            tokenQuery.setAddress(toAddr);
+            Example<TokenInfo> exp    = Example.of(tokenQuery);
+            List<TokenInfo>    tokens = tokenInfoDao.findAll(exp);
             tokenQuery.setTokenName(name);
             tokenQuery.setTokenSymbol(symbol);
             tokenQuery.setDecimals(decimals);
-            Example<TokenInfo> exp    = Example.of(tokenQuery);
-            List<TokenInfo>    tokens = tokenInfoDao.findAll(exp);
+            checkTokenType(toAddr, fromAddr, tokenQuery);
             if (tokens.size() < 1) {
                 //判断合约类型
                 checkTokenType(toAddr, fromAddr, tokenQuery);
-                //增加账户与token关系数据;
-                saveOrUpdateBalance(fromAddr, toAddr);
-                tokenQuery.setTokenType(1);
                 tokenQuery.setAddress(toAddr);
+                tokenQuery.setCreateTime(new Date());
                 tokenQuery.setCreateTime(new Date());
                 tokenInfoDao.save(tokenQuery);
             }
+            //增加账户与token关系数据;
+            saveOrUpdateBalance(fromAddr, toAddr);
+            updateNftAccount(fromAddr, toAddr);
         }
     }
 
@@ -159,26 +198,70 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * @param contract
      */
     private void saveOrUpdateBalance(String fromAddr, String contract) {
-        String symbol = vm30Utils.symbol(web3j, contract).toString();
+        assert !fromAddr.equals(contract);
+
+        String    symbol = "";
+        TokenInfo tokens = tokenInfoDao.findAllByAddress(contract);
+        if (tokens != null) {
+            symbol = tokens.getTokenSymbol();
+        }
+        assert StringUtils.isNotBlank(symbol);
         //查询账户余额
         BigInteger          amount  = vm30Utils.balanceOf(web3j, contract, fromAddr);
         TokenAccountBalance balance = new TokenAccountBalance();
         balance.setAccount(fromAddr);
+        balance.setContract(contract);
         balance.setToken(symbol);
         Example<TokenAccountBalance> exp      = Example.of(balance);
         List<TokenAccountBalance>    balances = tokenAccountBalanceDao.findAll(exp);
         if (balances.size() < 1) {
             balance.setContract(contract);
-            balance.setBalance(amount.longValue());
+            balance.setBalance(amount.toString());
             tokenAccountBalanceDao.save(balance);
         } else if (balances.size() == 1) {
             TokenAccountBalance tokenAccountBalance = balances.get(0);
-            tokenAccountBalance.setBalance(amount.longValue());
+            tokenAccountBalance.setBalance(amount.toString());
             //更新账户余额
-            tokenAccountBalanceDao.updateBalance(tokenAccountBalance.getId(), amount.longValue());
+            tokenAccountBalanceDao.updateBalance(tokenAccountBalance.getId(), amount);
         }
 
     }
+
+
+    /**
+     * 更新用户 NFT账户信息;
+     *
+     * @param fromAddr
+     * @param contract
+     */
+    @Transactional
+    public void updateNftAccount(String fromAddr, String contract) {
+        TokenInfo tokens = tokenInfoDao.findAllByAddress(contract);
+        if( tokens == null || tokens.getTokenType() != 2){
+            return;
+        }
+        NftAccount nftAccountQuer = new NftAccount();
+        nftAccountQuer.setAccount(fromAddr);
+        nftAccountQuer.setContract(contract);
+        nftAccountDao.deleteNftAccount(fromAddr, contract); //清楚账户的NFT旧信息;
+        //批量获取nft的数据信息;
+        BigInteger            count = vm30Utils.balanceOf(web3j, contract, fromAddr);
+        ArrayList<NftAccount> nfts  = new ArrayList<>();
+        for (int i = 0; i < count.intValue(); i++) {
+            NftAccount nftAccount = new NftAccount();
+            nftAccount.setContractName(tokens.getTokenName());
+            nftAccount.setAccount(fromAddr);
+            nftAccount.setContract(contract);
+            //tokenOfOwnerByIndex
+            BigInteger tokenId  = vm30Utils.tokenOfOwnerByIndex(web3j, contract, fromAddr, i);
+            Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
+            nftAccount.setNftData(tokenURL.toString());
+            nftAccount.setNftId(tokenId.longValue());
+            nfts.add(nftAccount);
+        }
+        nftAccountDao.saveAll(nfts);
+    }
+
 
     /**
      * 校验tokenType
@@ -252,11 +335,13 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             parames.add(new Address(fromAddr));
             boolean isApprovedForAll = vm30Utils.querryFunction(web3j, parames, "isApprovedForAll", fromAddr, contract);
 
-            if (transfer && allowance && totalSupply && balanceOf && transferFrom) {
-                tokenInfo.setTokenType(1);
-            } else if (balanceOf && ownerOf && safeTransferFrom && transferFrom
-                    && approve && setApprovalForAll && getApproved && isApprovedForAll) {
+            boolean erc20  = transfer && allowance && totalSupply && balanceOf && transferFrom;
+            boolean erc721 = balanceOf && ownerOf && safeTransferFrom && transferFrom && approve && setApprovalForAll && getApproved && isApprovedForAll;
+
+            if (erc721) {
                 tokenInfo.setTokenType(2);
+            } else if (erc20) {
+                tokenInfo.setTokenType(1);
             } else {
                 tokenInfo.setTokenType(0);
             }

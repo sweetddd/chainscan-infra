@@ -38,7 +38,7 @@ logging:
         ai.everylink.openapi: info
 
 coin:
-  chainIds: "4,299"
+  chainIds: "4,230"
 evm:
   vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
 watcher:

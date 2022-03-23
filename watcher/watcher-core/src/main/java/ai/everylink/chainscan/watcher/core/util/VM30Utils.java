@@ -79,7 +79,7 @@ public class VM30Utils {
             totalSupply = contract.burnt().send();
         } catch (Exception ex) {
             ex.printStackTrace();
-            log.error("获取burnt失败:" + contractAddress);
+            log.debug("获取burnt失败:" + contractAddress);
         }
         return totalSupply;
     }
@@ -104,7 +104,7 @@ public class VM30Utils {
                 message = message.replace("Unable to convert response: ", "");
                 symbol = new Utf8String(message);
             } else {
-                log.error("获取symbol失败:" + contractAddress);
+                log.debug("获取symbol失败:" + contractAddress);
             }
         }
         return symbol;
@@ -130,7 +130,7 @@ public class VM30Utils {
                 message = message.replace("Unable to convert response: ", "");
                 tokenURL = new Utf8String(message);
             } else {
-                log.error("获取tokenURL失败:" + contractAddress);
+                log.debug("获取tokenURL失败:" + contractAddress);
             }
         }
         return tokenURL;
@@ -156,7 +156,7 @@ public class VM30Utils {
                 message = message.replace("Unable to convert response: ", "");
                 name = new Utf8String(message);
             } else {
-                log.error("获取name失败:" + contractAddress);
+                log.debug("获取name失败:" + contractAddress);
             }
         }
         return name;
@@ -183,10 +183,8 @@ public class VM30Utils {
                 message = message.replace("Unable to convert response: ", "");
                 decimals = new BigInteger(message);
             } else {
-                log.error("获取decimals失败:" + contractAddress);
+                log.debug("获取decimals失败:" + contractAddress);
             }
-
-
         }
         return decimals;
     }
@@ -206,11 +204,54 @@ public class VM30Utils {
         try {
             balance = contract.balanceOf(address).send();
         } catch (Exception ex) {
-            ex.printStackTrace();
-            log.error("获取totalLockAmount失败:" + contractAddress);
+            String message = ex.getMessage();
+            if(!message.equals("Contract Call has been reverted by the EVM with the reason: 'VM Exception while processing transaction: revert'.")){
+                ex.printStackTrace();
+            }
+            log.debug("获取balanceOf失败:" + contractAddress);
         }
         return balance;
     }
+
+    /**
+     * 查询ERC721 合约的所有NFT的tokenId
+     * @param web3j
+     * @param contractAddress
+     * @param address
+     * @return
+     */
+    @SneakyThrows
+    public BigInteger tokenOfOwnerByIndex(Web3j web3j, String contractAddress, String address,int index) {
+        VM30       contract = getContranct(web3j, contractAddress);
+        BigInteger tokenId  = new BigInteger("0");
+        try {
+            tokenId = contract.tokenOfOwnerByIndex(address,index).send();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.debug("获取tokenId失败:" + contractAddress);
+        }
+        return tokenId;
+    }
+
+    /**
+     * 更具tokenId 查询NFT的元数据
+     * @param web3j
+     * @param tokenId
+     * @return
+     */
+    @SneakyThrows
+    public String tokenURI(Web3j web3j, String contractAddress, BigInteger tokenId) {
+        VM30       contract = getContranct(web3j, contractAddress);
+        String tokenURI  = "";
+        try {
+            tokenURI= contract.tokenURL(tokenId).send().toString();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.debug("获取tokenURI失败:" + contractAddress);
+        }
+        return tokenURI;
+    }
+
 
     /**
      * 查询指定合约, 转账接口

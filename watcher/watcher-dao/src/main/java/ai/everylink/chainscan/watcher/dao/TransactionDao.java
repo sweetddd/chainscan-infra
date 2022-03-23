@@ -24,6 +24,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * TransactionDao
  *
@@ -69,4 +71,11 @@ public interface TransactionDao extends JpaRepository<Transaction, Long> {
     public void updateTokenTag( @Param("id")Long id);
 
 
+    /**
+     * 查询未扫描的交易;
+     * @param tokenTag
+     * @return
+     */
+    @Query(value = "select * from transaction where token_tag=:tokenTag order by create_time", nativeQuery = true)
+    List<Transaction> findByTokenTag(int tokenTag);
 }

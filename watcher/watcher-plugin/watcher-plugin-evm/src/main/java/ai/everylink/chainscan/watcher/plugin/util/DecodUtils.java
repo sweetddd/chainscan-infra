@@ -1,5 +1,6 @@
 package ai.everylink.chainscan.watcher.plugin.util;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.web3j.abi.TypeDecoder;
@@ -9,6 +10,7 @@ import org.web3j.abi.datatypes.generated.Uint256;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static javax.swing.UIManager.put;
@@ -25,6 +27,9 @@ public class DecodUtils {
         put("0x40c10f19", "Function: mint(address _who, uint256 _value) ***");
         put("0x095ea7b3", "Function: approve(address _spender, uint256 _value) ***");
         put("0x05e2ca17", "Function: deposit(uint8 destinationChainID, bytes32 resourceID, bytes data) ***");
+        put("0xa44f5fe6", "Function: deposit(uint32 destinationChainID, bytes32 resourceID, bytes calldata data) ***");
+        put("0xee1c1c7b", "Function: depositETH(uint32 destinationChainID, bytes32 resourceID, bytes calldata data) ***");
+        put("0xfe4464a7", "Function: depositNFT(uint32 destinationChainID, bytes32 resourceID, bytes calldata data) ***");
         put("0x8c0c2631", "Function: adminSetBurnable(address handlerAddress, address tokenAddress) ***");
         put("0xd3fc9864", "Function: mint(address _to, uint256 _value, string symbol) ***");
         put("0x2f2ff15d", "Function: grantRole(bytes32 role, address account) ***");
@@ -34,6 +39,10 @@ public class DecodUtils {
         put("0x6a761202", "Function: execTransaction(address to, uint256 value, bytes data, uint8 operation, uint256 safeTxGas, uint256 dataGas, uint256 gasPrice, address gasToken, address refundReceiver, bytes signatures) ***");
         put("0xfa31de01", "Function: dispatch(uint32 _destinationDomain, bytes32 _recipientAddress, bytes _messageBody) ***");
         put("0xb31c01fb", "Function: update(bytes32 _committedRoot, bytes32 _newRoot, bytes _signature) ***");
+        //拍卖合约
+        put("0xeedcff91", "Function: function mintingMultiple(uint176 activityId, address to, uint256 number) ***");
+        put("0xb62c77c4", "Function setAlphabetAddr(address alphabetAddr) ***");
+        put("0xb52b0b09", "function creatActivity(string memory activityname,address recipientAddr,bool auctionState,address payTokenAddr,uint256 price,string memory symbol,uint8 unit,uint256 total) ***");
     }};
 
     /**
@@ -56,8 +65,8 @@ public class DecodUtils {
      */
     public static String getParams(String input) {
         String                  methodID  = input.substring(0, 10);
-        String                  sub       = input.substring(10, input.length());
-        HashMap<String, String> paramsMap = new HashMap<>();
+        String                        sub       = input.substring(10, input.length());
+        LinkedHashMap<String, Object> paramsMap = new LinkedHashMap<>();
         paramsMap.put("MethodID", methodID);
         int start = 0;
         for (int i = 1; i <= sub.length() / 64; i++) {
@@ -67,6 +76,7 @@ public class DecodUtils {
         Gson gson = new Gson();
         return gson.toJson(paramsMap);
     }
+
 
     /**
      * 解析地址信息
@@ -113,18 +123,9 @@ public class DecodUtils {
 
     public static void main(String[] args) {
         try {
-            String inputData = "0xa9059cbb0000000000000000000000005c5212ed85cc957c6b656d209a7be8812ab00e330000000000000000000000000000000000000000000000008d8dadf544fc0000";
-            String method    = inputData.substring(0, 10);
-            System.out.println(method);
-            String to        = inputData.substring(10, 74);
-            String value     = inputData.substring(74);
-            Method refMethod = null;
-            refMethod = TypeDecoder.class.getDeclaredMethod("decode", String.class, int.class, Class.class);
-            refMethod.setAccessible(true);
-            Address address = (Address) refMethod.invoke(null, to, 0, Address.class);
-            System.out.println(address.toString());
-            Uint256 amount = (Uint256) refMethod.invoke(null, value, 0, Uint256.class);
-            System.out.println(amount.getValue());
+            String inputData = "0xa44f5fe60000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000003542ebe4a02bbc34786d860b355f5a5ce00000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000540000000000000000000000000000000000000000000000000000000005f5e10000000000000000000000000000000000000000000000000000000000000000146da573eec80f63c98b88ced15d32ca270787fb5a000000000000000000000000";
+            String params    = getParams(inputData);
+            System.out.println(params);
         } catch (Exception e) {
             e.printStackTrace();
         }

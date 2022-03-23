@@ -162,8 +162,8 @@ public class EvmWatcher implements IWatcher {
     private void init() {
         initWeb3j();
         initService();
-        step = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyStep();
-        chainId = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyChainId();
+        step = SpringApplicationUtils.getBean(EvmConfig.class).getDtxScanStep();
+        chainId = SpringApplicationUtils.getBean(EvmConfig.class).getDtxChainId();
         currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
         logger.info("[EvmWatcher]got rocketmq name srv addr:{}", SlackUtils.getNamesrvAddr());
         logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
@@ -193,7 +193,7 @@ public class EvmWatcher implements IWatcher {
         try {
             String rpcUrl = System.getenv("watcher.vmChainUrl");
             if (rpcUrl == null) {
-                rpcUrl = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyUrl();
+                rpcUrl = SpringApplicationUtils.getBean(EvmConfig.class).getDtxUrl();
             }
             logger.info("[rpc_url]url=" + rpcUrl);
 

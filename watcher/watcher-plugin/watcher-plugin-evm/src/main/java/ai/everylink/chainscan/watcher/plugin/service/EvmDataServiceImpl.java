@@ -24,7 +24,9 @@ import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.entity.TransactionLog;
 import ai.everylink.chainscan.watcher.plugin.EvmData;
 import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
+import ai.everylink.chainscan.watcher.plugin.dto.CallTransaction;
 import ai.everylink.chainscan.watcher.plugin.util.DecodUtils;
+import ai.everylink.chainscan.watcher.plugin.util.HexUtils;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +37,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.Request;
 import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
@@ -43,6 +48,7 @@ import org.web3j.protocol.http.HttpService;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -61,6 +67,8 @@ public class EvmDataServiceImpl implements EvmDataService {
     private static final String CHAIN_TYPE = "EVM_PoS";
 
     private Web3j web3j;
+
+    private HttpService httpService;
 
     @Autowired
     private BlockDao blockDao;
@@ -85,11 +93,11 @@ public class EvmDataServiceImpl implements EvmDataService {
 
             String rpcUrl = System.getenv("watcher.vmChainUrl");
             if (rpcUrl == null) {
-                rpcUrl = SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyUrl();
+                rpcUrl = SpringApplicationUtils.getBean(EvmConfig.class).getDtxUrl();
             }
             log.info("[rpc_url]url=" + rpcUrl);
 
-            HttpService  httpService = new HttpService(rpcUrl, httpClient, false);
+            httpService = new HttpService(rpcUrl, httpClient, false);
             web3j = Web3j.build(httpService);
         } catch (Exception e) {
             log.error("初始化web3j异常", e);
@@ -232,6 +240,11 @@ public class EvmDataServiceImpl implements EvmDataService {
                         tx.setStatus("0x1");
                     } else {
                         tx.setStatus("0x0");
+                        //fail
+                        String failMsg = getFailMsg(item);
+
+                        tx.setFailMsg(failMsg);
+
                     }
 
                     // gas fee
@@ -249,6 +262,10 @@ public class EvmDataServiceImpl implements EvmDataService {
                             //设置to地址为合约地址
                             tx.setToAddr(receipt.getContractAddress());
                         }
+                        if(function.equals("0x60e06040") && receipt.getContractAddress() != null){
+                            //设置to地址为合约地址
+                            tx.setToAddr(receipt.getContractAddress());
+                        }
                     }
                     //合约地址存储
                     tx.setContractAddress(receipt.getContractAddress());
@@ -258,12 +275,41 @@ public class EvmDataServiceImpl implements EvmDataService {
             } catch (IOException e) {
                 log.error("[save]error occurred when query tx receipt. tx=" + item.getHash() + ",msg=" + e.getMessage(), e);
             }
-
+            tx.setTokenTag(0);
             tx.setChainType(CHAIN_TYPE);
             inputParams(tx);
             txList.add(tx);
         }
         return txList;
+    }
+
+    private String getFailMsg(org.web3j.protocol.core.methods.response.Transaction transaction){
+
+        try {
+            CallTransaction tr = new CallTransaction(transaction.getFrom()
+                    ,transaction.getGasPrice(),transaction.getGas()
+                    ,transaction.getTo()
+                    ,BigInteger.ZERO
+                    ,transaction.getInput());
+            DefaultBlockParameter defaultBlockParameter = DefaultBlockParameter.valueOf(transaction.getBlockNumber());
+
+
+            EthCall send = new Request<>(
+                    "eth_call",
+                    Arrays.asList(tr, defaultBlockParameter),
+                    httpService,
+                    org.web3j.protocol.core.methods.response.EthCall.class).send();
+
+            if (null != send.getError() && !StringUtils.isEmpty(send.getError().getMessage())){
+
+                return send.getError().getMessage();
+            }
+
+        }catch (Exception e){
+            log.error("[getFailMsg]error occurred when query tx receipt. tx=" + transaction.getHash() + ",msg=" + e.getMessage(), e);
+
+        }
+        return "";
     }
 
     private List<TransactionLog> buildTransactionLogList(EvmData data, int chainId) {

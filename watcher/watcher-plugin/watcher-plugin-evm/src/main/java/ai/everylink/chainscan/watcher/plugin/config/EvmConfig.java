@@ -35,16 +35,16 @@ public class EvmConfig {
     /**
      * 每次扫块步数
      */
-    private Integer rinkebyStep;
+    private Integer dtxScanStep;
 
     /**
-     * rinkeby chain id
+     *  chain id
      */
-    private Integer rinkebyChainId;
+    private Integer dtxChainId;
 
-    private String rinkebyUrl;
+    private String dtxUrl;
 
-    private String rinkebyRpcSecret;
+    private String dtxRpcSecret;
 
     private String rocketmqSrvAddr;
 

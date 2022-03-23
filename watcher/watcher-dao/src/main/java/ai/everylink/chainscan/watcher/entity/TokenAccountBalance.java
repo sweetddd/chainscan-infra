@@ -3,6 +3,7 @@ package ai.everylink.chainscan.watcher.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.math.BigInteger;
 import java.util.Date;
 import java.time.Instant;
 
@@ -25,7 +26,7 @@ public class TokenAccountBalance {
     private String contract;
 
     @Column(name = "balance", nullable = false)
-    private Long balance;
+    private String balance;
 
     @Column(name = "create_time", nullable = false)
     private Date createTime;
