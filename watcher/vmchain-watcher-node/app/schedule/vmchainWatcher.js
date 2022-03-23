@@ -8,8 +8,8 @@ const fs = require("fs");
 // const { hexToU8a, isHex, stringToU8a,hexToBn,numberToHex } =  require('@polkadot/util');
 
 
-//const DTX_WEB3J_URL = process.env.DTX_WEB3J_URL;
-const DTX_WEB3J_URL = 'http://vmdev.infra.powx.io';
+const DTX_WEB3J_URL = process.env.DTX_WEB3J_URL;
+//const DTX_WEB3J_URL = 'http://vmdev.infra.powx.io';
 //const DTX_WEB3J_URL = 'http://vmchain-dev-node-0-sandbox.chain-sandbox.svc.cluster.local:9934';
 const wsProvider = new HttpProvider(DTX_WEB3J_URL);
 let context = fs.readFileSync('./config/types.json');
