@@ -341,7 +341,7 @@ public class EvmDataServiceImpl implements EvmDataService {
     }
 
     private Date convertTime(long mills) {
-//        mills = mills + 8 * 60 * 60 * 1000L;
+        mills = mills + 8 * 60 * 60 * 1000L;
         return new Date(mills);
     }
 
