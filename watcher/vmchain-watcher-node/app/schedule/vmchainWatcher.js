@@ -1,11 +1,11 @@
-const ethers = require("ethers");
-const zksync = require("./../../app/zksync/build");
-const bridgerCall = require("./../../app/bridge/bridge-utils");
-const GlobalConstants = require("./../../app/bridge/constants");
+// const ethers = require("ethers");
+// const zksync = require("./../../app/zksync/build");
+// const bridgerCall = require("./../../app/bridge/bridge-utils");
+// const GlobalConstants = require("./../../app/bridge/constants");
 const { ApiPromise, WsProvider, HttpProvider } = require("@polkadot/api");
 const fs = require("fs");
-const { blake2AsHex } = require('@polkadot/util-crypto');
-const { hexToU8a, isHex, stringToU8a,hexToBn,numberToHex } =  require('@polkadot/util');
+// const { blake2AsHex } = require('@polkadot/util-crypto');
+// const { hexToU8a, isHex, stringToU8a,hexToBn,numberToHex } =  require('@polkadot/util');
 
 
 const DTX_WEB3J_URL = process.env.DTX_WEB3J_URL;
