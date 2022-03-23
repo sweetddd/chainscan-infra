@@ -48,10 +48,7 @@ import org.web3j.protocol.http.HttpService;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -174,7 +171,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setBlockNumber(data.getBlock().getNumber().longValue());
         block.setBlockHash(data.getBlock().getHash());
         block.setChainId(chainId);
-        block.setBlockTimestamp(data.getBlock().getTimestamp().longValue());
+        block.setBlockTimestamp(convertTime(data.getBlock().getTimestamp().longValue()*1000));
         block.setParentHash(data.getBlock().getParentHash());
         try {
             block.setNonce(data.getBlock().getNonce().toString());
@@ -213,9 +210,10 @@ public class EvmDataServiceImpl implements EvmDataService {
             tx.setChainId(chainId);
             tx.setTransactionIndex(item.getTransactionIndex().intValue());
             tx.setFailMsg("");
-            tx.setTxTimestamp(data.getBlock().getTimestamp().longValue());
-            log.info("[save]blockNum={},txHash={},blockTime={},txTime={}", item.getBlockNumber(),
-                    item.getHash(), data.getBlock().getTimestamp(), tx.getTxTimestamp());
+            tx.setTxTimestamp(convertTime(data.getBlock().getTimestamp().longValue() * 1000));
+            log.info("[save]blockNum={},txHash={},blockTime={},txTime={},timeZone={}",
+                    item.getBlockNumber(), item.getHash(), data.getBlock().getTimestamp().longValue()*100L,
+                    tx.getTxTimestamp().getTime(), Calendar.getInstance().getTimeZone());
             tx.setFromAddr(item.getFrom());
             if (Objects.nonNull(item.getTo())) {
                 tx.setToAddr(item.getTo());
@@ -343,8 +341,9 @@ public class EvmDataServiceImpl implements EvmDataService {
     }
 
     private Date convertTime(long mills) {
-        mills = mills + 8 * 60 * 60 * 1000L;
-        return new Date(mills);
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(mills);
+        return cal.getTime();
     }
 
     private String toJsonString(Object obj) {

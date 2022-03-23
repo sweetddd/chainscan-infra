@@ -83,7 +83,7 @@ public class Transaction {
     private String failMsg;
 
     @Column(name = "tx_timestamp")
-    private Long txTimestamp;
+    private Date txTimestamp;
 
     @Column(name = "from_addr")
     private String fromAddr;
