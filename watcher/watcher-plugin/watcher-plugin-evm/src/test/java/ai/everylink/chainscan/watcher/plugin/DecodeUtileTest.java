@@ -1,6 +1,6 @@
 package java.ai.everylink.chainscan.watcher.plugin;
 
-import ai.everylink.chainscan.watcher.plugin.util.DecodUtils;
+import ai.everylink.chainscan.watcher.core.util.DecodUtils;
 import org.junit.Test;
 import org.web3j.abi.TypeDecoder;
 import org.web3j.abi.datatypes.Address;

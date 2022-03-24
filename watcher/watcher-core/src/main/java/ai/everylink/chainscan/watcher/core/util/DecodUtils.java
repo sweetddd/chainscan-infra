@@ -8,10 +8,7 @@ import org.web3j.abi.datatypes.generated.Uint256;
 
 import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author brett
@@ -64,6 +61,8 @@ public class DecodUtils {
         return functionMap.get(input.substring(0, 10));
     };
 
+
+
     /**
      * 解码params
      * @param input
@@ -72,7 +71,7 @@ public class DecodUtils {
     public static String getParams(String input) {
         String methodID = input.substring(0, 10);
         String sub = input.substring(10, input.length());
-        HashMap<String, String> paramsMap = new HashMap<>();
+        LinkedHashMap<String, String> paramsMap = new LinkedHashMap<>();
         paramsMap.put("MethodID",methodID);
         int start = 0;
         for(int i = 1; i  <= sub.length()/64; i ++) {
@@ -140,9 +139,10 @@ public class DecodUtils {
 
     public static void main(String[] args) {
         try {
-            String inputData = "0xd4ee6f3200000000000000000000000000000000000000000000000000000000000000610000000000000000000000000000000000000000000000000000000000000009000000000000000000000000000006850ebe4a02bbc34786d860b355f5a5ce0054be7e0b3c3bb8c365bc42d8c30ac8b04e41b9065881cabc44d8f6ba61c86b3200000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000418219c35db963a6b1648e9cbf1d2fb66a2c3575fe1671e50ca5f901feb84785c8006962a6a47158fe054671295d84b3dcc0fa5c65eb54e0d2fbdc6f359240fc050000000000000000000000000000000000000000000000000000000000000000";
-            List<String> params2List = getParams2List(inputData);
-            System.out.println(params2List);
+            String inputData = "0xd4ee6f320000000000000000000000000000000000000000000000000000000000000061000000000000000000000000000000000000000000000000000000000000000f000000000000000000000000000003542ebe4a02bbc34786d860b355f5a5ce005e196fad0db4ed72d7a78d4acbf6584d14cbca7053c4b556976b7d773d5f9ef700000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000004131756e84aac09ae9e74cbd146cfdc32057bd4dd118f77d396c65efcd89c3a46a17e52911531b965ddba2ad66ad2df98bf65d3e16c95f67296f80691d0d6cce680100000000000000000000000000000000000000000000000000000000000000";
+            String params    = getFunction(inputData).toString();
+            //List<String> params2List = getParams2List(inputData);
+            System.out.println(params);
         } catch (Exception e) {
             e.printStackTrace();
         }

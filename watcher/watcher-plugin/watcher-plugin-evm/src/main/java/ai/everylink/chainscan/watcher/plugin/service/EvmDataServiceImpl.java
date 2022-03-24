@@ -17,6 +17,7 @@
 
 package ai.everylink.chainscan.watcher.plugin.service;
 
+import ai.everylink.chainscan.watcher.core.util.DecodUtils;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.dao.BlockDao;
@@ -27,7 +28,6 @@ import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.entity.TransactionLog;
 import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
 import ai.everylink.chainscan.watcher.plugin.dto.CallTransaction;
-import ai.everylink.chainscan.watcher.plugin.util.DecodUtils;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
@@ -352,7 +352,7 @@ public class EvmDataServiceImpl implements EvmDataService {
     private void inputParams(Transaction tx) {
         String input = tx.getInput();
         if(input.length()> 10 && input.substring(0,2).equals("0x")){
-            Object function = DecodUtils.getFunction(input.substring(0, 10));
+            Object function = DecodUtils.getFunction(input);
             if(function != null){
                 tx.setInputMethod(function.toString());
                 tx.setInputParams(DecodUtils.getParams(input));
