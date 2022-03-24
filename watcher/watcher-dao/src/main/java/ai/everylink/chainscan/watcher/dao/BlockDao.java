@@ -44,7 +44,7 @@ public interface BlockDao extends JpaRepository<Block, Long> {
      * @param chainId
      * @return
      */
-    @Query(value = "select * from block where block_num=:blockNum and chain_id=:chainId", nativeQuery = true)
+    @Query(value = "select * from block where block_number=:blockNum and chain_id=:chainId", nativeQuery = true)
     Block getBlockByNum(@Param("blockNum") Long blockNum, @Param("chainId") int chainId);
 
     /**

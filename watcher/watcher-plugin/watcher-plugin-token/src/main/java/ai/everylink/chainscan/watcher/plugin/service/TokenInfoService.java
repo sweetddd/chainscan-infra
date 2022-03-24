@@ -18,7 +18,6 @@
 package ai.everylink.chainscan.watcher.plugin.service;
 
 
-import ai.everylink.chainscan.watcher.plugin.vo.EvmData;
 
 /**
  * token数据统计service

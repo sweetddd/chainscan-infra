@@ -19,26 +19,17 @@ package ai.everylink.chainscan.watcher.plugin;
 
 import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
-import ai.everylink.chainscan.watcher.core.vo.EvmData;
-import lombok.extern.slf4j.Slf4j;
 
 /**
- * Demo类，演示如何通过SPI机制来成为框架自带的Erc20Watcher的plugin。
- * 1.继承IErc20WatcherPlugin
- * 2.在META-INF/services目录下新建一个名为ai.everylink.chainscan.watcher.core.IErc20WatcherPlugin的文件
- * 3.在文件里面写入每个实现了IErc20WatcherPlugin接口的plugin的全限定名。
  *
- * @author david.zhang@everylink.ai
- * @since 2021-11-26
+ *
+ * @author brett
+ * @since 2022-03-21
  */
-@Slf4j
-public class EvmSpiPlugin implements IEvmWatcherPlugin {
+public class BridgePlugin implements IEvmWatcherPlugin {
 
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
-        EvmData blockData = (EvmData)block;
-//        System.out.println("EvmSpiPlugin 处理: " + blockData.getBlock().getNumber()
-//                + "; tx size=" + blockData.getBlock().getTransactions().size());
         return false;
     }
 }

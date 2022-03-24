@@ -24,6 +24,8 @@ spring:
     allow-bean-definition-overriding: true
   application:
     name: watcher-bootstrap
+  jpa:
+    generate-ddl: false
 
 management:
   health:

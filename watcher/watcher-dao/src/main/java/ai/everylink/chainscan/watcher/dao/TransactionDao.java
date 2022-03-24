@@ -70,12 +70,29 @@ public interface TransactionDao extends JpaRepository<Transaction, Long> {
     @Transactional
     public void updateTokenTag( @Param("id")Long id);
 
+    /**
+     * 更新bridge插件扫描状态
+     * @param id
+     */
+    @Query(value = "update transaction set bridge_tag=1 where id=:id", nativeQuery = true)
+    @Modifying
+    @Transactional
+    public void updateBridgeTag( @Param("id")Long id);
+
 
     /**
-     * 查询未扫描的交易;
+     * token查询未扫描的交易;
      * @param tokenTag
      * @return
      */
     @Query(value = "select * from transaction where token_tag=:tokenTag order by create_time", nativeQuery = true)
     List<Transaction> findByTokenTag(int tokenTag);
+
+    /**
+     * bridge 查询为扫描的交易
+     * @param bridgeTag
+     * @return
+     */
+    @Query(value = "select * from transaction where bridge_tag=:bridgeTag  order by tx_timestamp ASC ", nativeQuery = true)
+    List<Transaction> findByBridgeTag(int bridgeTag);
 }

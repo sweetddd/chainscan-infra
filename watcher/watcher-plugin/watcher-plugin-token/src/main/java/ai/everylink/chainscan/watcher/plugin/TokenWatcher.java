@@ -20,11 +20,12 @@ package ai.everylink.chainscan.watcher.plugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
+import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
-import ai.everylink.chainscan.watcher.plugin.vo.EvmData;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import java.util.*;
+
+import java.util.List;
 
 /**
  * 合约统计发行量

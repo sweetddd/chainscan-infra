@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package ai.everylink.chainscan.watcher.plugin;
+package ai.everylink.chainscan.watcher.core.vo;
 
 import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
@@ -23,44 +23,45 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.Log;
+
 import java.util.List;
 import java.util.Map;
 
- /**
- * ERC20单个Block数据，包括Block信息、block包含的transaction列表、每个transaction下的logs列表。
- *
- * 示例可以参考：
- * https://etherscan.io/tx/0x3b7ec6ab8515c249ff2d3624f4ce1e0509706b5b66d9b64c0b80dae5c3857649
- *
- * @author david.zhang@everylink.ai
- * @since 2021-11-26
- */
+/**
+* ERC20单个Block数据，包括Block信息、block包含的transaction列表、每个transaction下的logs列表。
+*
+* 示例可以参考：
+* https://etherscan.io/tx/0x3b7ec6ab8515c249ff2d3624f4ce1e0509706b5b66d9b64c0b80dae5c3857649
+*
+* @author david.zhang@everylink.ai
+* @since 2021-11-26
+*/
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class EvmData {
 
-     /**
-      * 链id
-      */
-    private int chainId;
+    /**
+     * 链id
+     */
+   private int chainId;
+
+   /**
+    * 区块信息
+    */
+   private EthBlock.Block block;
+
+   /**
+    * 交易对应的log列表
+    *
+    * key: transaction hash
+    * value: log list
+    */
+   private Map<String, List<Log>> transactionLogMap = Maps.newConcurrentMap();
 
     /**
-     * 区块信息
+     * 扩展数据。watcher根据需要添加，各个plugin根据自身的业务需要进行处理。
      */
-    private EthBlock.Block block;
-
-    /**
-     * 交易对应的log列表
-     *
-     * key: transaction hash
-     * value: log list
-     */
-    private Map<String, List<Log>> transactionLogMap = Maps.newConcurrentMap();
-
-     /**
-      * 扩展数据。watcher根据需要添加，各个plugin根据自身的业务需要进行处理。
-      */
-    private Map<String, Object> extraData = Maps.newConcurrentMap();
+   private Map<String, Object> extraData = Maps.newConcurrentMap();
 
 }

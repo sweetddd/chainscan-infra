@@ -20,6 +20,7 @@ package ai.everylink.chainscan.watcher.plugin;
 import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
+import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

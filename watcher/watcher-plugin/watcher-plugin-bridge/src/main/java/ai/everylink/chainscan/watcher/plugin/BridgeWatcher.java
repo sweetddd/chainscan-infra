@@ -17,28 +17,46 @@
 
 package ai.everylink.chainscan.watcher.plugin;
 
-import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
-import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
+import ai.everylink.chainscan.watcher.core.IWatcher;
+import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import com.google.common.collect.Lists;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 /**
- * Demo类，演示如何通过SPI机制来成为框架自带的Erc20Watcher的plugin。
- * 1.继承IErc20WatcherPlugin
- * 2.在META-INF/services目录下新建一个名为ai.everylink.chainscan.watcher.core.IErc20WatcherPlugin的文件
- * 3.在文件里面写入每个实现了IErc20WatcherPlugin接口的plugin的全限定名。
+ * 合约统计发行量
  *
- * @author david.zhang@everylink.ai
+ * @author brett
  * @since 2021-11-26
  */
 @Slf4j
-public class EvmSpiPlugin implements IEvmWatcherPlugin {
+public class BridgeWatcher implements IWatcher {
 
     @Override
-    public <T> boolean processBlock(T block) throws WatcherExecutionException {
-        EvmData blockData = (EvmData)block;
-//        System.out.println("EvmSpiPlugin 处理: " + blockData.getBlock().getNumber()
-//                + "; tx size=" + blockData.getBlock().getTransactions().size());
-        return false;
+    @SneakyThrows
+    public List<EvmData> scanBlock() {
+        List<EvmData> blockList = Lists.newArrayList();
+        return blockList;
+    }
+
+    @Override
+    public List<IWatcherPlugin> getOrderedPluginList() {
+        // 自己创建的
+        List<IWatcherPlugin> pluginList = Lists.newArrayList(new BridgePlugin());
+        return pluginList;
+    }
+
+    @Override
+    public void finalizedBlockStatus() {
+
+    }
+
+    @Override
+    public String getCron() {
+        return "0 0 * * * ?";
+        //return "*/5 * * * * ?";
     }
 }
