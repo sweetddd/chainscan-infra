@@ -18,6 +18,7 @@
 package ai.everylink.chainscan.watcher.bootstrap;
 
 import ai.everylink.chainscan.watcher.core.IWatcher;
+import ai.everylink.chainscan.watcher.plugin.EvmWatcher;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
@@ -84,9 +85,10 @@ public class WatcherBootstrapApplication {
     }
 
     private static List<IWatcher> listWatcher() {
-        // 通过JAVA SPI机制加载所有的watcher
-        ServiceLoader<IWatcher> watcherList = ServiceLoader.load(IWatcher.class);
-        return watcherList == null ? Lists.newArrayList() : Lists.newArrayList(watcherList);
+        return Lists.newArrayList(new EvmWatcher());
+//        // 通过JAVA SPI机制加载所有的watcher
+//        ServiceLoader<IWatcher> watcherList = ServiceLoader.load(IWatcher.class);
+//        return watcherList == null ? Lists.newArrayList() : Lists.newArrayList(watcherList);
     }
 
 }

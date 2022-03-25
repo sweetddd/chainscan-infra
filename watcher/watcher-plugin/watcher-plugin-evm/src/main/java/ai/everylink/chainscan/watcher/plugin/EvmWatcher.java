@@ -17,15 +17,14 @@
 
 package ai.everylink.chainscan.watcher.plugin;
 
-import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.OkHttpUtil;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
-import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
 import ai.everylink.chainscan.watcher.plugin.rocketmq.SlackUtils;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
+import ai.everylink.chainscan.watcher.plugin.util.Utils;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
 import okhttp3.*;
@@ -33,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.response.*;
@@ -131,16 +129,7 @@ public class EvmWatcher implements IWatcher {
 
     @Override
     public List<IWatcherPlugin> getOrderedPluginList() {
-        // 自己创建的
-        List<IWatcherPlugin> pluginList = Lists.newArrayList(new EvmPlugin());
-
-        // 通过SPI发现的
-        pluginList.addAll(findErc20WatcherPluginBySPI());
-
-        // 排序
-        Collections.sort(pluginList, (o1, o2) -> o2.ordered() - o1.ordered());
-
-        return pluginList;
+        return Lists.newArrayList(new EvmPlugin());
     }
 
     /**
@@ -163,14 +152,14 @@ public class EvmWatcher implements IWatcher {
         logger.info("[EvmWatcher]timeZone={}", Calendar.getInstance().getTimeZone());
         initWeb3j();
         initService();
-        step = SpringApplicationUtils.getBean(EvmConfig.class).getDtxScanStep();
-        chainId = SpringApplicationUtils.getBean(EvmConfig.class).getDtxChainId();
+        step = Utils.getScanStep();
+        chainId = Utils.getChainId();
         currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
+        logger.info("[EvmWatcher]init config. step={}, chainId={}, rpcUrl={}, chainType={}",
+                step, chainId, Utils.getVmChainUrl(), Utils.getChainType());
         logger.info("[EvmWatcher]got rocketmq name srv addr:{}", SlackUtils.getNamesrvAddr());
         logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
     }
-
-
 
 
     private void initService() {
@@ -192,21 +181,16 @@ public class EvmWatcher implements IWatcher {
         }
 
         try {
-            String rpcUrl = System.getenv("watcher.vmChainUrl");
-            if (rpcUrl == null) {
-                rpcUrl = SpringApplicationUtils.getBean(EvmConfig.class).getDtxUrl();
-            }
+            String rpcUrl = Utils.getVmChainUrl();
             logger.info("[rpc_url]url=" + rpcUrl);
 
             OkHttpClient httpClient = OkHttpUtil.buildOkHttpClient();
             HttpService httpService = new HttpService(rpcUrl, httpClient, false);
-//            httpService.addHeader("Authorization", Credentials.basic("", SpringApplicationUtils.getBean(EvmConfig.class).getRinkebyRpcSecret()));
             web3j = Web3j.build(httpService);
         } catch (Exception e) {
             logger.error("初始化web3j异常", e);
         }
     }
-
 
     /**
      * 获取最新区块高度
@@ -264,15 +248,6 @@ public class EvmWatcher implements IWatcher {
         return dataList;
     }
 
-    /**
-     * 通过SPI机制发现所有三方开发的支持Erc20区块的plugin
-     *
-     * @return
-     */
-    private List<IEvmWatcherPlugin> findErc20WatcherPluginBySPI() {
-        ServiceLoader<IEvmWatcherPlugin> list = ServiceLoader.load(IEvmWatcherPlugin.class);
-        return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
-    }
 
     private static final RateLimiter slackNotifiyLimiter = RateLimiter.create(0.001);
     private void sendVmAlertMsgToSlack() {

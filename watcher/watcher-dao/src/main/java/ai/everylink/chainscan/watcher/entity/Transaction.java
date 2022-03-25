@@ -34,11 +34,9 @@
 package ai.everylink.chainscan.watcher.entity;
 
 
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -127,24 +125,6 @@ public class Transaction {
 
     @Column(name = "create_time")
     private Date createTime;
-
-    @Column(name = "coin_symbol")
-    private String coinSymbol;
-
-    @Column(name = "price")
-    private BigDecimal price;
-
-    @Column(name = "amount")
-    private BigDecimal amount;
-
-    @Column(name = "buyer_fee")
-    private BigDecimal buyerFee;
-
-    @Column(name = "seller_fee")
-    private BigDecimal sellerFee;
-
-    @Column(name = "source")
-    private String source;
 
     @Column(name = "token_tag")
     private Integer tokenTag;

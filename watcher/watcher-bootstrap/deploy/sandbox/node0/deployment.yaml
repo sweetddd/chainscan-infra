@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $APP_NAME-production
+  name: $APP_NAME-node-0-sandbox
   namespace: paas
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: $APP_NAME-production
+      app: $APP_NAME-node-0-sandbox
   template:
     metadata:
       labels:
-        app: $APP_NAME-production
+        app: $APP_NAME-node-0-sandbox
     spec:
       containers:
-      - name: $APP_NAME-production
+      - name: $APP_NAME-node-0-sandbox
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
@@ -43,11 +43,11 @@ spec:
         - containerPort: 9196
         env:
           - name: "spring.profiles.active"
-            value: "prd"
+            value: "test"
           - name: TZ
             value: UTC
           - name: "evm.chain.rinkebyUrl"
-            value: "https://vmtestnet.chainfra.io/v1/df8371a1d8cbc835147df382bb1144a9"
+            value: "http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
           - name: "nacos.config.server-addr"
             valueFrom:
               configMapKeyRef:
@@ -99,9 +99,11 @@ spec:
                 name: network-config
                 key: dtx.rpc.api
           - name: "watcher.chain.scanStep"
-              value: 100
+            value: 100
           - name: "watcher.chain.chainId"
-              value: 230
+            value: 97
+          - name: "watcher.chain.chainType"
+            value: EVM_PoS
       volumes:
       - name: host-time
         hostPath:
@@ -118,13 +120,7 @@ spec:
                   - key: app
                     operator: In
                     values:
-                      - $APP_NAME-production
+                      - $APP_NAME-node-0-sandbox
+                      - $APP_NAME-node-1-sandbox
+                      - $APP_NAME-node-2-sandbox
               topologyKey: "kubernetes.io/hostname"
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: "eks.amazonaws.com/nodegroup"
-                    operator: In
-                    values:
-                      - "ex-prd"

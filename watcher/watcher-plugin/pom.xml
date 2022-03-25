@@ -31,8 +31,6 @@
 
     <modules>
         <module>watcher-plugin-evm</module>
-<!--        <module>watcher-plugin-summary</module>-->
-        <module>watcher-plugin-incentive</module>
         <module>watcher-plugin-token</module>
     </modules>
 

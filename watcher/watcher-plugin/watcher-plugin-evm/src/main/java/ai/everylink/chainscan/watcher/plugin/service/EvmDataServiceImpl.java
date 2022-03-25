@@ -17,16 +17,14 @@
 
 package ai.everylink.chainscan.watcher.plugin.service;
 
-import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.dao.*;
 import ai.everylink.chainscan.watcher.entity.Block;
 import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.entity.TransactionLog;
 import ai.everylink.chainscan.watcher.plugin.EvmData;
-import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
 import ai.everylink.chainscan.watcher.plugin.dto.CallTransaction;
 import ai.everylink.chainscan.watcher.plugin.util.DecodUtils;
-import ai.everylink.chainscan.watcher.plugin.util.HexUtils;
+import ai.everylink.chainscan.watcher.plugin.util.Utils;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
@@ -88,10 +86,7 @@ public class EvmDataServiceImpl implements EvmDataService {
             builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
             OkHttpClient httpClient  = builder.build();
 
-            String rpcUrl = System.getenv("watcher.vmChainUrl");
-            if (rpcUrl == null) {
-                rpcUrl = SpringApplicationUtils.getBean(EvmConfig.class).getDtxUrl();
-            }
+            String rpcUrl = Utils.getVmChainUrl();
             log.info("[rpc_url]url=" + rpcUrl);
 
             httpService = new HttpService(rpcUrl, httpClient, false);
@@ -126,9 +121,6 @@ public class EvmDataServiceImpl implements EvmDataService {
 
         List<Transaction> txList = buildTransactionList(data, chainId);
 
-        if(txList.size() > 0){
-            System.out.println("1");
-        }
         // block gas used
         for (Transaction transaction : txList) {
             gasUsed += transaction.getGasUsed().intValue();
@@ -189,7 +181,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setBurnt("");
         block.setReward("");
         block.setValidator(data.getBlock().getMiner());
-        block.setChainType(CHAIN_TYPE);
+        block.setChainType(Utils.getChainType());
         block.setStatus(0);
         return block;
     }
@@ -211,9 +203,6 @@ public class EvmDataServiceImpl implements EvmDataService {
             tx.setTransactionIndex(item.getTransactionIndex().intValue());
             tx.setFailMsg("");
             tx.setTxTimestamp(convertTime(data.getBlock().getTimestamp().longValue() * 1000));
-            log.info("[save]blockNum={},txHash={},blockTime={},txTime={},timeZone={}",
-                    item.getBlockNumber(), item.getHash(), data.getBlock().getTimestamp().longValue()*100L,
-                    tx.getTxTimestamp().getTime(), Calendar.getInstance().getTimeZone());
             tx.setFromAddr(item.getFrom());
             if (Objects.nonNull(item.getTo())) {
                 tx.setToAddr(item.getTo());
@@ -276,7 +265,7 @@ public class EvmDataServiceImpl implements EvmDataService {
                 log.error("[save]error occurred when query tx receipt. tx=" + item.getHash() + ",msg=" + e.getMessage(), e);
             }
             tx.setTokenTag(0);
-            tx.setChainType(CHAIN_TYPE);
+            tx.setChainType(Utils.getChainType());
             inputParams(tx);
             txList.add(tx);
         }
@@ -369,47 +358,5 @@ public class EvmDataServiceImpl implements EvmDataService {
         }
     }
 
-
-    @Override
-    @Deprecated
-    public void processUnconfirmedVMBlocks(int childBlockNum) {
-        List<Block> blockList = blockDao.listUncomfirmedBlock();
-        if (CollectionUtils.isEmpty(blockList)) {
-            return;
-        }
-        if (blockList.size() <= childBlockNum) {
-            return;
-        }
-
-        for (int i = 0; i < blockList.size(); i++) {
-            int childNum = i + childBlockNum + 1;
-            if (childNum > blockList.size()) {
-                break;
-            }
-
-            boolean isLinked = isLinked(blockList.get(i), blockList.subList(i+1, childNum));
-            if (isLinked) {
-                log.info("[vm_confirm]confirmed.hash={}", blockList.get(i).getBlockHash());
-                blockDao.updateBlockStatus(0, blockList.get(i).getBlockNumber());
-            }
-        }
-    }
-
-    /**
-     * 能否成链
-     */
-    @Deprecated
-    private boolean isLinked(Block parentBlock, List<Block> childBlockList) {
-        Block firstChild = childBlockList.get(0);
-        if (childBlockList.size() == 1) {
-            return parentBlock.getBlockHash().equalsIgnoreCase(firstChild.getParentHash());
-        }
-
-        if (parentBlock.getBlockHash().equalsIgnoreCase(firstChild.getParentHash())) {
-            return isLinked(firstChild, childBlockList.subList(1, childBlockList.size()));
-        }
-
-        return false;
-    }
 }
 

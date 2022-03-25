@@ -54,11 +54,6 @@ public interface EvmDataService {
      * 根据最后确认hash更新block状态;
      * @param finalizedHash
      */
-    public void updateBlockByHash(String finalizedHash);
+    void updateBlockByHash(String finalizedHash);
 
-    /**
-     * 处理未确认的vm链区块
-     * @param childBlockNum 经过多少个子块才能表示当前块被确认
-     */
-    void processUnconfirmedVMBlocks(int childBlockNum);
 }
