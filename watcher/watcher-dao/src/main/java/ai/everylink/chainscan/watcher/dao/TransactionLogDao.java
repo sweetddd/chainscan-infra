@@ -50,4 +50,13 @@ public interface TransactionLogDao extends JpaRepository<TransactionLog, Long> {
      */
     @Query(value = "select * from transaction_log where transaction_hash=:txHash", nativeQuery = true)
     public List<TransactionLog>  findByTxHash(String txHash);
+
+    /**
+     * 查询跨链event
+     * @param txHash
+     * @param logIndex
+     * @return
+     */
+    @Query(value = "select * from transaction_log where transaction_hash=:txHash and log_index =:logIndex", nativeQuery = true)
+    TransactionLog findTopic(String txHash, int logIndex);
 }

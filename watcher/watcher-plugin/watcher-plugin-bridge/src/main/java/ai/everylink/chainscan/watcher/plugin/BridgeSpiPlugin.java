@@ -21,42 +21,34 @@ import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
-import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ai.everylink.chainscan.watcher.plugin.service.BridgeHistoryService;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * ERC20 chain data plugin
- *
- * @author david.zhang@everylink.ai
- * @since 2021-11-26
+ * @author brett
+ * @since 2022-03-21
  */
-public class EvmPlugin implements IEvmWatcherPlugin {
+@Slf4j
+public class BridgeSpiPlugin implements IEvmWatcherPlugin {
 
-    private Logger logger = LoggerFactory.getLogger(EvmPlugin.class);
 
-    private EvmDataService evmDataService;
+    private BridgeHistoryService bridgeHistoryService;
 
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
-        EvmData blockData = (EvmData) block;
         initService();
-        System.out.println("EvmPlugin 处理: " + blockData.getBlock().getNumber()
-                                   + "; tx size=" + blockData.getBlock().getTransactions().size());
-
-        try {
-            evmDataService.saveEvmData(blockData);
-        } catch (Exception e) {
-            logger.error("Error occured when process block=" + ((EvmData) block).getBlock().getNumber(), e);
-            return false;
-        }
-
-        return true;
+        EvmData blockData = (EvmData) block;
+        long    start     = System.currentTimeMillis();
+        log.info("BridgePlugin-start:" + start);
+        bridgeHistoryService.bridgeHistoryScan(blockData);
+        log.info("BridgePlugin-end:" + System.currentTimeMillis());
+        return false;
     }
 
     private void initService() {
-        if (evmDataService == null) {
-            evmDataService = SpringApplicationUtils.getBean(EvmDataService.class);
+        if (bridgeHistoryService == null) {
+            bridgeHistoryService = SpringApplicationUtils.getBean(BridgeHistoryService.class);
         }
     }
+
 }

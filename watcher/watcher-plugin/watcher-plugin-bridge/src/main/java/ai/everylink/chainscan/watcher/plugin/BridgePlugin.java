@@ -15,45 +15,21 @@
  * limitations under the License.
  */
 
-package ai.everylink.chainscan.watcher.plugin.service;
+package ai.everylink.chainscan.watcher.plugin;
 
-
-import ai.everylink.chainscan.watcher.core.vo.EvmData;
-
-import java.util.Date;
+import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
+import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 
 /**
- * EVM数据服务
  *
- * @author david.zhang@everylink.ai
- * @since 2021-11-30
+ *
+ * @author brett
+ * @since 2022-03-21
  */
-public interface EvmDataService {
+public class BridgePlugin implements IEvmWatcherPlugin {
 
-    /**
-     * 保存区块数据
-     *
-     * @param data
-     */
-    void saveEvmData(EvmData data);
-
-    /**
-     * 获取指定chain的处理进度
-     * @param chainId
-     * @return
-     */
-    Long getMaxBlockNum(int chainId);
-
-    /**
-     * 获取最后一个区块的创建时间
-     * @return
-     */
-    Date getMaxBlockCreationTime(int chainId);
-
-    /**
-     * 根据最后确认hash更新block状态;
-     * @param finalizedHash
-     */
-    void updateBlockByHash(String finalizedHash);
-
+    @Override
+    public <T> boolean processBlock(T block) throws WatcherExecutionException {
+        return false;
+    }
 }
