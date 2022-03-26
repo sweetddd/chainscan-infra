@@ -104,6 +104,8 @@ spec:
             value: 230
           - name: "watcher.chain.chainType"
             value: EVM_PoS
+          - name: "watcher.notify.template"
+            value: DTX_CHAIN_NOTIFY
       volumes:
       - name: host-time
         hostPath:

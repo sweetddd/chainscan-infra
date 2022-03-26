@@ -104,6 +104,8 @@ spec:
             value: 4
           - name: "watcher.chain.chainType"
             value: EVM_PoW
+          - name: "watcher.notify.template"
+            value: RINKEBY_CHAIN_NOTIFY
       volumes:
       - name: host-time
         hostPath:
