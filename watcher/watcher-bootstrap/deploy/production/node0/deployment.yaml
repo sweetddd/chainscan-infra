@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $APP_NAME-node-1-sandbox
+  name: $APP_NAME-node-0-production
   namespace: paas
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: $APP_NAME-node-1-sandbox
+      app: $APP_NAME-node-0-production
   template:
     metadata:
       labels:
-        app: $APP_NAME-node-1-sandbox
+        app: $APP_NAME-node-0-production
     spec:
       containers:
-      - name: $APP_NAME-node-1-sandbox
+      - name: $APP_NAME-node-0-production
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
@@ -43,11 +43,11 @@ spec:
         - containerPort: 9196
         env:
           - name: "spring.profiles.active"
-            value: "test"
+            value: "prd"
           - name: TZ
             value: UTC
           - name: "evm.chain.rinkebyUrl"
-            value: "http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
+            value: "https://vmtestnet.chainfra.io/v1/df8371a1d8cbc835147df382bb1144a9"
           - name: "nacos.config.server-addr"
             valueFrom:
               configMapKeyRef:
@@ -56,17 +56,17 @@ spec:
           - name: "spring.datasource.chainscan.jdbc-url"
             valueFrom:
               secretKeyRef:
-                name: database-rinkeby
+                name: database-chainscan
                 key: url
           - name: "spring.datasource.chainscan.username"
             valueFrom:
               secretKeyRef:
-                name: database-rinkeby
+                name: database-chainscan
                 key: username
           - name: "spring.datasource.chainscan.password"
             valueFrom:
               secretKeyRef:
-                name: database-rinkeby
+                name: database-chainscan
                 key: password
           - name: "watcher.rocketmq.server.addr"
             valueFrom:
@@ -97,13 +97,13 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: ether.rpc.api
+                key: dtx.rpc.api
           - name: "watcher.chain.scanStep"
             value: 100
           - name: "watcher.chain.chainId"
-            value: 4
+            value: 230
           - name: "watcher.chain.chainType"
-            value: EVM_PoW
+            value: EVM_PoS
       volumes:
       - name: host-time
         hostPath:
@@ -120,6 +120,13 @@ spec:
                   - key: app
                     operator: In
                     values:
-                      - $APP_NAME-node-0-sandbox
-                      - $APP_NAME-node-1-sandbox
+                      - $APP_NAME-production
               topologyKey: "kubernetes.io/hostname"
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: "eks.amazonaws.com/nodegroup"
+                    operator: In
+                    values:
+                      - "ex-prd"

@@ -17,6 +17,8 @@
 
 package ai.everylink.chainscan.watcher.plugin.service;
 
+import ai.everylink.chainscan.watcher.core.config.DataSourceEnum;
+import ai.everylink.chainscan.watcher.core.config.TargetDataSource;
 import ai.everylink.chainscan.watcher.entity.Block;
 import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.entity.TransactionLog;
@@ -99,23 +101,27 @@ public class EvmDataServiceImpl implements EvmDataService {
         }
     }
 
+    @TargetDataSource(value = DataSourceEnum.chainscan)
     @Override
     public Long getMaxBlockNum(int chainId) {
         Long maxBlockNum = blockDao.getMaxBlockNum(chainId);
         return maxBlockNum == null ? 0L : maxBlockNum;
     }
 
+    @TargetDataSource(value = DataSourceEnum.chainscan)
     @Override
     public Date getMaxBlockCreationTime(int chainId) {
         return blockDao.getMaxBlockCreationTime(chainId);
     }
 
+    @TargetDataSource(value = DataSourceEnum.chainscan)
     @Override
     public void updateBlockByHash(String finalizedHash) {
         blockDao.updateBlockByHash(finalizedHash);
     }
 
     @Transactional(rollbackFor = Exception.class)
+    @TargetDataSource(value = DataSourceEnum.chainscan)
     @Override
     public void saveEvmData(EvmData data) {
         int   chainId = data.getChainId();

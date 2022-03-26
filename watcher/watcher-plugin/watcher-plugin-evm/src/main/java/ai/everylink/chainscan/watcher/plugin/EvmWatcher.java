@@ -161,7 +161,7 @@ public class EvmWatcher implements IWatcher {
         chainId = Utils.getChainId();
         currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
         logger.info("[EvmWatcher]init config. step={}, chainId={}, rpcUrl={}, chainType={},db={}",
-                step, chainId, Utils.getVmChainUrl(), Utils.getChainType(), System.getenv("spring.datasource.url"));
+                step, chainId, Utils.getVmChainUrl(), Utils.getChainType(), System.getenv("spring.datasource.chainscan.jdbc-url"));
         logger.info("[EvmWatcher]got rocketmq name srv addr:{}", SlackUtils.getNamesrvAddr());
         logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
     }

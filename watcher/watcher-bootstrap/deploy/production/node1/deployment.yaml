@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $APP_NAME-production
+  name: $APP_NAME-node-1-production
   namespace: paas
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: $APP_NAME-production
+      app: $APP_NAME-node-1-production
   template:
     metadata:
       labels:
-        app: $APP_NAME-production
+        app: $APP_NAME-node-1-production
     spec:
       containers:
-      - name: $APP_NAME-production
+      - name: $APP_NAME-node-1-production
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
@@ -53,20 +53,20 @@ spec:
               configMapKeyRef:
                 name: nacos-config
                 key: nacos.config.server-addr
-          - name: "spring.datasource.url"
+          - name: "spring.datasource.chainscan.jdbc-url"
             valueFrom:
               secretKeyRef:
-                name: database-chainscan
+                name: database-rinkeby
                 key: url
-          - name: "spring.datasource.username"
+          - name: "spring.datasource.chainscan.username"
             valueFrom:
               secretKeyRef:
-                name: database-chainscan
+                name: database-rinkeby
                 key: username
-          - name: "spring.datasource.password"
+          - name: "spring.datasource.chainscan.password"
             valueFrom:
               secretKeyRef:
-                name: database-chainscan
+                name: database-rinkeby
                 key: password
           - name: "watcher.rocketmq.server.addr"
             valueFrom:
@@ -97,11 +97,13 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: dtx.rpc.api
+                key: ether.rpc.api
           - name: "watcher.chain.scanStep"
-              value: 100
+            value: 100
           - name: "watcher.chain.chainId"
-              value: 230
+            value: 4
+          - name: "watcher.chain.chainType"
+            value: EVM_PoW
       volumes:
       - name: host-time
         hostPath:
@@ -118,7 +120,8 @@ spec:
                   - key: app
                     operator: In
                     values:
-                      - $APP_NAME-production
+                      - $APP_NAME-node-0-production
+                      - $APP_NAME-node-1-production
               topologyKey: "kubernetes.io/hostname"
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
