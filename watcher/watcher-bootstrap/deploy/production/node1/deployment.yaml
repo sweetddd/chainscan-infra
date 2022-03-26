@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $APP_NAME-node-1-production
+  namespace: paas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: $APP_NAME-node-1-production
+  template:
+    metadata:
+      labels:
+        app: $APP_NAME-node-1-production
+    spec:
+      containers:
+      - name: $APP_NAME-node-1-production
+        image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9196
+            httpHeaders:
+              - name: X-Custom-Header
+                value: Awesome
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 15
+          successThreshold: 1
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 0.1
+            memory: 0.5Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+        volumeMounts:
+        - name: host-time
+          mountPath: /etc/localtime
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9196
+        env:
+          - name: "spring.profiles.active"
+            value: "prd"
+          - name: TZ
+            value: UTC
+          - name: "evm.chain.rinkebyUrl"
+            value: "https://vmtestnet.chainfra.io/v1/df8371a1d8cbc835147df382bb1144a9"
+          - name: "nacos.config.server-addr"
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: nacos.config.server-addr
+          - name: "spring.datasource.chainscan.jdbc-url"
+            valueFrom:
+              secretKeyRef:
+                name: database-rinkeby
+                key: url
+          - name: "spring.datasource.chainscan.username"
+            valueFrom:
+              secretKeyRef:
+                name: database-rinkeby
+                key: username
+          - name: "spring.datasource.chainscan.password"
+            valueFrom:
+              secretKeyRef:
+                name: database-rinkeby
+                key: password
+          - name: "watcher.rocketmq.server.addr"
+            valueFrom:
+              configMapKeyRef:
+                name: rocketmq-config
+                key: rocketmq.server.addr
+          - name: "coin.ether.api"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: ether.rpc.api
+          - name: "coin.dtx.api"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: dtx.rpc.api
+          - name: "evm.vmChainUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: dtx.rpc.api
+          - name: "watcher.rinkebyUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: ether.rpc.api
+          - name: "watcher.vmChainUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: ether.rpc.api
+          - name: "watcher.chain.scanStep"
+            value: 100
+          - name: "watcher.chain.chainId"
+            value: 4
+          - name: "watcher.chain.chainType"
+            value: EVM_PoW
+          - name: "watcher.notify.template"
+            value: RINKEBY_CHAIN_NOTIFY
+      volumes:
+      - name: host-time
+        hostPath:
+          path: /etc/localtime
+      imagePullSecrets:
+      - name: regcred
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - $APP_NAME-node-0-production
+                      - $APP_NAME-node-1-production
+              topologyKey: "kubernetes.io/hostname"
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: "eks.amazonaws.com/nodegroup"
+                    operator: In
+                    values:
+                      - "ex-prd"
