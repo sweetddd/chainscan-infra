@@ -84,7 +84,7 @@ class BlockService extends Service {
           "volume":volume[0]['sum(value)'],
           "transactions":transactions[0]['sum(tx_size)'],
           "mining_earnings":50*dividend_block,
-          "time":block.start_time,
+          "time":block.create_time,
           "burnt":0,
         }
         await ctx.service.dividendRecord.addRecord(dividendRecord);
@@ -94,7 +94,7 @@ class BlockService extends Service {
       const addTxSql = 'INSERT INTO block (' +
           'block_number, block_hash,  block_timestamp,  tx_size,  difficulty,  create_time, block_fee, chain_type' +
           ') VALUES(?,?,?,?,?,?,?,?)';
-      const addTxSql_Params = [block.block_height,block.block_hash,block.start_time,block.transaction_count,block.difficulty,new Date(),block.blocked_fee,'CPoS'];
+      const addTxSql_Params = [block.block_height,block.block_hash,block.create_time,block.transaction_count,block.difficulty,new Date(),block.blocked_fee,'CPoS'];
       await this.app.mysql.query(addTxSql, addTxSql_Params, function(err, result) {
         if (err) {
           console.log('[INSERT SUBSCABTX ERROR] - ', err.message);

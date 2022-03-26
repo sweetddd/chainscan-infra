@@ -84,7 +84,7 @@ class TransactionsService extends Service {
       tx.buyer_address,
       tx.seller_address,
       tx.transaction_volume,
-      this.hexToStr(tx.coin_symbol),
+      tx.buy_symbol + tx.sell_symbol,
       tx.price,
       tx.buyer_fee,
       tx.seller_fee,
