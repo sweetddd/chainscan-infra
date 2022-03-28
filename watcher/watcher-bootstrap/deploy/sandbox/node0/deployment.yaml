@@ -105,7 +105,7 @@ spec:
           - name: "watcher.chain.chainType"
             value: EVM_PoS
           - name: "watcher.notify.template"
-            value: DTX_CHAIN_NOTIFY
+            value: DTX_TEST
       volumes:
       - name: host-time
         hostPath:

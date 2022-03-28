@@ -72,7 +72,7 @@ public final class SlackUtils {
         bean.setParameters(params);
 
         if (System.getenv("watcher.notify.template") != null) {
-            bean.setTemplate(System.getenv("watcher.notify.template"));
+            params.put("title", System.getenv("watcher.notify.template"));
             logger.info("[slack]template={}", System.getenv("watcher.notify.template"));
         }
 
@@ -81,11 +81,10 @@ public final class SlackUtils {
 
     public static void main(String[] args) throws Exception {
         SlackMessage bean = new SlackMessage();
-        bean.setTemplate("RINKEBY_CHAIN_NOTIFY");
         bean.setId(UUID.randomUUID().toString());
         Map<String, Object> params = Maps.newHashMap();
         params.put("channelId", "C02UZMQUW5N");
-        params.put("title", "xxxx");
+        params.put("title", "DTX Testnet");
         params.put("msg", "闲着没事报个警");
         bean.setParameters(params);
 
