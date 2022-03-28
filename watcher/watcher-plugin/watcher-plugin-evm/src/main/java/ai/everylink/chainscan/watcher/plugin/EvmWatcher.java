@@ -108,7 +108,7 @@ public class EvmWatcher implements IWatcher {
                         : networkBlockHeight;
 
                 blockList = replayBlock(startBlockNumber, currentBlockHeight);
-                // blockList = replayBlock(89874L, 89874L);
+                // blockList = replayBlock(147103L,147103L);
                // blockList = replayBlock(126379L, 126379L);
                 logger.info("Scan block from {} to {},resultSize={}", startBlockNumber, currentBlockHeight, blockList.size());
                 if (CollectionUtils.isEmpty(blockList)) {
@@ -254,11 +254,6 @@ public class EvmWatcher implements IWatcher {
             logger.info("Found txs.block={},count={}", blockHeight, block.getBlock().getTransactions().size());
             for (EthBlock.TransactionResult transactionResult : block.getBlock().getTransactions()) {
                 Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
-                if (tx.getInput() == null || tx.getInput().length() < 138) {
-                    logger.info("No logs.block={},tx={}", blockHeight, tx.getHash());
-                    continue;
-                }
-
                 // 获取Logs
                 EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(tx.getHash()).send();
                 if (receipt.getResult() != null && receipt.getResult().getLogs() != null) {
@@ -266,6 +261,12 @@ public class EvmWatcher implements IWatcher {
                             blockHeight, tx.getHash(), receipt.getResult().getLogs().size());
                     data.getTransactionLogMap().put(tx.getHash(), receipt.getResult().getLogs());
                 }
+
+                if (tx.getInput() == null || tx.getInput().length() < 138) {
+                    logger.info("No logs.block={},tx={}", blockHeight, tx.getHash());
+                    continue;
+                }
+
             }
         }
 
