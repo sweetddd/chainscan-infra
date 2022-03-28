@@ -97,4 +97,12 @@ public interface BlockDao extends JpaRepository<Block, Long> {
     @Modifying
     @Transactional
     int updateBlockStatus(Integer status, Long blockNumber);
+
+    /**
+     * 查询区块id列表
+     * @param startBlockNumber
+     * @return
+     */
+    @Query(value = "select block_number from block where block_number>=?1 order by block_number asc limit 1000;", nativeQuery = true)
+    List<Long> listBlockNumber(long startBlockNumber);
 }

@@ -21,6 +21,7 @@ package ai.everylink.chainscan.watcher.plugin.service;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * EVM数据服务
@@ -56,4 +57,10 @@ public interface EvmDataService {
      */
     void updateBlockByHash(String finalizedHash);
 
+    /**
+     * 查询缺失的区块id
+     *
+     * @return
+     */
+    List<Long> listMissedBlockNumber(Long startBlockNum);
 }

@@ -366,5 +366,10 @@ public class EvmDataServiceImpl implements EvmDataService {
         }
     }
 
+    @Override
+    public  List<Long> listMissedBlockNumber(Long startBlockNum) {
+        blockDao.listBlockNumber(startBlockNum);
+        return Lists.newArrayList();
+    }
 }
 
