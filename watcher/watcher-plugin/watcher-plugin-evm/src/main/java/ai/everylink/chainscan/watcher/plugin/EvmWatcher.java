@@ -224,6 +224,11 @@ public class EvmWatcher implements IWatcher {
             // 查询block
             EthBlock block = web3j.ethGetBlockByNumber(
                     new DefaultBlockParameterNumber(blockHeight), true).send();
+            if (block == null || block.getBlock() == null) {
+                logger.error("Block is null. block={}", blockHeight);
+                continue;
+            }
+
             data.setBlock(block.getBlock());
             dataList.add(data);
             if (CollectionUtils.isEmpty(block.getBlock().getTransactions())) {
