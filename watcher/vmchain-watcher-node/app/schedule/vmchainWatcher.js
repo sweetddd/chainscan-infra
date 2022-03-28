@@ -136,7 +136,7 @@ function blockFromData(data){
         difficulty : difficulty,
         blocked_fee : blocked_fee,
         create_time : create_time,
-        block_hash : block_hash,
+        block_hash : "0x"+block_hash,
         transaction_count:transaction_count,
         transactions:tx_list
     };
@@ -170,7 +170,7 @@ function transactionFromData(data){
         price:price,
         buyer_fee:buyer_fee,
         seller_fee:seller_fee,
-        transaction_hash:transaction_hash,
+        transaction_hash:"0x"+transaction_hash,
         transaction_time:transaction_time,
         transaction_volume:transaction_volume,
     }
