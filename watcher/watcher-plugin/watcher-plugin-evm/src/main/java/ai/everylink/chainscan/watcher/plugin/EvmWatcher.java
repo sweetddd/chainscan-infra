@@ -27,6 +27,7 @@ import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.rocketmq.SlackUtils;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
+import ai.everylink.chainscan.watcher.plugin.util.Utils;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
 import okhttp3.OkHttpClient;
@@ -107,9 +108,10 @@ public class EvmWatcher implements IWatcher {
                         ? currentBlockHeight + step
                         : networkBlockHeight;
 
-                blockList = replayBlock(startBlockNumber, currentBlockHeight);
-                // blockList = replayBlock(89874L, 89874L);
-               // blockList = replayBlock(126379L, 126379L);
+
+               // blockList = replayBlock(startBlockNumber, currentBlockHeight);
+                 blockList = replayBlock(145773L, 145773L);
+
                 logger.info("Scan block from {} to {},resultSize={}", startBlockNumber, currentBlockHeight, blockList.size());
                 if (CollectionUtils.isEmpty(blockList)) {
                     logger.info("[slack_alert]扫块失败！！！start=" + startBlockNumber + ", end=" + currentBlockHeight);
@@ -227,49 +229,7 @@ public class EvmWatcher implements IWatcher {
     }
 
     public List<EvmData> replayBlock(Long startBlockNumber, Long endBlockNumber) throws Exception {
-        List<EvmData> dataList = Lists.newArrayList();
-
-        for (Long blockHeight = startBlockNumber; blockHeight <= endBlockNumber; blockHeight++) {
-            logger.info("Begin to scan block={}", blockHeight);
-
-            EvmData data = new EvmData();
-            data.setChainId(chainId);
-
-            // 查询block
-            EthBlock block = web3j.ethGetBlockByNumber(
-                    new DefaultBlockParameterNumber(blockHeight), true).send();
-            if (block == null || block.getBlock() == null) {
-                logger.error("Block is null. block={}", blockHeight);
-                continue;
-            }
-
-            data.setBlock(block.getBlock());
-            dataList.add(data);
-            if (CollectionUtils.isEmpty(block.getBlock().getTransactions())) {
-                logger.info("No transactions found. block={}", blockHeight);
-                continue;
-            }
-
-            // 交易列表
-            logger.info("Found txs.block={},count={}", blockHeight, block.getBlock().getTransactions().size());
-            for (EthBlock.TransactionResult transactionResult : block.getBlock().getTransactions()) {
-                Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
-                if (tx.getInput() == null || tx.getInput().length() < 138) {
-                    logger.info("No logs.block={},tx={}", blockHeight, tx.getHash());
-                    continue;
-                }
-
-                // 获取Logs
-                EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(tx.getHash()).send();
-                if (receipt.getResult() != null && receipt.getResult().getLogs() != null) {
-                    logger.info("Found logs.block={},tx={},count={}",
-                            blockHeight, tx.getHash(), receipt.getResult().getLogs().size());
-                    data.getTransactionLogMap().put(tx.getHash(), receipt.getResult().getLogs());
-                }
-            }
-        }
-
-        return dataList;
+        return Utils.replayBlock(startBlockNumber, endBlockNumber, logger, web3j, chainId);
     }
 
     /**
