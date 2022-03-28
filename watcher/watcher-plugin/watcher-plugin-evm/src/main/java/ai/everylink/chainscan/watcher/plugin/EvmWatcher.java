@@ -17,15 +17,16 @@
 
 package ai.everylink.chainscan.watcher.plugin;
 
+import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.OkHttpUtil;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
+import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.rocketmq.SlackUtils;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
-import ai.everylink.chainscan.watcher.plugin.util.Utils;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
 import okhttp3.OkHttpClient;
@@ -107,6 +108,8 @@ public class EvmWatcher implements IWatcher {
                         : networkBlockHeight;
 
                 blockList = replayBlock(startBlockNumber, currentBlockHeight);
+                // blockList = replayBlock(89874L, 89874L);
+               // blockList = replayBlock(126379L, 126379L);
                 logger.info("Scan block from {} to {},resultSize={}", startBlockNumber, currentBlockHeight, blockList.size());
                 if (CollectionUtils.isEmpty(blockList)) {
                     logger.info("[slack_alert]扫块失败！！！start=" + startBlockNumber + ", end=" + currentBlockHeight);
@@ -134,7 +137,18 @@ public class EvmWatcher implements IWatcher {
 
     @Override
     public List<IWatcherPlugin> getOrderedPluginList() {
-        return Lists.newArrayList(new EvmPlugin());
+        // 自己创建的
+        List<IWatcherPlugin> pluginList = Lists.newArrayList(new EvmPlugin());
+
+        // 通过SPI发现的
+        pluginList.addAll(findErc20WatcherPluginBySPI());
+
+        // 排序
+        Collections.sort(pluginList, (o1, o2) -> o2.ordered() - o1.ordered());
+
+        return pluginList;
+
+      //  return Lists.newArrayList(new EvmPlugin());
     }
 
     /**
@@ -157,11 +171,11 @@ public class EvmWatcher implements IWatcher {
         logger.info("[EvmWatcher]timeZone={}", Calendar.getInstance().getTimeZone());
         initWeb3j();
         initService();
-        step = Utils.getScanStep();
-        chainId = Utils.getChainId();
+        step = WatcherUtils.getScanStep();
+        chainId = WatcherUtils.getChainId();
         currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
         logger.info("[EvmWatcher]init config. step={}, chainId={}, rpcUrl={}, chainType={},db={}",
-                step, chainId, Utils.getVmChainUrl(), Utils.getChainType(), System.getenv("spring.datasource.chainscan.jdbc-url"));
+                    step, chainId, WatcherUtils.getVmChainUrl(), WatcherUtils.getChainType(), System.getenv("spring.datasource.chainscan.jdbc-url"));
         logger.info("[EvmWatcher]got rocketmq name srv addr:{}", SlackUtils.getNamesrvAddr());
         logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
     }
@@ -186,7 +200,7 @@ public class EvmWatcher implements IWatcher {
         }
 
         try {
-            String rpcUrl = Utils.getVmChainUrl();
+            String rpcUrl = WatcherUtils.getVmChainUrl();
             logger.info("[rpc_url]url=" + rpcUrl);
 
             OkHttpClient httpClient = OkHttpUtil.buildOkHttpClient();
@@ -258,6 +272,17 @@ public class EvmWatcher implements IWatcher {
         return dataList;
     }
 
+    /**
+     * 通过SPI机制发现所有三方开发的支持Erc20区块的plugin
+     *
+     * @return
+     */
+    private List<IEvmWatcherPlugin> findErc20WatcherPluginBySPI() {
+        ServiceLoader<IEvmWatcherPlugin> list = ServiceLoader.load(IEvmWatcherPlugin.class);
+        return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
+    }
+
+
 
     private static final RateLimiter slackNotifiyLimiter = RateLimiter.create(0.001);
     private void sendVmAlertMsgToSlack() {
@@ -277,6 +302,5 @@ public class EvmWatcher implements IWatcher {
 
         SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警",
                 "VM链长时间未出块，请关注！最后出块于(\"" + diff/1000/60 + "\")分钟前");
-
     }
 }

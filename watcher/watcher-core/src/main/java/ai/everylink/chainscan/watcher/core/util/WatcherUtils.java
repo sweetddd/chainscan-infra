@@ -1,7 +1,6 @@
-package ai.everylink.chainscan.watcher.plugin.util;
+package ai.everylink.chainscan.watcher.core.util;
 
-import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
-import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
+import ai.everylink.chainscan.watcher.core.config.EvmConfig;
 import org.springframework.util.StringUtils;
 
 /**
@@ -9,8 +8,8 @@ import org.springframework.util.StringUtils;
  *
  * @author: david.zhanghui@everylink.ai
  */
-public final class Utils {
-    private Utils() {}
+public final class WatcherUtils {
+    private WatcherUtils() {}
 
     public static String getVmChainUrl() {
         String rpcUrl = System.getenv("watcher.vmChainUrl");

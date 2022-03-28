@@ -31,7 +31,7 @@
 
     <modules>
         <module>watcher-plugin-evm</module>
-        <module>watcher-plugin-bridge</module>
+        <module>watcher-plugin-transaction-history</module>
         <module>watcher-plugin-token</module>
     </modules>
 

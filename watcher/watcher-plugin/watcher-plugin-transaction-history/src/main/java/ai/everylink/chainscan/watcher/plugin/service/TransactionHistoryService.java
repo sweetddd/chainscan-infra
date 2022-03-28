@@ -15,21 +15,22 @@
  * limitations under the License.
  */
 
-package ai.everylink.chainscan.watcher.plugin;
+package ai.everylink.chainscan.watcher.plugin.service;
 
-import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
-import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
+
+import ai.everylink.chainscan.watcher.core.vo.EvmData;
 
 /**
- *
+ * transaction数据统计service
  *
  * @author brett
- * @since 2022-03-21
+ * @since 2021-12-30
  */
-public class BridgePlugin implements IEvmWatcherPlugin {
+public interface TransactionHistoryService {
 
-    @Override
-    public <T> boolean processBlock(T block) throws WatcherExecutionException {
-        return false;
-    }
+    /**
+     *transaction 信息扫描
+     */
+    public void transactionHistoryScan(EvmData blockData);
+
 }

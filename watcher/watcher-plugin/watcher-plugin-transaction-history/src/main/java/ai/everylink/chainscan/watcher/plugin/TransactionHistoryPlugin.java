@@ -19,36 +19,17 @@ package ai.everylink.chainscan.watcher.plugin;
 
 import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
-import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
-import ai.everylink.chainscan.watcher.core.vo.EvmData;
-import ai.everylink.chainscan.watcher.plugin.service.BridgeHistoryService;
-import lombok.extern.slf4j.Slf4j;
 
 /**
+ *
+ *
  * @author brett
  * @since 2022-03-21
  */
-@Slf4j
-public class BridgeSpiPlugin implements IEvmWatcherPlugin {
-
-
-    private BridgeHistoryService bridgeHistoryService;
+public class TransactionHistoryPlugin implements IEvmWatcherPlugin {
 
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
-        initService();
-        EvmData blockData = (EvmData) block;
-        long    start     = System.currentTimeMillis();
-        log.info("BridgePlugin-start:" + start);
-        bridgeHistoryService.bridgeHistoryScan(blockData);
-        log.info("BridgePlugin-end:" + System.currentTimeMillis());
         return false;
     }
-
-    private void initService() {
-        if (bridgeHistoryService == null) {
-            bridgeHistoryService = SpringApplicationUtils.getBean(BridgeHistoryService.class);
-        }
-    }
-
 }

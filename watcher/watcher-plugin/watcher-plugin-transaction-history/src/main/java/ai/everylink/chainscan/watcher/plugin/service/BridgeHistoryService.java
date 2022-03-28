@@ -15,42 +15,28 @@
  * limitations under the License.
  */
 
-package ai.everylink.chainscan.watcher.plugin.config;
+package ai.everylink.chainscan.watcher.plugin.service;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
+import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import ai.everylink.chainscan.watcher.entity.Transaction;
 
 /**
+ * Bridge数据统计service
  *
- * @author david.zhang@everylink.ai
- * @since 2021-11-26
+ * @author brett
+ * @since 2021-12-30
  */
-@Configuration
-@ConfigurationProperties(prefix = "evm.chain")
-@Data
-public class EvmConfig {
+public interface BridgeHistoryService {
 
     /**
-     * 每次扫块步数
+     *depositBridge 信息扫描
      */
-    private Integer scanStep;
+    public void depositBridge(Transaction transaction,EvmData data);
 
     /**
-     *  chain id
+     *bridge 信息扫描
      */
-    private Integer chainId;
+    public void bridgeHistoryScan(Transaction transaction,EvmData data);
 
-    private String chainRpcUrl;
-
-    /**
-     * EVM_PoS
-     * EVM_PoW
-     */
-    private String chainType;
-
-    private String dtxRpcSecret;
-
-    private String rocketmqSrvAddr;
 }

@@ -33,7 +33,7 @@ import java.util.List;
  * @since 2021-11-26
  */
 @Slf4j
-public class BridgeWatcher implements IWatcher {
+public class TransactionHistoryWatcher implements IWatcher {
 
     @Override
     @SneakyThrows
@@ -45,7 +45,7 @@ public class BridgeWatcher implements IWatcher {
     @Override
     public List<IWatcherPlugin> getOrderedPluginList() {
         // 自己创建的
-        List<IWatcherPlugin> pluginList = Lists.newArrayList(new BridgePlugin());
+        List<IWatcherPlugin> pluginList = Lists.newArrayList(new TransactionHistoryPlugin());
         return pluginList;
     }
 
@@ -56,7 +56,7 @@ public class BridgeWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        return "0 0 * * * ?";
-        //return "*/5 * * * * ?";
+       // return "0 0 * * * ?";
+        return "*/5 * * * * ?";
     }
 }

@@ -8,6 +8,6 @@ package ai.everylink.chainscan.watcher.core.config;
 public interface DataSourceEnum {
 
     String chainscan = "chainscan";
-    String bridge = "bridge";
+    String wallet = "wallet";
 
 }

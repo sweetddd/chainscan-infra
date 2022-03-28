@@ -1,5 +1,6 @@
 package ai.everylink.chainscan.watcher.core.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 /**
@@ -7,11 +8,12 @@ import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
  * @Author: brett
  * @Date : 2022/3/24 18:25
  */
+@Slf4j
 public class DynamicRoutingDataSource extends AbstractRoutingDataSource {
     @Override
     protected Object determineCurrentLookupKey() {
         Object lookupKey = DynamicRoutingDataSource.getRoutingDataSource();
-        System.err.println(Thread.currentThread().getName() + " determineCurrentLookupKey : " + lookupKey);
+        log.info(Thread.currentThread().getName() + " determineCurrentLookupKey : " + lookupKey);
         return lookupKey;
     }
 

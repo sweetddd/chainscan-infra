@@ -19,17 +19,16 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 import ai.everylink.chainscan.watcher.core.config.DataSourceEnum;
 import ai.everylink.chainscan.watcher.core.config.TargetDataSource;
-import ai.everylink.chainscan.watcher.entity.Block;
-import ai.everylink.chainscan.watcher.entity.Transaction;
-import ai.everylink.chainscan.watcher.entity.TransactionLog;
-import ai.everylink.chainscan.watcher.plugin.dto.CallTransaction;
-import ai.everylink.chainscan.watcher.plugin.util.Utils;
 import ai.everylink.chainscan.watcher.core.util.DecodUtils;
+import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.dao.BlockDao;
 import ai.everylink.chainscan.watcher.dao.TransactionDao;
 import ai.everylink.chainscan.watcher.dao.TransactionLogDao;
-
+import ai.everylink.chainscan.watcher.entity.Block;
+import ai.everylink.chainscan.watcher.entity.Transaction;
+import ai.everylink.chainscan.watcher.entity.TransactionLog;
+import ai.everylink.chainscan.watcher.plugin.dto.CallTransaction;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
@@ -91,7 +90,7 @@ public class EvmDataServiceImpl implements EvmDataService {
             builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
             OkHttpClient httpClient  = builder.build();
 
-            String rpcUrl = Utils.getVmChainUrl();
+            String rpcUrl = WatcherUtils.getVmChainUrl();
             log.info("[rpc_url]url=" + rpcUrl);
 
             httpService = new HttpService(rpcUrl, httpClient, false);
@@ -190,7 +189,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         block.setBurnt("");
         block.setReward("");
         block.setValidator(data.getBlock().getMiner());
-        block.setChainType(Utils.getChainType());
+        block.setChainType(WatcherUtils.getChainType());
         block.setStatus(0);
         return block;
     }
@@ -274,7 +273,7 @@ public class EvmDataServiceImpl implements EvmDataService {
                 log.error("[save]error occurred when query tx receipt. tx=" + item.getHash() + ",msg=" + e.getMessage(), e);
             }
             tx.setTokenTag(0);
-            tx.setChainType(Utils.getChainType());
+            tx.setChainType(WatcherUtils.getChainType());
             inputParams(tx);
             txList.add(tx);
         }
@@ -285,10 +284,10 @@ public class EvmDataServiceImpl implements EvmDataService {
 
         try {
             CallTransaction tr = new CallTransaction(transaction.getFrom()
-                    ,transaction.getGasPrice(),transaction.getGas()
-                    ,transaction.getTo()
-                    ,BigInteger.ZERO
-                    ,transaction.getInput());
+                    , transaction.getGasPrice(), transaction.getGas()
+                    , transaction.getTo()
+                    , BigInteger.ZERO
+                    , transaction.getInput());
             DefaultBlockParameter defaultBlockParameter = DefaultBlockParameter.valueOf(transaction.getBlockNumber());
 
 
@@ -363,7 +362,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         }else if(input.equals("0x")){
             tx.setInputMethod("Transfer");
         }else {
-            tx.setInputParams(DecodUtils.getParams(input));
+            tx.setInputParams(input);
         }
     }
 

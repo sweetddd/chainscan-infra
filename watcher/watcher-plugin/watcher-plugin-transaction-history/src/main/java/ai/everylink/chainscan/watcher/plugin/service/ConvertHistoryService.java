@@ -21,16 +21,16 @@ package ai.everylink.chainscan.watcher.plugin.service;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 
 /**
- * token数据统计service
+ * Convert 数据统计service
  *
  * @author brett
- * @since 2021-12-30
+ * @since 2022-03-26
  */
-public interface BridgeHistoryService {
+public interface ConvertHistoryService {
 
     /**
-     *token 信息扫描
+     *Convert 信息扫描
      */
-    public void bridgeHistoryScan(EvmData blockData);
+    public void convertHistoryScan(EvmData blockData);
 
 }
