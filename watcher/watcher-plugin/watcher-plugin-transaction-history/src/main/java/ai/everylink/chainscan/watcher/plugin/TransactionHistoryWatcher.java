@@ -19,10 +19,9 @@ package ai.everylink.chainscan.watcher.plugin;
 
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
-import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
-import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
 import com.google.common.collect.Lists;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -34,29 +33,19 @@ import java.util.List;
  * @since 2021-11-26
  */
 @Slf4j
-public class TokenWatcher implements IWatcher {
-
-    private TokenInfoService tokenService;
-
-
-    private String chainIds;
+public class TransactionHistoryWatcher implements IWatcher {
 
     @Override
+    @SneakyThrows
     public List<EvmData> scanBlock() {
-        initService();
-        long start = System.currentTimeMillis();
-        log.info("TokenWatcher-start:" + start);
-        tokenService.tokenScan();  //统计合约数据;
-        log.info("TokenWatcher-end:" + System.currentTimeMillis());
         List<EvmData> blockList = Lists.newArrayList();
         return blockList;
     }
 
-
     @Override
     public List<IWatcherPlugin> getOrderedPluginList() {
         // 自己创建的
-        List<IWatcherPlugin> pluginList = Lists.newArrayList(new TokenPlugin());
+        List<IWatcherPlugin> pluginList = Lists.newArrayList(new TransactionHistoryPlugin());
         return pluginList;
     }
 
@@ -67,14 +56,7 @@ public class TokenWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        return "0 0 * * * ?";
-      // return "*/5 * * * * ?";
+       // return "0 0 * * * ?";
+        return "*/5 * * * * ?";
     }
-
-    private void initService() {
-        if (tokenService == null) {
-            tokenService = SpringApplicationUtils.getBean(TokenInfoService.class);
-        }
-    }
-
 }

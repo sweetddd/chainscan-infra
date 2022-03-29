@@ -15,52 +15,27 @@
  * limitations under the License.
  */
 
-package ai.everylink.chainscan.watcher.plugin.service;
+package ai.everylink.chainscan.watcher.dao;
 
+import ai.everylink.chainscan.watcher.entity.BlockData;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
-import ai.everylink.chainscan.watcher.core.vo.EvmData;
-
-import java.util.Date;
 import java.util.List;
 
 /**
- * EVM数据服务
+ * BlockDataDao
  *
  * @author david.zhang@everylink.ai
  * @since 2021-11-30
  */
-public interface EvmDataService {
+public interface BlockDataDao extends JpaRepository<BlockData, Long> {
 
-    /**
-     * 保存区块数据
-     *
-     * @param data
-     */
-    void saveEvmData(EvmData data);
+    @Query(value = "select max(block_number) from block_data", nativeQuery = true)
+    Long queryMaxBlockNumber();
 
-    /**
-     * 获取指定chain的处理进度
-     * @param chainId
-     * @return
-     */
-    Long getMaxBlockNum(int chainId);
-
-    /**
-     * 获取最后一个区块的创建时间
-     * @return
-     */
-    Date getMaxBlockCreationTime(int chainId);
-
-    /**
-     * 根据最后确认hash更新block状态;
-     * @param finalizedHash
-     */
-    void updateBlockByHash(String finalizedHash);
-
-    /**
-     * 查询缺失的区块id
-     *
-     * @return
-     */
-    List<Long> listMissedBlockNumber(Long startBlockNum);
+    @Query(value = "select * from block_data where block_number > ?1 order by block_number asc limit ?2", nativeQuery = true)
+    List<BlockData> listBlock(long startBlock, int limit);
 }

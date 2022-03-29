@@ -31,21 +31,21 @@ public class DataSourceConfig {
         return build;
     }
 
-    @Bean(name = "bridgeDataSource")
-    @ConfigurationProperties(prefix = "spring.datasource.bridge")
-    public DataSource bridgeDataSource() {
+    @Bean(name = "walletDataSource")
+    @ConfigurationProperties(prefix = "spring.datasource.wallet")
+    public DataSource walletDataSource() {
         DataSource build = DataSourceBuilder.create().build();
         return build;
     }
 
-    @Primary
     @Bean
+    @Primary
     public DynamicRoutingDataSource dynamicDataSource(
             @Qualifier(value = "chainscanDataSource") DataSource chainscanDataSource,
-            @Qualifier(value = "bridgeDataSource") DataSource bridgeDataSource) {
+            @Qualifier(value = "walletDataSource") DataSource walletDataSource) {
         Map<Object, Object> targetDataSources = new HashMap<>(2);
         targetDataSources.put(DataSourceEnum.chainscan, chainscanDataSource);
-        targetDataSources.put(DataSourceEnum.bridge, bridgeDataSource);
+        targetDataSources.put(DataSourceEnum.wallet, walletDataSource);
         DynamicRoutingDataSource dynamicRoutingDataSource = new DynamicRoutingDataSource();
         //设置数据源
         dynamicRoutingDataSource.setTargetDataSources(targetDataSources);

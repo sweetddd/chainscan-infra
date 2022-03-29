@@ -15,52 +15,42 @@
  * limitations under the License.
  */
 
-package ai.everylink.chainscan.watcher.plugin.service;
+package ai.everylink.chainscan.watcher.core.config;
 
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-import ai.everylink.chainscan.watcher.core.vo.EvmData;
-
-import java.util.Date;
-import java.util.List;
 
 /**
- * EVM数据服务
  *
  * @author david.zhang@everylink.ai
- * @since 2021-11-30
+ * @since 2021-11-26
  */
-public interface EvmDataService {
+@Configuration
+@ConfigurationProperties(prefix = "evm.chain")
+@Data
+public class EvmConfig {
 
     /**
-     * 保存区块数据
-     *
-     * @param data
+     * 每次扫块步数
      */
-    void saveEvmData(EvmData data);
+    private Integer scanStep;
 
     /**
-     * 获取指定chain的处理进度
-     * @param chainId
-     * @return
+     *  chain id
      */
-    Long getMaxBlockNum(int chainId);
+    private Integer chainId;
+
+    private String chainRpcUrl;
 
     /**
-     * 获取最后一个区块的创建时间
-     * @return
+     * EVM_PoS
+     * EVM_PoW
      */
-    Date getMaxBlockCreationTime(int chainId);
+    private String chainType;
 
-    /**
-     * 根据最后确认hash更新block状态;
-     * @param finalizedHash
-     */
-    void updateBlockByHash(String finalizedHash);
+    private String dtxRpcSecret;
 
-    /**
-     * 查询缺失的区块id
-     *
-     * @return
-     */
-    List<Long> listMissedBlockNumber(Long startBlockNum);
+    private String rocketmqSrvAddr;
 }

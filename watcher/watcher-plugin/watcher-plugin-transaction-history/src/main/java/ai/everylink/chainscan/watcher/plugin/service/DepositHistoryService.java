@@ -19,48 +19,19 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
-
-import java.util.Date;
-import java.util.List;
+import ai.everylink.chainscan.watcher.entity.Transaction;
 
 /**
- * EVM数据服务
+ * Deposit 数据统计service
  *
- * @author david.zhang@everylink.ai
- * @since 2021-11-30
+ * @author brett
+ * @since 2022-03-26
  */
-public interface EvmDataService {
+public interface DepositHistoryService {
 
     /**
-     * 保存区块数据
-     *
-     * @param data
+     *Deposit 信息扫描
      */
-    void saveEvmData(EvmData data);
+    public void depositHistoryScan(Transaction transaction, EvmData data);
 
-    /**
-     * 获取指定chain的处理进度
-     * @param chainId
-     * @return
-     */
-    Long getMaxBlockNum(int chainId);
-
-    /**
-     * 获取最后一个区块的创建时间
-     * @return
-     */
-    Date getMaxBlockCreationTime(int chainId);
-
-    /**
-     * 根据最后确认hash更新block状态;
-     * @param finalizedHash
-     */
-    void updateBlockByHash(String finalizedHash);
-
-    /**
-     * 查询缺失的区块id
-     *
-     * @return
-     */
-    List<Long> listMissedBlockNumber(Long startBlockNum);
 }

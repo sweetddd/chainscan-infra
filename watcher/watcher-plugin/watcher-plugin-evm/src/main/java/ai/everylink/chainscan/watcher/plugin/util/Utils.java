@@ -1,8 +1,16 @@
 package ai.everylink.chainscan.watcher.plugin.util;
 
-import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
-import ai.everylink.chainscan.watcher.plugin.config.EvmConfig;
-import org.springframework.util.StringUtils;
+import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import ai.everylink.chainscan.watcher.plugin.EvmWatcher;
+import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.methods.response.EthBlockNumber;
+
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Utils
@@ -10,49 +18,66 @@ import org.springframework.util.StringUtils;
  * @author: david.zhanghui@everylink.ai
  */
 public final class Utils {
-    private Utils() {}
+    private static Logger logger = LoggerFactory.getLogger(Utils.class);
 
-    public static String getVmChainUrl() {
-        String rpcUrl = System.getenv("watcher.vmChainUrl");
-        if (StringUtils.isEmpty(rpcUrl)) {
-            rpcUrl = SpringApplicationUtils.getBean(EvmConfig.class).getChainRpcUrl();
+    public static Long getNetworkBlockHeight(Logger logger, Web3j web3j) {
+        try {
+            EthBlockNumber blockNumber = web3j.ethBlockNumber().send();
+            return blockNumber.getBlockNumber().longValue();
+        } catch (Throwable e) {
+            logger.error("Error occured when request web3j.ethBlockNumber.", e);
+            return 0L;
         }
-
-        return rpcUrl;
     }
 
-    public static Integer getScanStep() {
-        String scanStepStr = System.getenv("watcher.chain.scanStep");
-        if (!StringUtils.isEmpty(scanStepStr)) {
+
+    public static class ScanChainThread implements Runnable {
+        private CountDownLatch latch;
+        private EvmWatcher watcher;
+        public ScanChainThread(CountDownLatch latch, EvmWatcher watcher) {
+            this.latch = latch;
+            this.watcher = watcher;
+        }
+
+        @Override
+        public void run() {
             try {
-                return Integer.parseInt(scanStepStr);
+                watcher.scanChain();
             } catch (Exception e) {
-                // ignore
+                logger.error("[EvmWatcher]ScanChainThread scanChain error", e);
+            } finally {
+                latch.countDown();
             }
         }
-
-        return SpringApplicationUtils.getBean(EvmConfig.class).getScanStep();
     }
 
-    public static Integer getChainId() {
-        String chainIdStr = System.getenv("watcher.chain.chainId");
-        if (!StringUtils.isEmpty(chainIdStr)) {
+    public static class ListBlockThread implements Runnable {
+        private CountDownLatch latch;
+        private EvmWatcher watcher;
+        private List<EvmData> list;
+        public ListBlockThread(CountDownLatch latch, EvmWatcher watcher, List<EvmData> list) {
+            this.latch = latch;
+            this.watcher = watcher;
+            this.list = list;
+        }
+
+        @Override
+        public void run() {
             try {
-                return Integer.parseInt(chainIdStr);
+                List<EvmData> tmpList = watcher.listBlock();
+                if (CollectionUtils.isEmpty(tmpList)) {
+                    logger.info("[EvmWatcher]no blocks found.");
+                    return;
+                }
+
+                list.addAll(tmpList);
             } catch (Exception e) {
-                // ignore
+                logger.error("[EvmWatcher]ListBlockThread scanChain error", e);
+            } finally {
+                latch.countDown();
             }
         }
-
-        return SpringApplicationUtils.getBean(EvmConfig.class).getChainId();
     }
 
-    public static String getChainType() {
-        String chainType = System.getenv("watcher.chain.chainType");
-        if (StringUtils.isEmpty(chainType)) {
-            chainType = SpringApplicationUtils.getBean(EvmConfig.class).getChainType();
-        }
 
-        return chainType;
-    }
 }
