@@ -174,7 +174,10 @@ public class EvmWatcher implements IWatcher {
         Long dbHeight = evmScanDataService.queryMaxBlockNumber();
 
         // 获取链上高度 TODO 等待自有rinkeby节点好了再放开
-        Long chainHeight = 10408735L;//getNetworkBlockHeight();
+        Long chainHeight = getNetworkBlockHeight();
+        if (chainHeight == null || chainHeight <= 0) {
+            chainHeight = 10408735L;
+        }
 
         if (dbHeight.equals(chainHeight)) {
             logger.info("[EvmWatcher]dbHeight catch the chain height.");
