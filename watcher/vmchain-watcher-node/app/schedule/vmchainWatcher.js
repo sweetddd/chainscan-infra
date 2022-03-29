@@ -111,9 +111,10 @@ function blockFromData(data){
     let blocked_fee =parseInt(data.substring(50,82),16); // 32
     let create_time =parseInt(data.substring(82,98),16); //16
     let block_hash = data.substring(98,162);  //
-    let transaction_count = parseInt(data.substring(162,178));  //
+    let rewards = parseInt(data.substring(162,194),16); //16
+    let transaction_count = parseInt(data.substring(194,210));  //
 
-    let txs_data = data.substring(178,data.length);
+    let txs_data = data.substring(210,data.length);
     console.log(txs_data.length)
 
 
@@ -137,6 +138,7 @@ function blockFromData(data){
         blocked_fee : blocked_fee,
         create_time : create_time,
         block_hash : "0x"+block_hash,
+        rewards : rewards,
         transaction_count:transaction_count,
         transactions:tx_list
     };

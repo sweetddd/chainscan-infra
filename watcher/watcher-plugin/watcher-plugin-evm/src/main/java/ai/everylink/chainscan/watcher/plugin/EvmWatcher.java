@@ -71,6 +71,11 @@ public class EvmWatcher implements IWatcher {
     private int step;
 
     /**
+     * 每次查询的limit
+     */
+    private int processStep;
+
+    /**
      * 当前扫块的链的id
      */
     private static int chainId;
@@ -165,7 +170,8 @@ public class EvmWatcher implements IWatcher {
 
     public List<EvmData> listBlock() {
         Long dbHeight = evmDataService.getMaxBlockNum(chainId);
-        return evmScanDataService.queryBlockList(dbHeight, step);
+        logger.info("[EvmWatcher]listBlock.dbHeight={},processStep={}", dbHeight, processStep);
+        return evmScanDataService.queryBlockList(dbHeight, processStep);
     }
 
 
@@ -365,10 +371,11 @@ public class EvmWatcher implements IWatcher {
         initWeb3j();
         initService();
         step = WatcherUtils.getScanStep();
+        processStep = WatcherUtils.getProcessStep();
         chainId = WatcherUtils.getChainId();
         currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
-        logger.info("[EvmWatcher]init config. step={}, chainId={}, rpcUrl={}, chainType={},db={}",
-                    step, chainId, WatcherUtils.getVmChainUrl(), WatcherUtils.getChainType(), System.getenv("spring.datasource.chainscan.jdbc-url"));
+        logger.info("[EvmWatcher]init config. step={}, processStep={}. chainId={}, rpcUrl={}, chainType={},db={}",
+                    step, processStep, chainId, WatcherUtils.getVmChainUrl(), WatcherUtils.getChainType(), System.getenv("spring.datasource.chainscan.jdbc-url"));
         logger.info("[EvmWatcher]got rocketmq name srv addr:{}", SlackUtils.getNamesrvAddr());
         logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
     }

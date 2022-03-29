@@ -37,6 +37,8 @@ public class EvmConfig {
      */
     private Integer scanStep;
 
+    private Integer processStep;
+
     /**
      *  chain id
      */

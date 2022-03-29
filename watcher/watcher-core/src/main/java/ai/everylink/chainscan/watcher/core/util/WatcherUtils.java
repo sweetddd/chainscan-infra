@@ -33,6 +33,20 @@ public final class WatcherUtils {
         return SpringApplicationUtils.getBean(EvmConfig.class).getScanStep();
     }
 
+
+    public static Integer getProcessStep() {
+        String scanStepStr = System.getenv("watcher.chain.processStep");
+        if (!StringUtils.isEmpty(scanStepStr)) {
+            try {
+                return Integer.parseInt(scanStepStr);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+
+        return SpringApplicationUtils.getBean(EvmConfig.class).getProcessStep();
+    }
+
     public static Integer getChainId() {
         String chainIdStr = System.getenv("watcher.chain.chainId");
         if (!StringUtils.isEmpty(chainIdStr)) {
