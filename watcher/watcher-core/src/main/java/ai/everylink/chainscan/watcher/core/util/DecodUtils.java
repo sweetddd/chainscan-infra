@@ -25,6 +25,9 @@ public class DecodUtils {
         put("0xa44f5fe6", "Function: deposit(uint32 destinationChainID, bytes32 resourceID, bytes calldata data) ***");
         put("0xee1c1c7b", "Function: depositETH(uint32 destinationChainID, bytes32 resourceID, bytes calldata data) ***");
         put("0xfe4464a7", "Function: depositNFT(uint32 destinationChainID, bytes32 resourceID, bytes calldata data) ***");
+        //L2 deposit
+        put("0x20e2d818", "Function: depositNativeToken(address _shardChainAddress) ***");
+        put("0xe17376b5", "Function: function depositERC20(IERC20 _token,uint104 _amount,address _shardChainAddress) ***");
         //执行提按
         put("0x20e82d03", "Function: executeProposal(uint32 chainID,uint64 depositNonce,bytes calldata data,bytes32 resourceID,ProposalStatus proposalStatus,bytes32 proposalDataHash,bytes32 proposalResourceId,address[] memory yesVoteList,bytes[] memory relayerSignList) ***");
         put("0x860b533d", "Function: finishProposal(uint32 chainID, uint64 depositNonce, bytes32 dataHash) ***");

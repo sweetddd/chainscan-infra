@@ -33,6 +33,12 @@ public class WalletTransactionHistory {
     @Column(name = "token_id", nullable = false, length = 80)
     private String tokenId;
 
+    @Column(name = "contract_name", nullable = false)
+    private String contractName;
+
+    @Column(name = "layer", nullable = false, length = 80)
+    private String layer;
+
     @Column(name = "from_address", nullable = false, length = 80)
     private String fromAddress;
 
@@ -76,7 +82,10 @@ public class WalletTransactionHistory {
     private Timestamp toTxTime;
 
     @Column(name = "confirm_block")
-    private BigInteger confirmBlock;
+    private int confirmBlock;
+
+    @Column(name = "submit_block")
+    private BigInteger submitBlock;
 
     @Column(name = "tx_state", nullable = false)
     private String txState;
