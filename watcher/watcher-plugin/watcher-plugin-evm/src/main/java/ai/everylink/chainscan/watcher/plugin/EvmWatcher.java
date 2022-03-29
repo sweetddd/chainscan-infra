@@ -27,6 +27,8 @@ import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.rocketmq.SlackUtils;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
+import ai.everylink.chainscan.watcher.plugin.service.EvmScanDataService;
+import ai.everylink.chainscan.watcher.plugin.util.Utils;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
 import okhttp3.OkHttpClient;
@@ -43,6 +45,7 @@ import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.http.HttpService;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * 以太坊扫块
@@ -70,68 +73,63 @@ public class EvmWatcher implements IWatcher {
     /**
      * 当前扫块的链的id
      */
-    private int chainId;
+    private static int chainId;
 
-    private Web3j web3j;
+    private static Web3j web3j;
 
     /**
      * 从数据库里面获取处理进度
      */
     private EvmDataService evmDataService;
 
+    private EvmScanDataService evmScanDataService;
+
     /**
      * 区块生产超时时间
      */
     private static final Long BLOCK_PRODUCE_TIMEOUT = 11*60*1000L;
 
+    private static final int MAX_SCAN_THREAD = 200;
+    private static final int MAX_TX_SCAN_THREAD = 250;
+    /**
+     * 任务线程池。
+     * 一个线程用来扫块，落库。
+     * 另外一个线程用来查库，组装EvmData对象并交付plugin处理
+     */
+    private static ExecutorService taskPool = new ThreadPoolExecutor(2,2, 6, TimeUnit.HOURS, new ArrayBlockingQueue<>(1000));
+
+    /**
+     * 扫块时并发查询区块线程池。
+     */
+    private static ExecutorService scanBlockPool = new ThreadPoolExecutor(10, MAX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000));
+
+    /**
+     * 扫块时并发查询区块下的交易线程池。
+     */
+    private static ExecutorService scanTxPool = new ThreadPoolExecutor(30, MAX_TX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(50000));
+
+    /**
+     * 入口方法
+     *
+     * @return
+     */
     @Override
     public List<EvmData> scanBlock() {
-        long start = System.currentTimeMillis();
-
         init();
 
-        List<EvmData> blockList = Lists.newArrayList();
+        List<EvmData> dataList = new CopyOnWriteArrayList<EvmData>();
 
-        Long networkBlockHeight = getNetworkBlockHeight();
-        logger.info("loop scan begin.curNum={},netNum={}", currentBlockHeight, networkBlockHeight);
-        if (networkBlockHeight <= 0) {
-            logger.info("[slack_alert]chain block height is 0, maybe the chain is down.");
-            return Lists.newArrayList();
-        }
+        CountDownLatch latch = new CountDownLatch(2);
+        taskPool.submit(new Utils.ScanChainThread(latch, this));
+        taskPool.submit(new Utils.ListBlockThread(latch, this, dataList));
 
-        long startBlockNumber = 0;
         try {
-            if (currentBlockHeight < networkBlockHeight) {
-                startBlockNumber = currentBlockHeight + 1;
-                currentBlockHeight = (networkBlockHeight - currentBlockHeight > step)
-                        ? currentBlockHeight + step
-                        : networkBlockHeight;
-
-                blockList = replayBlock(startBlockNumber, currentBlockHeight);
-                // blockList = replayBlock(147103L,147103L);
-               // blockList = replayBlock(126379L, 126379L);
-                logger.info("Scan block from {} to {},resultSize={}", startBlockNumber, currentBlockHeight, blockList.size());
-                if (CollectionUtils.isEmpty(blockList)) {
-                    logger.info("[slack_alert]扫块失败！！！start=" + startBlockNumber + ", end=" + currentBlockHeight);
-                    currentBlockHeight = startBlockNumber - 1;
-
-                    // 发送slack通知
-                    sendVmAlertMsgToSlack();
-
-                    return Lists.newArrayList();
-                }
-            } else {
-                logger.info("[slack_alert]当前块高超过链上块高，maybe the chain was reset.");
-            }
-        } catch (Throwable e) {
-            currentBlockHeight = startBlockNumber - 1;
-            logger.error("loop scan error.curNum={" + currentBlockHeight + "},netNum={" + networkBlockHeight + "}", e);
+            latch.await(3, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            logger.error("[EvmWatcher]scanBlock error", e);
         }
 
-        logger.info("loop scan end.curNum={},netNum={},consume={}ms",
-                currentBlockHeight, networkBlockHeight, (System.currentTimeMillis() - start));
-
-        return blockList;
+        return dataList;
     }
 
 
@@ -147,8 +145,6 @@ public class EvmWatcher implements IWatcher {
         Collections.sort(pluginList, (o1, o2) -> o2.ordered() - o1.ordered());
 
         return pluginList;
-
-      //  return Lists.newArrayList(new EvmPlugin());
     }
 
     /**
@@ -164,8 +160,202 @@ public class EvmWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-       return "*/10 * * * * ?";
+        return "*/10 * * * * ?";
     }
+
+    public List<EvmData> listBlock() {
+        Long dbHeight = evmDataService.getMaxBlockNum(chainId);
+        return evmScanDataService.queryBlockList(dbHeight, step);
+    }
+
+
+    public void scanChain() {
+        // 获取数据库保存的扫块高度
+        Long dbHeight = evmScanDataService.queryMaxBlockNumber();
+
+        // 获取链上高度 TODO 等待自有rinkeby节点好了再放开
+        Long chainHeight = 10408735L;//getNetworkBlockHeight();
+
+        if (dbHeight.equals(chainHeight)) {
+            logger.info("[EvmWatcher]dbHeight catch the chain height.");
+            return;
+        }
+
+        if (dbHeight > chainHeight) {
+            logger.info("[EvmWatcher]DB块高超过链上块高，maybe the chain was reset.");
+            return;
+        }
+
+        // 计算扫块区间
+        long start = dbHeight + 1;
+        long end = chainHeight;
+        if (chainHeight - start >= step) {
+            end = start + step - 1;
+        }
+        logger.info("[EvmWatcher]begin to scan.dbHeight={},chainHeight={},start={},end={}", dbHeight, chainHeight, start, end);
+
+        // 并发扫块
+        List<EvmData> dataList = currentReplayBlock(start, end);
+
+        // 校验数据
+        if (CollectionUtils.isEmpty(dataList)) {
+            logger.error("[EvmWatcher]data is empty.expected: {} blocks", (end - start + 1));
+            return;
+        }
+
+        if (dataList.size() != (end - start + 1)) {
+            logger.error("[EvmWatcher]Scan block size {} mismatch expect size {}", dataList.size(), (end - start + 1));
+            return;
+        }
+
+        // 落库
+        try {
+            evmScanDataService.insert(dataList);
+        } catch (Exception e) {
+            logger.error("[EvmWatcher]insert db failed.", e);
+        }
+    }
+
+    private List<EvmData> currentReplayBlock(long start, long end) {
+        List<EvmData> list = new CopyOnWriteArrayList<EvmData>();
+
+        try {
+            CountDownLatch latch = new CountDownLatch((int) (end - start + 1));
+
+            for (long blockNum = start; blockNum <= end; blockNum++) {
+                scanBlockPool.submit(new ReplayBlockThread(latch, blockNum, list));
+            }
+
+            latch.await(3, TimeUnit.MINUTES);
+
+            if (CollectionUtils.isEmpty(list)) {
+                logger.info("[EvmWatcher]replay block failied. start=" + start + ", end=" + end);
+                sendVmAlertMsgToSlack();
+                return Lists.newArrayList();
+            }
+        } catch (Exception e) {
+            logger.error("[EvmWatcher]error when currentReplayBlock.", e);
+            return Lists.newArrayList();
+        }
+
+        Collections.sort(list, new Comparator<EvmData>() {
+            @Override
+            public int compare(EvmData o1, EvmData o2) {
+                return o1.getBlock().getNumber().compareTo(o2.getBlock().getNumber());
+            }
+        });
+
+        logger.info("[EvmWatcher]end replay blocks.start={},end={},size={}", start, end, list.size());
+        return list;
+    }
+
+    public static class ReplayBlockThread implements Runnable {
+        private CountDownLatch latch;
+        private Long blockNum;
+        private List<EvmData> list;
+        private ReplayBlockThread (CountDownLatch latch, Long blockNum, List<EvmData> list) {
+            this.latch = latch;
+            this.blockNum = blockNum;
+            this.list = list;
+        }
+
+        @Override
+        public void run() {
+            try {
+                EvmData data = replayBlock(blockNum);
+                if (data == null) {
+                    logger.error("[EvmWatcher]fetched empty block:" + blockNum);
+                    return;
+                }
+
+                // 并发查询交易列表
+                if (!CollectionUtils.isEmpty(data.getBlock().getTransactions())) {
+                    CountDownLatch txLatch = new CountDownLatch(data.getBlock().getTransactions().size());
+                    for (EthBlock.TransactionResult transactionResult : data.getBlock().getTransactions()) {
+                        Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
+                        scanTxPool.submit(new ReplayTransactionThread(txLatch, data, tx.getHash()));
+                    }
+                    txLatch.await(3, TimeUnit.MINUTES);
+
+                    // 校验
+                    if (data.getBlock().getTransactions().size() != data.getTxList().size()) {
+                        logger.error("[EvmWatcher]Scan tx size {} mismatch expect size {}. blockNum={}",
+                                data.getTxList().size(), data.getBlock().getTransactions().size(), blockNum);
+//                        return;
+                    }
+                }
+
+                list.add(data);
+            } catch (Throwable e) {
+                logger.error("[EvmWatcher]error when process block:" + blockNum, e);
+            } finally {
+                latch.countDown();
+            }
+        }
+    }
+
+    public static class ReplayTransactionThread implements Runnable {
+        private CountDownLatch latch;
+        private EvmData data;
+        private String txHash;
+
+        public ReplayTransactionThread(CountDownLatch latch, EvmData data, String txHash) {
+            this.latch = latch;
+            this.data = data;
+            this.txHash = txHash;
+        }
+
+        @Override
+        public void run() {
+            try {
+                replayTx(data, txHash);
+            } catch (Exception e) {
+                logger.error("[EvmWatcher]error when process tx. blockNum="
+                        + data.getBlock().getNumber().longValue() + ", txHash=" + txHash, e);
+            } finally {
+                latch.countDown();
+            }
+        }
+    }
+
+    private static EvmData replayBlock(Long blockNumber) throws Exception {
+        EvmData data = new EvmData();
+        data.setChainId(chainId);
+
+        // 查询block
+        EthBlock block = web3j.ethGetBlockByNumber(
+                new DefaultBlockParameterNumber(blockNumber), true).send();
+        if (block == null || block.getBlock() == null) {
+            logger.error("[EvmWatcher]Block is null. block={}", blockNumber);
+            return null;
+        }
+
+        data.setBlock(block.getBlock());
+
+        return data;
+    }
+
+    private static void replayTx(EvmData data, String txHash) throws Exception {
+        long blockNumber = data.getBlock().getNumber().longValue();
+
+        // 获取receipt
+        EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(txHash).send();
+        if (receipt.getResult() == null) {
+            // TODO 一个交易查不到，是否需要返回null
+            logger.error("[EvmWatcher]tx receipt not found. blockNum={}, tx={}", blockNumber, txHash);
+            return ;
+        }
+
+        data.getTxList().put(txHash, receipt.getResult());
+
+        // 获取Logs
+        if (!CollectionUtils.isEmpty(receipt.getResult().getLogs())) {
+            logger.info("[EvmWatcher]Found logs.block={},tx={},count={}",
+                    blockNumber, txHash, receipt.getResult().getLogs().size());
+            data.getTransactionLogMap().put(txHash, receipt.getResult().getLogs());
+        }
+    }
+
 
     private void init() {
         logger.info("[EvmWatcher]timeZone={}", Calendar.getInstance().getTimeZone());
@@ -187,6 +377,10 @@ public class EvmWatcher implements IWatcher {
         }
         if (vmChainUtil == null) {
             vmChainUtil = SpringApplicationUtils.getBean(VmChainUtil.class);
+        }
+
+        if (evmScanDataService == null) {
+            evmScanDataService = SpringApplicationUtils.getBean(EvmScanDataService.class);
         }
 
     }
@@ -226,53 +420,6 @@ public class EvmWatcher implements IWatcher {
         }
     }
 
-    public List<EvmData> replayBlock(Long startBlockNumber, Long endBlockNumber) throws Exception {
-        List<EvmData> dataList = Lists.newArrayList();
-
-        for (Long blockHeight = startBlockNumber; blockHeight <= endBlockNumber; blockHeight++) {
-            logger.info("Begin to scan block={}", blockHeight);
-
-            EvmData data = new EvmData();
-            data.setChainId(chainId);
-
-            // 查询block
-            EthBlock block = web3j.ethGetBlockByNumber(
-                    new DefaultBlockParameterNumber(blockHeight), true).send();
-            if (block == null || block.getBlock() == null) {
-                logger.error("Block is null. block={}", blockHeight);
-                continue;
-            }
-
-            data.setBlock(block.getBlock());
-            dataList.add(data);
-            if (CollectionUtils.isEmpty(block.getBlock().getTransactions())) {
-                logger.info("No transactions found. block={}", blockHeight);
-                continue;
-            }
-
-            // 交易列表
-            logger.info("Found txs.block={},count={}", blockHeight, block.getBlock().getTransactions().size());
-            for (EthBlock.TransactionResult transactionResult : block.getBlock().getTransactions()) {
-                Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
-                // 获取Logs
-                EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(tx.getHash()).send();
-                if (receipt.getResult() != null && receipt.getResult().getLogs() != null) {
-                    logger.info("Found logs.block={},tx={},count={}",
-                            blockHeight, tx.getHash(), receipt.getResult().getLogs().size());
-                    data.getTransactionLogMap().put(tx.getHash(), receipt.getResult().getLogs());
-                }
-
-                if (tx.getInput() == null || tx.getInput().length() < 138) {
-                    logger.info("No logs.block={},tx={}", blockHeight, tx.getHash());
-                    continue;
-                }
-
-            }
-        }
-
-        return dataList;
-    }
-
     /**
      * 通过SPI机制发现所有三方开发的支持Erc20区块的plugin
      *
@@ -282,7 +429,6 @@ public class EvmWatcher implements IWatcher {
         ServiceLoader<IEvmWatcherPlugin> list = ServiceLoader.load(IEvmWatcherPlugin.class);
         return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
     }
-
 
 
     private static final RateLimiter slackNotifiyLimiter = RateLimiter.create(0.001);

@@ -23,6 +23,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.Log;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,13 @@ public class EvmData {
     * 区块信息
     */
    private EthBlock.Block block;
+
+    /**
+     * Block对应的交易列表
+     * key: txHash
+     * value ： tx list
+     */
+   private Map<String, TransactionReceipt> txList = Maps.newConcurrentMap();
 
    /**
     * 交易对应的log列表

@@ -119,10 +119,20 @@ public class EvmDataServiceImpl implements EvmDataService {
         blockDao.updateBlockByHash(finalizedHash);
     }
 
+    private boolean isBlockExist(Long blockNum, int chainId) {
+        Long dbBlockNum = blockDao.getBlockIdByNum(blockNum, chainId);
+        return dbBlockNum != null && dbBlockNum > 0;
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @TargetDataSource(value = DataSourceEnum.chainscan)
     @Override
     public void saveEvmData(EvmData data) {
+        if (isBlockExist(data.getBlock().getNumber().longValue(), data.getChainId())) {
+            log.info("[save]block exist.");
+            return;
+        }
+
         int   chainId = data.getChainId();
         int   gasUsed = 0;
         Block block = buildBlock(data, chainId);
@@ -131,7 +141,9 @@ public class EvmDataServiceImpl implements EvmDataService {
 
         // block gas used
         for (Transaction transaction : txList) {
-            gasUsed += transaction.getGasUsed().intValue();
+            if (transaction.getGasUsed() != null) {
+                gasUsed += transaction.getGasUsed().intValue();
+            }
         }
         block.setGasUsed(new BigInteger(String.valueOf(gasUsed)));
 
@@ -227,51 +239,48 @@ public class EvmDataServiceImpl implements EvmDataService {
             }
             tx.setCreateTime(new Date());
 
-            try {
-                TransactionReceipt receipt = web3j.ethGetTransactionReceipt(item.getHash()).send().getResult();
-                if(receipt != null){
-                    // status
-                    if (receipt.getStatus() != null &&
-                            ( receipt.getStatus().equalsIgnoreCase("1")
-                                    || receipt.getStatus().equalsIgnoreCase("0x1"))) {
-                        tx.setStatus("0x1");
-                    } else {
-                        tx.setStatus("0x0");
-                        //fail
-                        String failMsg = getFailMsg(item);
-
-                        tx.setFailMsg(failMsg);
-
-                    }
-
-                    // gas fee
-                    if (receipt.getGasUsed() != null) {
-                        tx.setGasUsed(receipt.getGasUsed());
-                        if (item.getGasPrice() != null) {
-                            tx.setTxFee(item.getGasPrice().multiply(receipt.getGasUsed()).toString());
-                        }
-                    }
-
-                    //创建合约交易
-                    if(item.getInput().length() > 10){
-                        String function = item.getInput().substring(0, 10);
-                        if(function.equals("0x60806040") && receipt.getContractAddress() != null){
-                            //设置to地址为合约地址
-                            tx.setToAddr(receipt.getContractAddress());
-                        }
-                        if(function.equals("0x60e06040") && receipt.getContractAddress() != null){
-                            //设置to地址为合约地址
-                            tx.setToAddr(receipt.getContractAddress());
-                        }
-                    }
-                    //合约地址存储
-                    tx.setContractAddress(receipt.getContractAddress());
+            TransactionReceipt receipt = data.getTxList().get(item.getHash());
+            if(receipt != null){
+                // status
+                if (receipt.getStatus() != null &&
+                        ( receipt.getStatus().equalsIgnoreCase("1")
+                                || receipt.getStatus().equalsIgnoreCase("0x1"))) {
+                    tx.setStatus("0x1");
                 } else {
-                    log.info("[save]cannot get gas used and tx fee. txHash={}", item.getHash());
+                    tx.setStatus("0x0");
+                    //fail
+                    String failMsg = getFailMsg(item);
+
+                    tx.setFailMsg(failMsg);
+
                 }
-            } catch (IOException e) {
-                log.error("[save]error occurred when query tx receipt. tx=" + item.getHash() + ",msg=" + e.getMessage(), e);
+
+                // gas fee
+                if (receipt.getGasUsed() != null) {
+                    tx.setGasUsed(receipt.getGasUsed());
+                    if (item.getGasPrice() != null) {
+                        tx.setTxFee(item.getGasPrice().multiply(receipt.getGasUsed()).toString());
+                    }
+                }
+
+                //创建合约交易
+                if(item.getInput().length() > 10){
+                    String function = item.getInput().substring(0, 10);
+                    if(function.equals("0x60806040") && receipt.getContractAddress() != null){
+                        //设置to地址为合约地址
+                        tx.setToAddr(receipt.getContractAddress());
+                    }
+                    if(function.equals("0x60e06040") && receipt.getContractAddress() != null){
+                        //设置to地址为合约地址
+                        tx.setToAddr(receipt.getContractAddress());
+                    }
+                }
+                //合约地址存储
+                tx.setContractAddress(receipt.getContractAddress());
+            } else {
+                log.info("[save]cannot get gas used and tx fee. txHash={}", item.getHash());
             }
+
             tx.setTokenTag(0);
             tx.setChainType(WatcherUtils.getChainType());
             inputParams(tx);
@@ -349,20 +358,24 @@ public class EvmDataServiceImpl implements EvmDataService {
     }
 
     private void inputParams(Transaction tx) {
-        String input = tx.getInput();
-        if(input.length()> 10 && input.substring(0,2).equals("0x")){
-            Object function = DecodUtils.getFunction(input);
-            if(function != null){
-                tx.setInputMethod(function.toString());
-                tx.setInputParams(DecodUtils.getParams(input));
-            }else{
-                tx.setInputMethod(input);
+        try {
+            String input = tx.getInput();
+            if (input.length() > 10 && input.substring(0, 2).equals("0x")) {
+                Object function = DecodUtils.getFunction(input);
+                if (function != null) {
+                    tx.setInputMethod(function.toString());
+                    tx.setInputParams(DecodUtils.getParams(input));
+                } else {
+                    tx.setInputMethod(input);
+                    tx.setInputParams(input);
+                }
+            } else if (input.equals("0x")) {
+                tx.setInputMethod("Transfer");
+            } else {
                 tx.setInputParams(input);
             }
-        }else if(input.equals("0x")){
-            tx.setInputMethod("Transfer");
-        }else {
-            tx.setInputParams(input);
+        } catch (Exception e) {
+            log.error("[Save]inputParams call error.txHash=" + tx.getTransactionHash(), e);
         }
     }
 

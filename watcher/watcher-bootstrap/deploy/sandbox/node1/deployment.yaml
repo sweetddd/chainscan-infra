@@ -33,7 +33,7 @@ spec:
             cpu: 0.1
             memory: 0.5Gi
           limits:
-            cpu: 2
+            cpu: 4
             memory: 4Gi
         volumeMounts:
         - name: host-time
@@ -94,10 +94,7 @@ spec:
                 name: network-config
                 key: ether.rpc.api
           - name: "watcher.vmChainUrl"
-            valueFrom:
-              configMapKeyRef:
-                name: network-config
-                key: ether.rpc.api
+            value: http://10.233.109.182:8545
           - name: "watcher.chain.scanStep"
             value: 100
           - name: "watcher.chain.chainId"

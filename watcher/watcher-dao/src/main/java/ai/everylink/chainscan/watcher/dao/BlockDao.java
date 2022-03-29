@@ -48,6 +48,16 @@ public interface BlockDao extends JpaRepository<Block, Long> {
     Block getBlockByNum(@Param("blockNum") Long blockNum, @Param("chainId") int chainId);
 
     /**
+     * get block by block num
+     *
+     * @param blockNum
+     * @param chainId
+     * @return
+     */
+    @Query(value = "select block_number from block where block_number=:blockNum and chain_id=:chainId", nativeQuery = true)
+    Long getBlockIdByNum(@Param("blockNum") Long blockNum, @Param("chainId") int chainId);
+
+    /**
      * get block by block hash
      * @param blockHash
      * @param chainId
@@ -103,6 +113,6 @@ public interface BlockDao extends JpaRepository<Block, Long> {
      * @param startBlockNumber
      * @return
      */
-    @Query(value = "select block_number from block where block_number>=?1 order by block_number asc limit 1000;", nativeQuery = true)
+    @Query(value = "select block_number from block where block_number>=?1 order by block_number asc limit 1000", nativeQuery = true)
     List<Long> listBlockNumber(long startBlockNumber);
 }
