@@ -32,6 +32,12 @@ public interface DepositHistoryService {
     /**
      *Deposit 信息扫描
      */
-    public void depositHistoryScan(Transaction transaction, EvmData data);
+    public void depositERC20HistoryScan(Transaction transaction, EvmData data);
+
+
+    /**
+     *Deposit 信息扫描
+     */
+    public void depositNativeTokenHistoryScan(Transaction transaction, EvmData data);
 
 }

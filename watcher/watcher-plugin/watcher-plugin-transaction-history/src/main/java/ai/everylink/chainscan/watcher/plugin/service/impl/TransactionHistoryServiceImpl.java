@@ -23,7 +23,9 @@ import ai.everylink.chainscan.watcher.core.util.DecodUtils;
 import ai.everylink.chainscan.watcher.core.util.OkHttpUtil;
 import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import ai.everylink.chainscan.watcher.dao.WalletTranactionHistoryDao;
 import ai.everylink.chainscan.watcher.entity.Transaction;
+import ai.everylink.chainscan.watcher.entity.WalletTransactionHistory;
 import ai.everylink.chainscan.watcher.plugin.service.BridgeHistoryService;
 import ai.everylink.chainscan.watcher.plugin.service.ConvertHistoryService;
 import ai.everylink.chainscan.watcher.plugin.service.DepositHistoryService;
@@ -44,6 +46,7 @@ import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -69,6 +72,9 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
     @Autowired
     private ConvertHistoryService convertHistoryService;
+
+    @Autowired
+    private WalletTranactionHistoryDao wTxHistoryDao;
 
     @Autowired
     Environment environment;
@@ -117,12 +123,38 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
                 //Deposit depositERC20 :0x58242801d371a53f9cddac5a44a17e4ca2523fc7ba7b171a9d71e0b8fd069630
                 if( params.size() > 2 && method.contains("0xe17376b5")){
-                    depositHistoryService.depositHistoryScan(transaction,data);
+                    depositHistoryService.depositERC20HistoryScan(transaction,data);
                 }
                 // depositNativeToken :0x79031410a6b2e95b5cc4e954c236e45c9dab96ad22ea80b26c2611097819b001
                 if( params.size() > 2 && method.contains("0x20e2d818")){
-                    depositHistoryService.depositHistoryScan(transaction,data);
+                    depositHistoryService.depositNativeTokenHistoryScan(transaction,data);
                 }
+            }
+        }
+    }
+
+    @Override
+    @TargetDataSource(value = DataSourceEnum.wallet)
+    public void updateConfirmBlock(EvmData blockData) {
+        BigInteger blockNumber = blockData.getBlock().getNumber();
+       List<WalletTransactionHistory> txHistorys = wTxHistoryDao.findConfirmBlock();
+        for (WalletTransactionHistory txHistory : txHistorys) {
+            String type = txHistory.getType();
+            int confirmBlock = txHistory.getConfirmBlock();
+            int   number   = blockNumber.intValue() - confirmBlock;
+            if(number < 13 && type.equals("Bridge")) {
+                txHistory.setConfirmBlock(number);
+                if(StringUtils.isEmpty(txHistory.getToTxHash())){
+                    txHistory.setTxState("From Chain Processing (" + number + "/12)");
+                }else {
+                    txHistory.setTxState("To Chain Processing (" + number + "/12)");
+                }
+            }else if(number < 13 && type.equals("Deposit")){
+                txHistory.setConfirmBlock(number);
+                txHistory.setTxState("L1 Depositing (" + number + "/12)");
+            }else {
+                txHistory.setConfirmBlock(12);
+                txHistory.setTxState("In Consensus Processing");
             }
         }
     }
@@ -214,9 +246,9 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             HttpService httpService = new HttpService("http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf", httpClient, false);
             Web3j              web3j       = Web3j.build(httpService);
             EthBlockNumber     blockNumber = web3j.ethBlockNumber().send();
-            TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0x33d4612ce3fffb58eed2ad1d7d28c0f9f110de0721159dc6a0f4b26775097676").send().getResult();
+            TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0xb13b4da6108a19386c4f2d28c930994e30254d8d4b032356032fa1da1018622f").send().getResult();
             System.out.println(receipt);
-            org.web3j.protocol.core.methods.response.Transaction tx = web3j.ethGetTransactionByHash("0x33d4612ce3fffb58eed2ad1d7d28c0f9f110de0721159dc6a0f4b26775097676").send().getResult();
+            org.web3j.protocol.core.methods.response.Transaction tx = web3j.ethGetTransactionByHash("0xb13b4da6108a19386c4f2d28c930994e30254d8d4b032356032fa1da1018622f").send().getResult();
             System.out.println(tx);
         } catch (IOException e) {
             e.printStackTrace();

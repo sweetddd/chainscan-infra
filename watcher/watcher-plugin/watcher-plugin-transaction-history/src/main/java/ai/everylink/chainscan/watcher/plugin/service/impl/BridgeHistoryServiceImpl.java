@@ -2,8 +2,6 @@ package ai.everylink.chainscan.watcher.plugin.service.impl;
 
 import ai.everylink.chainscan.watcher.core.util.DecodUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
-import ai.everylink.chainscan.watcher.dao.BridgeHistoryDao;
-import ai.everylink.chainscan.watcher.dao.BridgeResourceDao;
 import ai.everylink.chainscan.watcher.dao.WalletTranactionHistoryDao;
 import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.entity.WalletTransactionHistory;
@@ -27,12 +25,6 @@ import java.util.List;
 public class BridgeHistoryServiceImpl implements BridgeHistoryService {
 
     @Autowired
-    private BridgeHistoryDao bridgeHistoryDao;
-
-    @Autowired
-    private BridgeResourceDao bridgeResourceDao;
-
-    @Autowired
     private WalletTranactionHistoryDao wTxHistoryDao;
 
     @Override
@@ -49,13 +41,18 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         for (WalletTransactionHistory txHistory : txHistorys) {
             txHistory.setFromTxState(txSatte);
             txHistory.setFromTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
-            txHistory.setConfirmBlock(data.getBlock().getNumber());
+            txHistory.setConfirmBlock(0);
+            txHistory.setSubmitBlock(data.getBlock().getNumber());
             if(logs.size() ==3){
                 String    topicData    = logs.get(2).getTopics().get(3);
                 Integer depositNonce = Integer.parseInt(topicData.replace("0x", ""), 16);
                 txHistory.setFromDepositNonce(depositNonce);
             }
-            txHistory.setTxState("");
+            if(txSatte == 1){
+                txHistory.setTxState("From Chain Processing (1/12)");
+            }else if(txSatte == 0){
+                txHistory.setTxState("Failure");
+            }
             wTxHistoryDao.updateTxHistory(txHistory);
         }
     }
@@ -70,12 +67,19 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         Integer                  depositNonce    = Integer.parseInt(params.get(2).replace("0x", ""), 16);
         WalletTransactionHistory txHistory = wTxHistoryDao.findByChainNonce(chainID,depositNonce);
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
-        txHistory.setToTxState(txSatte);
-        txHistory.setToTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
-        txHistory.setToTxHash(transactionHash);
-        if(txSatte ==0){
-            txHistory.setTxState("Processing");
+        if(txHistory != null){
+            txHistory.setToTxState(txSatte);
+            txHistory.setToTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
+            txHistory.setToTxHash(transactionHash);
+            if(txSatte == 1){
+                txHistory.setTxState("To Chain Processing (1/12)");
+            }else if(txSatte == 0){
+                txHistory.setTxState("Failure");
+            }
+            wTxHistoryDao.updateTxToHistory(txHistory);
+        }else {
+          log.error("txhistory-plugin(bridgeHistoryScan):There is no such data:" + transactionHash);
         }
-        wTxHistoryDao.updateTxToHistory(txHistory);
+
     }
 }

@@ -33,4 +33,9 @@ public interface TransactionHistoryService {
      */
     public void transactionHistoryScan(EvmData blockData);
 
+    /**
+     * 更新交易区块确认信息;
+     * @param blockData
+     */
+    public void updateConfirmBlock(EvmData blockData);
 }
