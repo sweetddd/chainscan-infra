@@ -99,7 +99,7 @@ spec:
                 name: network-config
                 key: ether.rpc.api
           - name: "watcher.chain.scanStep"
-            value: 100
+            value: 200
           - name: "watcher.chain.chainId"
             value: 4
           - name: "watcher.chain.chainType"
