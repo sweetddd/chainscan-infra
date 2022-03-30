@@ -166,8 +166,8 @@ function transactionFromData(data){
     let tx = {
         buy_symbol:buy_symbol,
         sell_symbol:sell_symbol,
-        buyer_address:buyer_address,
-        seller_address:seller_address,
+        buyer_address:"0x"+buyer_address,
+        seller_address:"0x"+seller_address,
         amount:amount,
         price:price,
         buyer_fee:buyer_fee,
