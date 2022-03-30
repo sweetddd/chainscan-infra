@@ -61,11 +61,6 @@ public class EvmWatcher implements IWatcher {
     private VmChainUtil vmChainUtil;
 
     /**
-     * 当前扫描高度(扫描时从数据库实时获取当前高度)
-     */
-    private Long currentBlockHeight = 0L;
-
-    /**
      * 每次扫块最大扫块步数
      */
     private int step;
@@ -179,12 +174,8 @@ public class EvmWatcher implements IWatcher {
         // 获取数据库保存的扫块高度
         Long dbHeight = evmScanDataService.queryMaxBlockNumber();
 
-        // 获取链上高度 TODO 等待自有rinkeby节点好了再放开
+        // 获取链上高度
         Long chainHeight = getNetworkBlockHeight();
-        if (chainHeight == null || chainHeight <= 0) {
-            chainHeight = 10408735L;
-        }
-
         if (dbHeight.equals(chainHeight)) {
             logger.info("[EvmWatcher]dbHeight catch the chain height.");
             return;
@@ -288,7 +279,7 @@ public class EvmWatcher implements IWatcher {
 
                     // 校验
                     if (data.getBlock().getTransactions().size() != data.getTxList().size()) {
-                        logger.error("[EvmWatcher]Scan tx size {} mismatch expect size {}. blockNum={}",
+                        logger.warn("[EvmWatcher]Scan tx size {} mismatch expect size {}. blockNum={}",
                                 data.getTxList().size(), data.getBlock().getTransactions().size(), blockNum);
 //                        return;
                     }
@@ -350,8 +341,7 @@ public class EvmWatcher implements IWatcher {
         // 获取receipt
         EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(txHash).send();
         if (receipt.getResult() == null) {
-            // TODO 一个交易查不到，是否需要返回null
-            logger.error("[EvmWatcher]tx receipt not found. blockNum={}, tx={}", blockNumber, txHash);
+            logger.warn("[EvmWatcher]tx receipt not found. blockNum={}, tx={}", blockNumber, txHash);
             return ;
         }
 
@@ -373,11 +363,9 @@ public class EvmWatcher implements IWatcher {
         step = WatcherUtils.getScanStep();
         processStep = WatcherUtils.getProcessStep();
         chainId = WatcherUtils.getChainId();
-        currentBlockHeight = evmDataService.getMaxBlockNum(chainId);
         logger.info("[EvmWatcher]init config. step={}, processStep={}. chainId={}, rpcUrl={}, chainType={},db={}",
                     step, processStep, chainId, WatcherUtils.getVmChainUrl(), WatcherUtils.getChainType(), System.getenv("spring.datasource.chainscan.jdbc-url"));
         logger.info("[EvmWatcher]got rocketmq name srv addr:{}", SlackUtils.getNamesrvAddr());
-        logger.info("==================Current DB block height:{},chainId:{}======", currentBlockHeight, chainId);
     }
 
 
