@@ -23,4 +23,4 @@ EXPOSE 6003
 
 ARG JAR_FILE=target/chainscan-watcher-bootstrap.jar
 COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java -Xmx6144m -Xms1024m","-jar","/app.jar"]
+ENTRYPOINT ["java","-Xmx6144m","-Xms1024m","-jar","/app.jar"]
