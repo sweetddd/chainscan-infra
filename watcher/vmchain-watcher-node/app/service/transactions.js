@@ -6,6 +6,7 @@ const TABLE = "transaction";
 const { env } = require("process");
 const web3 = require("web3");
 const { hexToStr } = require("../utils");
+const moment = require("moment");
 
 class TransactionsService extends Service {
   constructor(ctx) {
@@ -73,8 +74,9 @@ class TransactionsService extends Service {
     if (time.length == 10) {
       time = time + "000";
     }
-    let newTime = new Date(time);
-    tx.transaction_time = newTime;
+    time =moment.utc(time).format('YYYY-MM-DD HH:mm:ss')
+    // let newTime = new Date(time);
+    // tx.transaction_time = newTime;
     tx.amount = web3.utils.hexToNumberString(tx.amount);
     const addTxSql_Params = [
       tx.transaction_hash,
