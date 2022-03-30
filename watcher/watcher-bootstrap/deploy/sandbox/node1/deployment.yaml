@@ -15,6 +15,8 @@ spec:
     spec:
       containers:
       - name: $APP_NAME-node-1-sandbox
+        command: [ "/bin/bash" ]
+        args: ["java","-jar","/app.jar","-Xmx4024m -Xms1024m"]
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
@@ -30,8 +32,8 @@ spec:
           failureThreshold: 3
         resources:
           requests:
-            cpu: 0.1
-            memory: 0.5Gi
+            cpu: 2
+            memory: 2Gi
           limits:
             cpu: 4
             memory: 4Gi
