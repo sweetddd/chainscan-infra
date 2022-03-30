@@ -240,7 +240,7 @@ public class EvmDataServiceImpl implements EvmDataService {
             tx.setCreateTime(new Date());
 
             TransactionReceipt receipt = data.getTxList().get(item.getHash());
-            if(receipt != null){
+            if (receipt != null) {
                 // status
                 if (receipt.getStatus() != null &&
                         ( receipt.getStatus().equalsIgnoreCase("1")
@@ -277,8 +277,6 @@ public class EvmDataServiceImpl implements EvmDataService {
                 }
                 //合约地址存储
                 tx.setContractAddress(receipt.getContractAddress());
-            } else {
-                log.info("[save]cannot get gas used and tx fee. txHash={}", item.getHash());
             }
 
             tx.setTokenTag(0);
