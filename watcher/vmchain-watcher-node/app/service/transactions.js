@@ -74,7 +74,7 @@ class TransactionsService extends Service {
     if (time.length == 10) {
       time = time + "000";
     }
-    time =moment.utc(time).format('YYYY-MM-DD HH:mm:ss')
+    time =moment.utc(Number(time)).format('YYYY-MM-DD HH:mm:ss')
     // let newTime = new Date(time);
     // tx.transaction_time = newTime;
     tx.amount = web3.utils.hexToNumberString(tx.amount);
