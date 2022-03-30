@@ -4,6 +4,7 @@
 // const GlobalConstants = require("./../../app/bridge/constants");
 const { ApiPromise, WsProvider, HttpProvider } = require("@polkadot/api");
 const fs = require("fs");
+const web3 = require("web3");
 // const { blake2AsHex } = require('@polkadot/util-crypto');
 // const { hexToU8a, isHex, stringToU8a,hexToBn,numberToHex } =  require('@polkadot/util');
 
@@ -112,8 +113,7 @@ function blockFromData(data){
     let create_time =parseInt(data.substring(82,98),16); //16
     let block_hash = data.substring(98,162);  //
     let rewards = parseInt(data.substring(162,194),16); //16
-    let transaction_count = parseInt(data.substring(194,210));  //
-
+    let transaction_count = parseInt(Number(web3.utils.hexToNumberString('0x'+data.substring(194,210))));  //
     let txs_data = data.substring(210,data.length);
     console.log(txs_data.length)
 
