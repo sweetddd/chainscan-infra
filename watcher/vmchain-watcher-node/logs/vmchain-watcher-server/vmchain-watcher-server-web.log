@@ -318,3 +318,35 @@ operator: "=="
 pid: 14335
 hostname: yinhaonandeMacBook-Pro.local
 
+2022-03-30 21:41:39,504 ERROR 28246 [-/127.0.0.1/-/0ms GET /] nodejs.AssertionError: [egg-mysql] 'host: undefined', 'port: undefined', 'user: undefined', 'database: undefined' are required on config
+    at Singleton.createOneClient [as create] (/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-mysql/lib/mysql.js:13:3)
+    at Singleton.createInstance (/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/lib/core/singleton.js:88:17)
+    at useMysql (/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/app.js:14:25)
+    at /Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/app.js:20:5
+    at Object.callFn (/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-core/lib/utils/index.js:44:42)
+    at /Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-core/lib/lifecycle.js:256:13
+    at processTicksAndRejections (internal/process/task_queues.js:75:11)
+generatedMessage: false
+code: "ERR_ASSERTION"
+actual: undefined
+expected: true
+operator: "=="
+pid: 28246
+hostname: yinhaonandeMacBook-Pro.local
+
+2022-03-30 21:41:48,379 ERROR 28389 [-/127.0.0.1/-/0ms GET /] nodejs.AssertionError: [egg-mysql] 'host: undefined', 'port: undefined', 'user: undefined', 'database: undefined' are required on config
+    at Singleton.createOneClient [as create] (/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-mysql/lib/mysql.js:13:3)
+    at Singleton.createInstance (/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg/lib/core/singleton.js:88:17)
+    at useMysql (/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/app.js:14:25)
+    at /Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/app.js:20:5
+    at Object.callFn (/Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-core/lib/utils/index.js:44:42)
+    at /Users/inkoukusunoki/Desktop/ 一点万物/chainscan-infra/watcher/vmchain-watcher-node/node_modules/egg-core/lib/lifecycle.js:256:13
+    at processTicksAndRejections (internal/process/task_queues.js:75:11)
+generatedMessage: false
+code: "ERR_ASSERTION"
+actual: undefined
+expected: true
+operator: "=="
+pid: 28389
+hostname: yinhaonandeMacBook-Pro.local
+

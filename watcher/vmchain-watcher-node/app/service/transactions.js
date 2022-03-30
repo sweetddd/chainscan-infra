@@ -76,7 +76,7 @@ class TransactionsService extends Service {
     }
     time =moment.utc(Number(time)).format('YYYY-MM-DD HH:mm:ss')
     // let newTime = new Date(time);
-    // tx.transaction_time = newTime;
+    tx.transaction_time = time;
     tx.amount = web3.utils.hexToNumberString(tx.amount);
     const addTxSql_Params = [
       tx.transaction_hash,
