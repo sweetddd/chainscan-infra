@@ -93,7 +93,7 @@ class BlockService extends Service {
       }
       const addTxSql = 'INSERT INTO block (' +
           'block_number, block_hash,  block_timestamp,  tx_size,  difficulty,  create_time, block_fee, chain_type,reward' +
-          ') VALUES(?,?,?,?,?,?,?,?)';
+          ') VALUES(?,?,?,?,?,?,?,?,?)';
       const addTxSql_Params = [block.block_height,block.block_hash,block.create_time,block.transaction_count,block.difficulty,new Date(),block.blocked_fee,'CPoS',block.rewards];
       await this.app.mysql.query(addTxSql, addTxSql_Params, function(err, result) {
         if (err) {
