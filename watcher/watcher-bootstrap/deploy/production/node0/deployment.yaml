@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $APP_NAME-node-0-production
+  name: $APP_NAME-dtx-production
   namespace: paas
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: $APP_NAME-node-0-production
+      app: $APP_NAME-dtx-production
   template:
     metadata:
       labels:
-        app: $APP_NAME-node-0-production
+        app: $APP_NAME-dtx-production
     spec:
       containers:
-      - name: $APP_NAME-node-0-production
+      - name: $APP_NAME-dtx-production
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
@@ -124,7 +124,8 @@ spec:
                   - key: app
                     operator: In
                     values:
-                      - $APP_NAME-production
+                      - $APP_NAME-dtx-production
+                      - $APP_NAME-rinkeby-production
               topologyKey: "kubernetes.io/hostname"
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

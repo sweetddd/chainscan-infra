@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $APP_NAME-node-0-sandbox
+  name: $APP_NAME-dtx-sandbox
   namespace: paas
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: $APP_NAME-node-0-sandbox
+      app: $APP_NAME-dtx-sandbox
   template:
     metadata:
       labels:
-        app: $APP_NAME-node-0-sandbox
+        app: $APP_NAME-dtx-sandbox
     spec:
       containers:
-      - name: $APP_NAME-node-0-sandbox
+      - name: $APP_NAME-dtx-sandbox
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
@@ -124,6 +124,6 @@ spec:
                   - key: app
                     operator: In
                     values:
-                      - $APP_NAME-node-0-sandbox
-                      - $APP_NAME-node-1-sandbox
+                      - $APP_NAME-dtx-sandbox
+                      - $APP_NAME-rinkeby-sandbox
               topologyKey: "kubernetes.io/hostname"
