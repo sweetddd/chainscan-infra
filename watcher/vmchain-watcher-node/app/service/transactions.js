@@ -106,7 +106,7 @@ class TransactionsService extends Service {
           console.log("INSERT ID:", result);
         }
       );
-    } catch (error) {}
+    } catch (error) { console.log("[INSERT SUBSCABTX ERROR] - ", error);}
   }
 }
 
