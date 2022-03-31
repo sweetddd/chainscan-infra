@@ -101,12 +101,27 @@ public class EvmWatcher implements IWatcher {
     /**
      * 扫块时并发查询区块线程池。
      */
-    private static ExecutorService scanBlockPool = new ThreadPoolExecutor(10, MAX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000));
+    private static ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(200, MAX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000), new RejectedExecutionHandler() {
+        @Override
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            logger.error("scanBlockPool queue is full");
+        }
+    });
 
     /**
      * 扫块时并发查询区块下的交易线程池。
      */
-    private static ExecutorService scanTxPool = new ThreadPoolExecutor(30, MAX_TX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(50000));
+    private static ThreadPoolExecutor scanTxPool = new ThreadPoolExecutor(250, MAX_TX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(20000), new RejectedExecutionHandler() {
+        @Override
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            logger.error("scanTxPool queue is full");
+        }
+    });
+
+    /**
+     * 一次插入数据库记录数
+     */
+    private static final int BATCH_INSERT_MAX_SIZE = 30;
 
     /**
      * 入口方法
@@ -210,7 +225,24 @@ public class EvmWatcher implements IWatcher {
 
         // 落库
         try {
-            evmScanDataService.insert(dataList);
+            if (dataList.size() <= BATCH_INSERT_MAX_SIZE) {
+                evmScanDataService.insert(dataList);
+            } else {
+                // 分批插入，防止爆仓
+                int cnt = dataList.size() / BATCH_INSERT_MAX_SIZE;
+                if (dataList.size() % BATCH_INSERT_MAX_SIZE != 0) {
+                    cnt = cnt+1;
+                }
+
+                for (int i = 0; i < cnt; i++) {
+                    int startIdx = i * BATCH_INSERT_MAX_SIZE;
+                    int endIdx = startIdx + BATCH_INSERT_MAX_SIZE;
+                    if (endIdx > dataList.size()) {
+                        endIdx = dataList.size();
+                    }
+                    evmScanDataService.insert(dataList.subList(startIdx, endIdx));
+                }
+            }
         } catch (Exception e) {
             logger.error("[EvmWatcher]insert db failed.", e);
         }
@@ -355,7 +387,6 @@ public class EvmWatcher implements IWatcher {
         }
     }
 
-
     private void init() {
         logger.info("[EvmWatcher]timeZone={}", Calendar.getInstance().getTimeZone());
         initWeb3j();
@@ -366,7 +397,11 @@ public class EvmWatcher implements IWatcher {
         logger.info("[EvmWatcher]init config. step={}, processStep={}. chainId={}, rpcUrl={}, chainType={},db={}",
                     step, processStep, chainId, WatcherUtils.getVmChainUrl(), WatcherUtils.getChainType(), System.getenv("spring.datasource.chainscan.jdbc-url"));
         logger.info("[EvmWatcher]got rocketmq name srv addr:{}", SlackUtils.getNamesrvAddr());
+
+        new MonitorThread().start();
     }
+
+
 
 
     private void initService() {
@@ -426,6 +461,47 @@ public class EvmWatcher implements IWatcher {
     private List<IEvmWatcherPlugin> findErc20WatcherPluginBySPI() {
         ServiceLoader<IEvmWatcherPlugin> list = ServiceLoader.load(IEvmWatcherPlugin.class);
         return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
+    }
+
+    private static class MonitorThread extends Thread {
+        @Override
+        public void run() {
+            try {
+                for (;;) {
+                    Thread.sleep(10000);
+
+                    logger.info("[monitor]scanBlockPool.{},{},{},{},{},{},{};{},{},{}",
+                            scanBlockPool.getCorePoolSize(),
+                            scanBlockPool.getMaximumPoolSize(),
+                            scanBlockPool.getLargestPoolSize(),
+                            scanBlockPool.getTaskCount(),
+                            scanBlockPool.getActiveCount(),
+                            scanBlockPool.getCompletedTaskCount(),
+                            scanBlockPool.getPoolSize(),
+                            scanBlockPool.getQueue().size(),
+                            scanBlockPool.isShutdown(),
+                            scanBlockPool.isTerminated()
+                    );
+
+                    logger.info("[monitor]scanTxPool.{},{},{},{},{},{},{};{},{},{}",
+                            scanTxPool.getCorePoolSize(),
+                            scanTxPool.getMaximumPoolSize(),
+                            scanTxPool.getLargestPoolSize(),
+                            scanTxPool.getTaskCount(),
+                            scanTxPool.getActiveCount(),
+                            scanTxPool.getCompletedTaskCount(),
+                            scanTxPool.getPoolSize(),
+                            scanTxPool.getQueue().size(),
+                            scanTxPool.isShutdown(),
+                            scanTxPool.isTerminated()
+                    );
+                }
+            } catch (Exception e) {
+                // ignore
+            } finally {
+
+            }
+        }
     }
 
 
