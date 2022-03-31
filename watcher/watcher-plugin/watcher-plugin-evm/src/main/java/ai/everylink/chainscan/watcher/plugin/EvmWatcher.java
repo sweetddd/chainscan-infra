@@ -105,16 +105,18 @@ public class EvmWatcher implements IWatcher {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             logger.error("scanBlockPool queue is full");
+            printThreadPoolStat();
         }
     });
 
     /**
      * 扫块时并发查询区块下的交易线程池。
      */
-    private static ThreadPoolExecutor scanTxPool = new ThreadPoolExecutor(250, MAX_TX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(20000), new RejectedExecutionHandler() {
+    private static ThreadPoolExecutor scanTxPool = new ThreadPoolExecutor(250, MAX_TX_SCAN_THREAD, 2, TimeUnit.HOURS, new ArrayBlockingQueue<>(500000), new RejectedExecutionHandler() {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             logger.error("scanTxPool queue is full");
+            printThreadPoolStat();
         }
     });
 
@@ -470,31 +472,7 @@ public class EvmWatcher implements IWatcher {
                 for (;;) {
                     Thread.sleep(10000);
 
-                    logger.info("[monitor]scanBlockPool.{},{},{},{},{},{},{};{},{},{}",
-                            scanBlockPool.getCorePoolSize(),
-                            scanBlockPool.getMaximumPoolSize(),
-                            scanBlockPool.getLargestPoolSize(),
-                            scanBlockPool.getTaskCount(),
-                            scanBlockPool.getActiveCount(),
-                            scanBlockPool.getCompletedTaskCount(),
-                            scanBlockPool.getPoolSize(),
-                            scanBlockPool.getQueue().size(),
-                            scanBlockPool.isShutdown(),
-                            scanBlockPool.isTerminated()
-                    );
-
-                    logger.info("[monitor]scanTxPool.{},{},{},{},{},{},{};{},{},{}",
-                            scanTxPool.getCorePoolSize(),
-                            scanTxPool.getMaximumPoolSize(),
-                            scanTxPool.getLargestPoolSize(),
-                            scanTxPool.getTaskCount(),
-                            scanTxPool.getActiveCount(),
-                            scanTxPool.getCompletedTaskCount(),
-                            scanTxPool.getPoolSize(),
-                            scanTxPool.getQueue().size(),
-                            scanTxPool.isShutdown(),
-                            scanTxPool.isTerminated()
-                    );
+                    printThreadPoolStat();
                 }
             } catch (Exception e) {
                 // ignore
@@ -502,6 +480,34 @@ public class EvmWatcher implements IWatcher {
 
             }
         }
+    }
+
+    private static void printThreadPoolStat() {
+        logger.info("[monitor]scanBlockPool.{},{},{},{},{},{},{};{},{},{}",
+                scanBlockPool.getCorePoolSize(),
+                scanBlockPool.getMaximumPoolSize(),
+                scanBlockPool.getLargestPoolSize(),
+                scanBlockPool.getTaskCount(),
+                scanBlockPool.getActiveCount(),
+                scanBlockPool.getCompletedTaskCount(),
+                scanBlockPool.getPoolSize(),
+                scanBlockPool.getQueue().size(),
+                scanBlockPool.isShutdown(),
+                scanBlockPool.isTerminated()
+        );
+
+        logger.info("[monitor]scanTxPool.{},{},{},{},{},{},{};{},{},{}",
+                scanTxPool.getCorePoolSize(),
+                scanTxPool.getMaximumPoolSize(),
+                scanTxPool.getLargestPoolSize(),
+                scanTxPool.getTaskCount(),
+                scanTxPool.getActiveCount(),
+                scanTxPool.getCompletedTaskCount(),
+                scanTxPool.getPoolSize(),
+                scanTxPool.getQueue().size(),
+                scanTxPool.isShutdown(),
+                scanTxPool.isTerminated()
+        );
     }
 
 
