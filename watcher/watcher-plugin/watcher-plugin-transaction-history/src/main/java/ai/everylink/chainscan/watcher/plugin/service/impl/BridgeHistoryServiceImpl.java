@@ -12,6 +12,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.core.methods.response.Log;
 
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         for (WalletTransactionHistory txHistory : txHistorys) {
             txHistory.setFromTxState(txSatte);
             txHistory.setFromTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
-            txHistory.setConfirmBlock(0);
+            txHistory.setConfirmBlock(new BigInteger("0"));
             txHistory.setSubmitBlock(data.getBlock().getNumber());
             if(logs.size() ==3){
                 String    topicData    = logs.get(2).getTopics().get(3);

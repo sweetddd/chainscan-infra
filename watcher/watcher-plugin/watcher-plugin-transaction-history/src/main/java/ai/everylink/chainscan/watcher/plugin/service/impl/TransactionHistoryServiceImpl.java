@@ -108,7 +108,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         // 事件监听 解析;
         for (Transaction transaction : txList) {
             String input           = transaction.getInput();
-            if(StringUtils.isNotBlank(input) && input.length() > 74){
+            if(StringUtils.isNotBlank(input) && input.length() >  10){
                 List<String> params = DecodUtils.getParams2List(input);
                 String method = params.get(0);
                 //发起跨链
@@ -117,16 +117,16 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     method.contains("0xfe4464a7"))){  //NFT
                     bridgeHistoryService.depositBridge(transaction,data);
                 //目标链接收跨链交易解析;
-                }else if( params.size() > 2 && method.contains("0x20e82d03")){
+                }else if( params.size() > 1 && method.contains("0x20e82d03")){
                     bridgeHistoryService.bridgeHistoryScan(transaction,data);
                 }
 
                 //Deposit depositERC20 :0x58242801d371a53f9cddac5a44a17e4ca2523fc7ba7b171a9d71e0b8fd069630
-                if( params.size() > 2 && method.contains("0xe17376b5")){
+                if( params.size() > 1 && method.contains("0xe17376b5")){
                     depositHistoryService.depositERC20HistoryScan(transaction,data);
                 }
                 // depositNativeToken :0x79031410a6b2e95b5cc4e954c236e45c9dab96ad22ea80b26c2611097819b001
-                if( params.size() > 2 && method.contains("0x20e2d818")){
+                if( params.size() > 1 && method.contains("0x20e2d818")){
                     depositHistoryService.depositNativeTokenHistoryScan(transaction,data);
                 }
             }
@@ -140,22 +140,23 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
        List<WalletTransactionHistory> txHistorys = wTxHistoryDao.findConfirmBlock();
         for (WalletTransactionHistory txHistory : txHistorys) {
             String type = txHistory.getType();
-            int confirmBlock = txHistory.getConfirmBlock();
+            int confirmBlock = txHistory.getConfirmBlock().intValue();
             int   number   = blockNumber.intValue() - confirmBlock;
             if(number < 13 && type.equals("Bridge")) {
-                txHistory.setConfirmBlock(number);
+                txHistory.setConfirmBlock(new BigInteger(number + ""));
                 if(StringUtils.isEmpty(txHistory.getToTxHash())){
                     txHistory.setTxState("From Chain Processing (" + number + "/12)");
                 }else {
                     txHistory.setTxState("To Chain Processing (" + number + "/12)");
                 }
             }else if(number < 13 && type.equals("Deposit")){
-                txHistory.setConfirmBlock(number);
+                txHistory.setConfirmBlock(new BigInteger(number + ""));
                 txHistory.setTxState("L1 Depositing (" + number + "/12)");
             }else {
-                txHistory.setConfirmBlock(12);
+                txHistory.setConfirmBlock(new BigInteger("12"));
                 txHistory.setTxState("In Consensus Processing");
             }
+            wTxHistoryDao.updateTxHistory(txHistory);
         }
     }
 

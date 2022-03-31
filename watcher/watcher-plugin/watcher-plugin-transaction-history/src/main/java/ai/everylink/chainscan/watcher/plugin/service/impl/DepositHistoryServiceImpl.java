@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.sql.Timestamp;
 
 /**
@@ -32,7 +33,7 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
         if(txHistory != null){
             txHistory.setFromTxState(txSatte);
             txHistory.setFromTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
-            txHistory.setConfirmBlock(0);
+            txHistory.setConfirmBlock(new BigInteger("0"));
             txHistory.setSubmitBlock(data.getBlock().getNumber());
             if(txSatte == 1){
                 txHistory.setTxState("L1 Depositing (1/12)");
@@ -53,7 +54,7 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
         if(txHistory != null){
             txHistory.setFromTxState(txSatte);
             txHistory.setFromTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
-            txHistory.setConfirmBlock(0);
+            txHistory.setConfirmBlock(new BigInteger("0"));
             txHistory.setSubmitBlock(data.getBlock().getNumber());
             if(txSatte == 1){
                 txHistory.setTxState("L1 Depositing (1/12)");
