@@ -37,7 +37,8 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         walletTxHistory.setFromAddress(transaction.getFromAddr());
         Example<WalletTransactionHistory> exp       = Example.of(walletTxHistory);
         List<WalletTransactionHistory>   txHistorys = wTxHistoryDao.findAll(exp);
-
+        log.error("txHistory:params" + transaction.getFromAddr() + ",Hash=" + transactionHash);
+        log.error("txHistory" + txHistorys.toString());
         List<Log> logs = data.getTransactionLogMap().get(transactionHash);
         for (WalletTransactionHistory txHistory : txHistorys) {
             txHistory.setFromTxState(txSatte);
@@ -67,6 +68,8 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         Integer                  chainID         = Integer.parseInt(chainIDStr, 16);
         Integer                  depositNonce    = Integer.parseInt(params.get(2).replace("0x", ""), 16);
         WalletTransactionHistory txHistory = wTxHistoryDao.findByChainNonce(chainID,depositNonce);
+        log.error("txHistory:params" + transaction.getFromAddr() + ",Hash=" + transactionHash);
+        log.error("txHistory" + txHistory.toString());
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
         if(txHistory != null){
             txHistory.setToTxState(txSatte);
