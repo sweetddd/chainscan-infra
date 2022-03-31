@@ -69,7 +69,7 @@ class TransactionsService extends Service {
     const addTxSql =
       "INSERT INTO transaction (" +
       "transaction_hash,block_hash,block_number,tx_timestamp,from_addr,to_addr,value,coin_symbol,price,buyer_fee,seller_fee,amount,chain_type,chain_id" +
-      ") VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+      ") VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     let time = tx.transaction_time.toString();
     if (time.length == 10) {
       time = time + "000";
