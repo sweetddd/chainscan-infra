@@ -118,14 +118,14 @@ function blockFromData(data){
     console.log(txs_data.length)
 
 
-    if (txs_data.length % 177 != 0){
+    if (txs_data.length % 185 != 0){
         console.log("Error : Transaction list data is not public data "+txs_data);
     }
 
     let tx_list = [];
     for(var i = 0; i < transaction_count; i++){
 
-        let tx_data = txs_data.substring(i*354,i*354+354);
+        let tx_data = txs_data.substring(i*370,i*370+370);
         let tx = transactionFromData(tx_data);
         tx_list.push(tx);
     }
@@ -162,6 +162,7 @@ function transactionFromData(data){
     let transaction_hash = data.substring(242,306);  //
     let transaction_time = parseInt(data.substring(306,322),16);  //
     let transaction_volume = parseInt(data.substring(322,354),16);  //
+    let chain_id = parseInt(data.substring(354,370),16);  //
      console.log("transaction_time"+ transaction_time)
     let tx = {
         buy_symbol:buy_symbol,
@@ -175,6 +176,7 @@ function transactionFromData(data){
         transaction_hash:"0x"+transaction_hash,
         transaction_time:transaction_time,
         transaction_volume:transaction_volume,
+        chain_id:chain_id
     }
 
   //  console.log(tx);
