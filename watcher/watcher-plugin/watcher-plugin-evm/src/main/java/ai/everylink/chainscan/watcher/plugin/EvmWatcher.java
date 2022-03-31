@@ -91,6 +91,7 @@ public class EvmWatcher implements IWatcher {
 
     private static final int MAX_SCAN_THREAD = 200;
     private static final int MAX_TX_SCAN_THREAD = 250;
+
     /**
      * 任务线程池。
      * 一个线程用来扫块，落库。
@@ -399,8 +400,6 @@ public class EvmWatcher implements IWatcher {
         logger.info("[EvmWatcher]init config. step={}, processStep={}. chainId={}, rpcUrl={}, chainType={},db={}",
                     step, processStep, chainId, WatcherUtils.getVmChainUrl(), WatcherUtils.getChainType(), System.getenv("spring.datasource.chainscan.jdbc-url"));
         logger.info("[EvmWatcher]got rocketmq name srv addr:{}", SlackUtils.getNamesrvAddr());
-
-        new MonitorThread().start();
     }
 
 
@@ -463,23 +462,6 @@ public class EvmWatcher implements IWatcher {
     private List<IEvmWatcherPlugin> findErc20WatcherPluginBySPI() {
         ServiceLoader<IEvmWatcherPlugin> list = ServiceLoader.load(IEvmWatcherPlugin.class);
         return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
-    }
-
-    private static class MonitorThread extends Thread {
-        @Override
-        public void run() {
-            try {
-                for (;;) {
-                    Thread.sleep(10000);
-
-                    printThreadPoolStat();
-                }
-            } catch (Exception e) {
-                // ignore
-            } finally {
-
-            }
-        }
     }
 
     private static void printThreadPoolStat() {
