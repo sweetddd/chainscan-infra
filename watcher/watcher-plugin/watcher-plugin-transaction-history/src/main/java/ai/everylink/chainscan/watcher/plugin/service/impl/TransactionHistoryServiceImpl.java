@@ -105,6 +105,9 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
        // String            property1 = environment.getProperty("spring.datasource.url");
         int   chainId = data.getChainId();
         List<Transaction> txList = buildTransactionList(data, chainId);
+        if( txList.size() > 0){
+            log.error("transactionHistoryScan:txList" + txList.toString());
+        }
         // 事件监听 解析;
         for (Transaction transaction : txList) {
             String input           = transaction.getInput();
