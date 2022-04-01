@@ -68,4 +68,17 @@ public final class WatcherUtils {
 
         return chainType;
     }
+
+    public static Integer getBatchInsertSize() {
+        String batchInsertSize = System.getenv("watcher.chain.batchInsertSize");
+        if (!StringUtils.isEmpty(batchInsertSize)) {
+            try {
+                return Integer.parseInt(batchInsertSize);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+
+        return 30;
+    }
 }

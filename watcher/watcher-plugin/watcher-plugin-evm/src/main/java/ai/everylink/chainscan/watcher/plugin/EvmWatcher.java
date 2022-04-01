@@ -124,7 +124,7 @@ public class EvmWatcher implements IWatcher {
     /**
      * 一次插入数据库记录数
      */
-    private static final int BATCH_INSERT_MAX_SIZE = 30;
+    private static int BATCH_INSERT_MAX_SIZE = 30;
 
     /**
      * 入口方法
@@ -397,8 +397,9 @@ public class EvmWatcher implements IWatcher {
         step = WatcherUtils.getScanStep();
         processStep = WatcherUtils.getProcessStep();
         chainId = WatcherUtils.getChainId();
-        logger.info("[EvmWatcher]init config. step={}, processStep={}. chainId={}, rpcUrl={}, chainType={},db={}",
-                    step, processStep, chainId, WatcherUtils.getVmChainUrl(), WatcherUtils.getChainType(), System.getenv("spring.datasource.chainscan.jdbc-url"));
+        BATCH_INSERT_MAX_SIZE = WatcherUtils.getBatchInsertSize();
+        logger.info("[EvmWatcher]init config. step={},processStep={},chainId={},batchInsertSize={},rpcUrl={}, chainType={},db={}",
+                    step, processStep, chainId, BATCH_INSERT_MAX_SIZE, WatcherUtils.getVmChainUrl(), WatcherUtils.getChainType(), System.getenv("spring.datasource.chainscan.jdbc-url"));
         logger.info("[EvmWatcher]got rocketmq name srv addr:{}", SlackUtils.getNamesrvAddr());
     }
 

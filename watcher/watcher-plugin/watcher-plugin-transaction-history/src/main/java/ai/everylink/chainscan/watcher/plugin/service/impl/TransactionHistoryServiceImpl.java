@@ -112,7 +112,6 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         // 事件监听 解析;
         for (Transaction transaction : txList) {
             String input           = transaction.getInput();
-            log.error("transactionHistoryScan:transaction:method" + input);
             if(StringUtils.isNotBlank(input) && input.length() >  10){
                 List<String> params = DecodUtils.getParams2List(input);
                 String method = params.get(0);
@@ -120,22 +119,21 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 if(params.size() > 2 && (method.contains("0xa44f5fe6") ||   //ERC20
                     method.contains("0xee1c1c7b")||  //原生币
                     method.contains("0xfe4464a7"))){  //NFT
-                    log.error("transactionHistoryScan:method" + "发起跨链");
                     bridgeHistoryService.depositBridge(transaction,data);
                 //目标链接收跨链交易解析;
                 }else if( params.size() > 1 && method.contains("0x20e82d03")){
-                    log.error("transactionHistoryScan:method" + "0x20e82d03");
+                    log.info("transactionHistoryScan:method" + "0x20e82d03");
                     bridgeHistoryService.bridgeHistoryScan(transaction,data);
                 }
 
                 //Deposit depositERC20 :0x58242801d371a53f9cddac5a44a17e4ca2523fc7ba7b171a9d71e0b8fd069630
                 if( params.size() > 1 && method.contains("0xe17376b5")){
-                    log.error("transactionHistoryScan:method" + "0xe17376b5");
+                    log.info("transactionHistoryScan:method" + "0xe17376b5");
                     depositHistoryService.depositERC20HistoryScan(transaction,data);
                 }
                 // depositNativeToken :0x79031410a6b2e95b5cc4e954c236e45c9dab96ad22ea80b26c2611097819b001
                 if( params.size() > 1 && method.contains("0x20e2d818")){
-                    log.error("transactionHistoryScan:method" + "0x20e2d818");
+                    log.info("transactionHistoryScan:method" + "0x20e2d818");
                     depositHistoryService.depositNativeTokenHistoryScan(transaction,data);
                 }
             }

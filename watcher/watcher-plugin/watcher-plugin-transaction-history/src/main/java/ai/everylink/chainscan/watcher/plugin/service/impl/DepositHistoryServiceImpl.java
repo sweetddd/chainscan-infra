@@ -53,8 +53,6 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
         String  transactionHash = transaction.getTransactionHash();
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
         WalletTransactionHistory txHistory  = wTxHistoryDao.findByAddTxHash(transaction.getFromAddr(), transactionHash);
-        log.error("txHistory:params" + transaction.getFromAddr() + ",Hash=" + transactionHash);
-        log.error("txHistory" + txHistory.toString());
         if(txHistory != null){
             txHistory.setFromTxState(txSatte);
             txHistory.setFromTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));

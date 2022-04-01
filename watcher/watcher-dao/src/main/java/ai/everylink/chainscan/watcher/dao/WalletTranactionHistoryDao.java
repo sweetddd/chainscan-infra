@@ -40,7 +40,7 @@ public interface WalletTranactionHistoryDao extends JpaRepository<WalletTransact
      * 更新交易记录
      * @param txHistory
      */
-    @Query(value = "update  wallet_transaction_history set from_tx_state = :#{#txHistory.fromTxState},from_tx_time = :#{#txHistory.fromTxTime},confirm_block = :#{#txHistory.confirmBlock}, from_deposit_nonce = :#{#txHistory.fromDepositNonce},tx_state =:#{#txHistory.txState}  where id =:#{#txHistory.id}", nativeQuery = true)
+    @Query(value = "update  wallet_transaction_history set from_tx_state = :#{#txHistory.fromTxState},from_tx_time = :#{#txHistory.fromTxTime},confirm_block = :#{#txHistory.confirmBlock}, from_deposit_nonce = :#{#txHistory.fromDepositNonce},tx_state =:#{#txHistory.txState},submit_block =:#{#txHistory.submitBlock}   where id =:#{#txHistory.id}", nativeQuery = true)
     @Modifying
     @Transactional
     public void updateTxHistory(@Param("txHistory")WalletTransactionHistory txHistory);
