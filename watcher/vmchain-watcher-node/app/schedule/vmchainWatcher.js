@@ -47,7 +47,10 @@ async function scanBlock(ctx,api){
     }
     
     await baseBlock(ctx,api,maxBlockNumber);
-    await baseBlock(ctx,api,maxBlockNumber+1);
+    if(next_schedule){
+        await baseBlock(ctx,api,maxBlockNumber+1);
+    }
+    
 
 }
 
@@ -84,17 +87,15 @@ async function baseBlock(ctx,api,maxBlockNumber){
             next_schedule = true;
 
         } catch (error) {
-            console.log('error')
-            console.log(error.message);
             // let currentMaxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
             // if(!currentMaxBlockNumber){
             //     next_schedule = true;
             //     return
             // }
-            next_schedule = true;
-            // setTimeout(()=>{
-            //     baseBlock(ctx,api,maxBlockNumber)
-            // },5000);
+            next_schedule = false;
+            setTimeout(()=>{
+                baseBlock(ctx,api,maxBlockNumber)
+            },10000);
 
         }
         
