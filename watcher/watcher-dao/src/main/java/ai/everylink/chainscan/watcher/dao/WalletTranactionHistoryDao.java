@@ -76,6 +76,6 @@ public interface WalletTranactionHistoryDao extends JpaRepository<WalletTransact
      * 查询需要更新区块信息的数据;
      * @return
      */
-    @Query(value = "select * from wallet_transaction_history where confirm_block >= 0 and confirm_block < 12 and tx_state != 'Failure' and tx_state != 'Finalized' and (from_tx_state = 1 or to_tx_state = 1)", nativeQuery = true)
+    @Query(value = "select * from wallet_transaction_history where   tx_state != 'Failure'  and tx_state != 'Finalized'", nativeQuery = true)
     public List<WalletTransactionHistory> findConfirmBlock();
 }

@@ -147,7 +147,10 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
        List<WalletTransactionHistory> txHistorys = wTxHistoryDao.findConfirmBlock();
         for (WalletTransactionHistory txHistory : txHistorys) {
             String type = txHistory.getType();
-            int confirmBlock = txHistory.getConfirmBlock().intValue();
+            int confirmBlock = 0;
+            if(txHistory.getConfirmBlock()!= null){
+                 confirmBlock = txHistory.getConfirmBlock().intValue();
+            }
             int   number   = blockNumber.intValue() - confirmBlock;
             if(number < 13 && type.equals("Bridge")) {
                 txHistory.setConfirmBlock(new BigInteger(number + ""));
@@ -156,6 +159,8 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 }else {
                     txHistory.setTxState("To Chain Processing (" + number + "/12)");
                 }
+            }else if(number > 13 && type.equals("Bridge")){
+                txHistory.setTxState("Finalized");
             }else if(number < 13 && type.equals("Deposit")){
                 txHistory.setConfirmBlock(new BigInteger(number + ""));
                 txHistory.setTxState("L1 Depositing (" + number + "/12)");
