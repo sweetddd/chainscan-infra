@@ -165,7 +165,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 txHistory.setConfirmBlock(new BigInteger(number + ""));
                 txHistory.setTxState("L1 Depositing (" + number + "/12)");
             }else if(number > 12 && type.equals("Deposit")){
-                txHistory.setTxState("L2 Processing");
+                txHistory.setTxState("Finalized");
             }else {
                 txHistory.setConfirmBlock(new BigInteger("12"));
                 txHistory.setTxState("In Consensus Processing");
