@@ -22,6 +22,11 @@ spring:
      allow-bean-definition-overriding: true
    application:
     name: watcher-bootstrap
+  datasource:
+    wallet:
+      jdbc-url: jdbc:mysql://exchange-mysql5-7.database.svc.cluster.local:3306/wallet?characterEncoding=utf-8&serverTimezone=UTC&useSSL=false
+      username: root
+      password: ZxcvAsdf
 
 management:
   health:
