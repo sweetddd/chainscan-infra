@@ -101,6 +101,8 @@ spec:
             value: 200
           - name: "watcher.chain.chainId"
             value: 4
+          - name: "watcher.chain.batchInsertSize"
+            value: 30
           - name: "watcher.chain.chainType"
             value: EVM_PoW
           - name: "watcher.notify.template"
