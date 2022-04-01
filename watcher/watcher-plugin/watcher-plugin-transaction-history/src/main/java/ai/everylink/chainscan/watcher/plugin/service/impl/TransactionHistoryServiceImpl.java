@@ -102,12 +102,13 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
     @Override
     @TargetDataSource(value = DataSourceEnum.wallet)
     public void transactionHistoryScan(EvmData data) {
-        String            property1 = environment.getProperty("spring.datasource.url");
+       // String            property1 = environment.getProperty("spring.datasource.url");
         int   chainId = data.getChainId();
         List<Transaction> txList = buildTransactionList(data, chainId);
         // 事件监听 解析;
         for (Transaction transaction : txList) {
             String input           = transaction.getInput();
+            log.error("transactionHistoryScan:transaction:method" + input);
             if(StringUtils.isNotBlank(input) && input.length() >  10){
                 List<String> params = DecodUtils.getParams2List(input);
                 String method = params.get(0);
