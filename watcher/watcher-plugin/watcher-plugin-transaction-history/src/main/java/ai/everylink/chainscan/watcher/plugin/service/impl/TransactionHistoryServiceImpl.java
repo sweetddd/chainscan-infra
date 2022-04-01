@@ -150,18 +150,13 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             String type = txHistory.getType();
             BigInteger confirmBlock = BigInteger.ZERO;
             BigInteger newNumber = BigInteger.ZERO;
-            if(txHistory.getConfirmBlock()!= null){
-                 confirmBlock = txHistory.getConfirmBlock();
-            }
-            if(confirmBlock == BigInteger.ZERO){
-                try {
-                    long  block = web3j.ethBlockNumber().send().getBlockNumber().longValue();
-                    newNumber = BigInteger.valueOf(block);
-                    org.web3j.protocol.core.methods.response.Transaction result = web3j.ethGetTransactionByHash(fromTxHash).send().getResult();
-                    confirmBlock  = result.getBlockNumber();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            try {
+                long  block = web3j.ethBlockNumber().send().getBlockNumber().longValue();
+                newNumber = BigInteger.valueOf(block);
+                org.web3j.protocol.core.methods.response.Transaction result = web3j.ethGetTransactionByHash(fromTxHash).send().getResult();
+                confirmBlock  = result.getBlockNumber();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
             txHistory.setSubmitBlock(newNumber);
             BigInteger number = newNumber.subtract(confirmBlock);
