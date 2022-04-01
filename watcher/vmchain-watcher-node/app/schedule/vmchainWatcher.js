@@ -92,6 +92,18 @@ async function baseBlock(ctx,api,maxBlockNumber){
             //     next_schedule = true;
             //     return
             // }
+            console.log('scan_error')
+            console.log('scan_error')
+            console.log('scan_error')
+            console.log('scan_error')
+            console.log(error.message)
+
+            const IS_DUP_ENTRY = error.message.indexOf('ER_DUP_ENTRY')!==-1;
+            if(IS_DUP_ENTRY){
+                next_schedule = true;
+                return
+            }
+
             next_schedule = false;
             setTimeout(()=>{
                 baseBlock(ctx,api,maxBlockNumber)
