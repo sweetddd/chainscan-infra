@@ -163,22 +163,22 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     e.printStackTrace();
                 }
             }
-            txHistory.setConfirmBlock(confirmBlock);
             txHistory.setSubmitBlock(newNumber);
-            int number = newNumber.subtract(confirmBlock).intValue();
-            if(number < 13 && type.equals("Bridge")) {
-                txHistory.setConfirmBlock(new BigInteger(number + ""));
+            BigInteger number = newNumber.subtract(confirmBlock);
+            txHistory.setConfirmBlock(number);
+            if(number.longValue() < 13 && type.equals("Bridge")) {
                 if(StringUtils.isEmpty(txHistory.getToTxHash())){
                     txHistory.setTxState("From Chain Processing (" + number + "/12)");
                 }else {
                     txHistory.setTxState("To Chain Processing (" + number + "/12)");
                 }
-            }else if(number > 13 && type.equals("Bridge")){
+            }else if(number.longValue() > 13 && type.equals("Bridge")){
+                txHistory.setConfirmBlock(new BigInteger("12"));
                 txHistory.setTxState("Finalized");
-            }else if(number < 13 && type.equals("Deposit")){
-                txHistory.setConfirmBlock(new BigInteger(number + ""));
+            }else if(number.longValue() < 13 && type.equals("Deposit")){
                 txHistory.setTxState("L1 Depositing (" + number + "/12)");
-            }else if(number > 12 && type.equals("Deposit")){
+            }else if(number.longValue() > 12 && type.equals("Deposit")){
+                txHistory.setConfirmBlock(new BigInteger("12"));
                 txHistory.setTxState("Finalized");
             }else {
                 txHistory.setConfirmBlock(new BigInteger("12"));
