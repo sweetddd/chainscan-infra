@@ -146,10 +146,19 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         BigInteger blockNumber = blockData.getBlock().getNumber();
        List<WalletTransactionHistory> txHistorys = wTxHistoryDao.findConfirmBlock();
         for (WalletTransactionHistory txHistory : txHistorys) {
+            String fromTxHash = txHistory.getFromTxHash();
             String type = txHistory.getType();
             int confirmBlock = 0;
             if(txHistory.getConfirmBlock()!= null){
                  confirmBlock = txHistory.getConfirmBlock().intValue();
+            }
+            if(confirmBlock == 0){
+                try {
+                    org.web3j.protocol.core.methods.response.Transaction result = web3j.ethGetTransactionByHash(fromTxHash).send().getResult();
+                    confirmBlock  = result.getBlockNumber().intValue();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
             int   number   = blockNumber.intValue() - confirmBlock;
             if(number < 13 && type.equals("Bridge")) {
