@@ -159,7 +159,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 e.printStackTrace();
             }
             txHistory.setSubmitBlock(newNumber);
-            BigInteger number = newNumber.subtract(confirmBlock);
+            BigInteger number = newNumber.subtract(confirmBlock).abs();
             txHistory.setConfirmBlock(number);
             if(number.longValue() < 13 && type.equals("Bridge")) {
                 if(StringUtils.isEmpty(txHistory.getToTxHash())){
