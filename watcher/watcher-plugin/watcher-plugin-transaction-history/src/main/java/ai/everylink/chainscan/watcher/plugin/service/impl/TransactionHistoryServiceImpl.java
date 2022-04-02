@@ -146,40 +146,43 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         //BigInteger blockNumber = blockData.getBlock().getNumber();
        List<WalletTransactionHistory> txHistorys = wTxHistoryDao.findConfirmBlock();
         for (WalletTransactionHistory txHistory : txHistorys) {
-            String fromTxHash = txHistory.getFromTxHash();
-            String type = txHistory.getType();
-            BigInteger confirmBlock = BigInteger.ZERO;
-            BigInteger newNumber = BigInteger.ZERO;
-            try {
-                long  block = web3j.ethBlockNumber().send().getBlockNumber().longValue();
-                newNumber = BigInteger.valueOf(block);
-                org.web3j.protocol.core.methods.response.Transaction result = web3j.ethGetTransactionByHash(fromTxHash).send().getResult();
-                confirmBlock  = result.getBlockNumber();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            txHistory.setSubmitBlock(newNumber);
-            BigInteger number = newNumber.subtract(confirmBlock).abs();
-            txHistory.setConfirmBlock(number);
-            if(number.longValue() < 13 && type.equals("Bridge")) {
-                if(StringUtils.isEmpty(txHistory.getToTxHash())){
-                    txHistory.setTxState("From Chain Processing (" + number + "/12)");
-                }else {
-                    txHistory.setTxState("To Chain Processing (" + number + "/12)");
+            Integer fromChainId = txHistory.getFromChainId();
+            if(WatcherUtils.getChainId() == fromChainId){
+                String fromTxHash = txHistory.getFromTxHash();
+                String type = txHistory.getType();
+                BigInteger confirmBlock = BigInteger.ZERO;
+                BigInteger newNumber = BigInteger.ZERO;
+                try {
+                    long  block = web3j.ethBlockNumber().send().getBlockNumber().longValue();
+                    newNumber = BigInteger.valueOf(block);
+                    org.web3j.protocol.core.methods.response.Transaction result = web3j.ethGetTransactionByHash(fromTxHash).send().getResult();
+                    confirmBlock  = result.getBlockNumber();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            }else if(number.longValue() > 13 && type.equals("Bridge")){
-                txHistory.setConfirmBlock(new BigInteger("12"));
-                txHistory.setTxState("Finalized");
-            }else if(number.longValue() < 13 && type.equals("Deposit")){
-                txHistory.setTxState("L1 Depositing (" + number + "/12)");
-            }else if(number.longValue() >= 12 && type.equals("Deposit")){
-                txHistory.setConfirmBlock(new BigInteger("12"));
-                txHistory.setTxState("Finalized");
-            }else {
-                txHistory.setConfirmBlock(new BigInteger("12"));
-                txHistory.setTxState("In Consensus Processing");
+                txHistory.setSubmitBlock(newNumber);
+                BigInteger number = newNumber.subtract(confirmBlock).abs();
+                txHistory.setConfirmBlock(number);
+                if(number.longValue() < 13 && type.equals("Bridge")) {
+                    if(StringUtils.isEmpty(txHistory.getToTxHash())){
+                        txHistory.setTxState("From Chain Processing (" + number + "/12)");
+                    }else {
+                        txHistory.setTxState("To Chain Processing (" + number + "/12)");
+                    }
+                }else if(number.longValue() > 13 && type.equals("Bridge")){
+                    txHistory.setConfirmBlock(new BigInteger("12"));
+                    txHistory.setTxState("Finalized");
+                }else if(number.longValue() < 13 && type.equals("Deposit")){
+                    txHistory.setTxState("L1 Depositing (" + number + "/12)");
+                }else if(number.longValue() >= 12 && type.equals("Deposit")){
+                    txHistory.setConfirmBlock(new BigInteger("12"));
+                    txHistory.setTxState("Finalized");
+                }else {
+                    txHistory.setConfirmBlock(new BigInteger("12"));
+                    txHistory.setTxState("In Consensus Processing");
+                }
+                wTxHistoryDao.updateTxHistory(txHistory);
             }
-            wTxHistoryDao.updateTxHistory(txHistory);
         }
     }
 
