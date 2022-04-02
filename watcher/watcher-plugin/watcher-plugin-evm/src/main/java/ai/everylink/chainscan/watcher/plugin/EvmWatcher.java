@@ -184,7 +184,7 @@ public class EvmWatcher implements IWatcher {
     public List<EvmData> listBlock() {
         Long dbHeight = evmDataService.getMaxBlockNum(chainId);
         logger.info("[EvmWatcher]listBlock.dbHeight={},processStep={}", dbHeight, processStep);
-        return evmScanDataService.queryBlockList(dbHeight, processStep);
+        return evmScanDataService.queryBlockList(202903L, 1);
     }
 
 
