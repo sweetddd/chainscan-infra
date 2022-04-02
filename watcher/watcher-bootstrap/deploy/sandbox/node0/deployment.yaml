@@ -71,17 +71,17 @@ spec:
           - name: "spring.datasource.wallet.jdbc-url"
             valueFrom:
               secretKeyRef:
-                name: database-chainscan
+                name: database-wallet
                 key: wallet-url
           - name: "spring.datasource.wallet.username"
             valueFrom:
               secretKeyRef:
-                name: database-chainscan
+                name: database-wallet
                 key: wallet-username
           - name: "spring.datasource.wallet.password"
             valueFrom:
               secretKeyRef:
-                name: database-chainscan
+                name: database-wallet
                 key: wallet-password
           - name: "watcher.rocketmq.server.addr"
             valueFrom:
