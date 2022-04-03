@@ -56,7 +56,7 @@ import java.util.concurrent.*;
 @Component
 public class EvmWatcher implements IWatcher {
 
-    private static Logger logger = LoggerFactory.getLogger(EvmWatcher.class);
+    private static final Logger logger = LoggerFactory.getLogger(EvmWatcher.class);
 
     private VmChainUtil vmChainUtil;
 
@@ -97,12 +97,12 @@ public class EvmWatcher implements IWatcher {
      * 一个线程用来扫块，落库。
      * 另外一个线程用来查库，组装EvmData对象并交付plugin处理
      */
-    private static ExecutorService taskPool = new ThreadPoolExecutor(2,2, 6, TimeUnit.HOURS, new ArrayBlockingQueue<>(1000));
+    private static final ExecutorService taskPool = new ThreadPoolExecutor(2, 2, 6, TimeUnit.HOURS, new ArrayBlockingQueue<>(1000));
 
     /**
      * 扫块时并发查询区块线程池。
      */
-    private static ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(200, MAX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000), new RejectedExecutionHandler() {
+    private static final ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(200, MAX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000), new RejectedExecutionHandler() {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             logger.error("scanBlockPool queue is full");
@@ -113,7 +113,7 @@ public class EvmWatcher implements IWatcher {
     /**
      * 扫块时并发查询区块下的交易线程池。
      */
-    private static ThreadPoolExecutor scanTxPool = new ThreadPoolExecutor(250, MAX_TX_SCAN_THREAD, 2, TimeUnit.HOURS, new ArrayBlockingQueue<>(500000), new RejectedExecutionHandler() {
+    private static final ThreadPoolExecutor scanTxPool = new ThreadPoolExecutor(250, MAX_TX_SCAN_THREAD, 2, TimeUnit.HOURS, new ArrayBlockingQueue<>(500000), new RejectedExecutionHandler() {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             logger.error("scanTxPool queue is full");
@@ -184,7 +184,7 @@ public class EvmWatcher implements IWatcher {
     public List<EvmData> listBlock() {
         Long dbHeight = evmDataService.getMaxBlockNum(chainId);
         logger.info("[EvmWatcher]listBlock.dbHeight={},processStep={}", dbHeight, processStep);
-        return evmScanDataService.queryBlockList(202903L, 1);
+        return evmScanDataService.queryBlockList(dbHeight, 1);
     }
 
 
@@ -285,9 +285,9 @@ public class EvmWatcher implements IWatcher {
     }
 
     public static class ReplayBlockThread implements Runnable {
-        private CountDownLatch latch;
-        private Long blockNum;
-        private List<EvmData> list;
+        private final CountDownLatch latch;
+        private final Long           blockNum;
+        private final List<EvmData>  list;
         private ReplayBlockThread (CountDownLatch latch, Long blockNum, List<EvmData> list) {
             this.latch = latch;
             this.blockNum = blockNum;
@@ -330,9 +330,9 @@ public class EvmWatcher implements IWatcher {
     }
 
     public static class ReplayTransactionThread implements Runnable {
-        private CountDownLatch latch;
-        private EvmData data;
-        private String txHash;
+        private final CountDownLatch latch;
+        private final EvmData        data;
+        private final String         txHash;
 
         public ReplayTransactionThread(CountDownLatch latch, EvmData data, String txHash) {
             this.latch = latch;
