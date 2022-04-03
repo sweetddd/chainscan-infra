@@ -102,39 +102,39 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
     @Override
     @TargetDataSource(value = DataSourceEnum.wallet)
     public void transactionHistoryScan(EvmData data) {
-       // String            property1 = environment.getProperty("spring.datasource.url");
-        int   chainId = data.getChainId();
-        List<Transaction> txList = buildTransactionList(data, chainId);
+        // String            property1 = environment.getProperty("spring.datasource.url");
+        int               chainId = data.getChainId();
+        List<Transaction> txList  = buildTransactionList(data, chainId);
 
-        if( txList.size() > 0){
+        if (txList.size() > 0) {
             log.error("transactionHistoryScan:txList" + txList.toString());
         }
         // 事件监听 解析;
         for (Transaction transaction : txList) {
-            String input           = transaction.getInput();
-            if(StringUtils.isNotBlank(input) && input.length() >  10){
+            String input = transaction.getInput();
+            if (StringUtils.isNotBlank(input) && input.length() > 10) {
                 List<String> params = DecodUtils.getParams2List(input);
-                String method = params.get(0);
+                String       method = params.get(0);
                 //发起跨链
-                if(params.size() > 2 && (method.contains("0xa44f5fe6") ||   //ERC20
-                    method.contains("0xee1c1c7b")||  //原生币
-                    method.contains("0xfe4464a7"))){  //NFT
-                    bridgeHistoryService.depositBridge(transaction,data);
-                //目标链接收跨链交易解析;
-                }else if( params.size() > 1 && method.contains("0x20e82d03")){
+                if (params.size() > 2 && (method.contains("0xa44f5fe6") ||   //ERC20
+                        method.contains("0xee1c1c7b") ||  //原生币
+                        method.contains("0xfe4464a7"))) {  //NFT
+                    bridgeHistoryService.depositBridge(transaction, data);
+                    //目标链接收跨链交易解析;
+                } else if (params.size() > 1 && method.contains("0x20e82d03")) {
                     log.info("transactionHistoryScan:method" + "0x20e82d03");
-                    bridgeHistoryService.bridgeHistoryScan(transaction,data);
+                    bridgeHistoryService.bridgeHistoryScan(transaction, data);
                 }
 
                 //Deposit depositERC20 :0x58242801d371a53f9cddac5a44a17e4ca2523fc7ba7b171a9d71e0b8fd069630
-                if( params.size() > 1 && method.contains("0xe17376b5")){
+                if (params.size() > 1 && method.contains("0xe17376b5")) {
                     log.info("transactionHistoryScan:method" + "0xe17376b5");
-                    depositHistoryService.depositERC20HistoryScan(transaction,data);
+                    depositHistoryService.depositERC20HistoryScan(transaction, data);
                 }
                 // depositNativeToken :0x79031410a6b2e95b5cc4e954c236e45c9dab96ad22ea80b26c2611097819b001
-                if( params.size() > 1 && method.contains("0x20e2d818")){
+                if (params.size() > 1 && method.contains("0x20e2d818")) {
                     log.info("transactionHistoryScan:method" + "0x20e2d818");
-                    depositHistoryService.depositNativeTokenHistoryScan(transaction,data);
+                    depositHistoryService.depositNativeTokenHistoryScan(transaction, data);
                 }
             }
         }
@@ -144,44 +144,46 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
     @TargetDataSource(value = DataSourceEnum.wallet)
     public void updateConfirmBlock(EvmData blockData) {
         //BigInteger blockNumber = blockData.getBlock().getNumber();
-       List<WalletTransactionHistory> txHistorys = wTxHistoryDao.findConfirmBlock();
+        List<WalletTransactionHistory> txHistorys = wTxHistoryDao.findConfirmBlock();
         for (WalletTransactionHistory txHistory : txHistorys) {
-            Integer fromChainId = txHistory.getFromChainId();
-            if(WatcherUtils.getChainId() == fromChainId){
-                String fromTxHash = txHistory.getFromTxHash();
-                String type = txHistory.getType();
+            try {
+                Integer fromChainId = txHistory.getFromChainId();
+                //if(WatcherUtils.getChainId() == fromChainId){
+                String     fromTxHash   = txHistory.getFromTxHash();
+                String     type         = txHistory.getType();
                 BigInteger confirmBlock = BigInteger.ZERO;
-                BigInteger newNumber = BigInteger.ZERO;
-                try {
-                    long  block = web3j.ethBlockNumber().send().getBlockNumber().longValue();
-                    newNumber = BigInteger.valueOf(block);
-                    org.web3j.protocol.core.methods.response.Transaction result = web3j.ethGetTransactionByHash(fromTxHash).send().getResult();
-                    confirmBlock  = result.getBlockNumber();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                BigInteger newNumber    = BigInteger.ZERO;
+                long block = web3j.ethBlockNumber().send().getBlockNumber().longValue();
+                newNumber = BigInteger.valueOf(block);
+                org.web3j.protocol.core.methods.response.Transaction result = web3j.ethGetTransactionByHash(fromTxHash).send().getResult();
+                confirmBlock = result.getBlockNumber();
+
                 txHistory.setSubmitBlock(newNumber);
                 BigInteger number = newNumber.subtract(confirmBlock).abs();
                 txHistory.setConfirmBlock(number);
-                if(number.longValue() < 13 && type.equals("Bridge")) {
-                    if(StringUtils.isEmpty(txHistory.getToTxHash())){
+                if (number.longValue() < 13 && type.equals("Bridge")) {
+                    if (StringUtils.isEmpty(txHistory.getToTxHash())) {
                         txHistory.setTxState("From Chain Processing (" + number + "/12)");
-                    }else {
+                    } else {
                         txHistory.setTxState("To Chain Processing (" + number + "/12)");
                     }
-                }else if(number.longValue() > 13 && type.equals("Bridge")){
+                } else if (number.longValue() > 13 && type.equals("Bridge")) {
                     txHistory.setConfirmBlock(new BigInteger("12"));
                     txHistory.setTxState("Finalized");
-                }else if(number.longValue() < 13 && type.equals("Deposit")){
+                } else if (number.longValue() < 13 && type.equals("Deposit")) {
                     txHistory.setTxState("L1 Depositing (" + number + "/12)");
-                }else if(number.longValue() >= 12 && type.equals("Deposit")){
+                } else if (number.longValue() >= 12 && type.equals("Deposit")) {
                     txHistory.setConfirmBlock(new BigInteger("12"));
                     txHistory.setTxState("Finalized");
-                }else {
+                } else {
                     txHistory.setConfirmBlock(new BigInteger("12"));
                     txHistory.setTxState("In Consensus Processing");
                 }
                 wTxHistoryDao.updateTxHistory(txHistory);
+                //}
+            } catch (Exception e) {
+                log.error("update txlog ERROR!");
+                e.printStackTrace();
             }
         }
     }
@@ -192,8 +194,8 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             return txList;
         }
         for (EthBlock.TransactionResult result : data.getBlock().getTransactions()) {
-            Transaction tx = new Transaction();
-            org.web3j.protocol.core.methods.response.Transaction item                  = ((EthBlock.TransactionObject) result).get();
+            Transaction                                          tx   = new Transaction();
+            org.web3j.protocol.core.methods.response.Transaction item = ((EthBlock.TransactionObject) result).get();
             tx.setTransactionHash(item.getHash());
             tx.setBlockHash(item.getBlockHash());
             tx.setBlockNumber(item.getBlockNumber().longValue());
@@ -219,10 +221,10 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
             try {
                 TransactionReceipt receipt = web3j.ethGetTransactionReceipt(item.getHash()).send().getResult();
-                if(receipt != null){
+                if (receipt != null) {
                     // status
                     if (receipt.getStatus() != null &&
-                            ( receipt.getStatus().equalsIgnoreCase("1")
+                            (receipt.getStatus().equalsIgnoreCase("1")
                                     || receipt.getStatus().equalsIgnoreCase("0x1"))) {
                         tx.setStatus("0x1");
                     } else {
@@ -236,13 +238,13 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                         }
                     }
                     //创建合约交易
-                    if(item.getInput().length() > 10){
+                    if (item.getInput().length() > 10) {
                         String function = item.getInput().substring(0, 10);
-                        if(function.equals("0x60806040") && receipt.getContractAddress() != null){
+                        if (function.equals("0x60806040") && receipt.getContractAddress() != null) {
                             //设置to地址为合约地址
                             tx.setToAddr(receipt.getContractAddress());
                         }
-                        if(function.equals("0x60e06040") && receipt.getContractAddress() != null){
+                        if (function.equals("0x60e06040") && receipt.getContractAddress() != null) {
                             //设置to地址为合约地址
                             tx.setToAddr(receipt.getContractAddress());
                         }
@@ -269,8 +271,8 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
     public static void main(String[] args) {
         try {
-            OkHttpClient httpClient = OkHttpUtil.buildOkHttpClient();
-            HttpService httpService = new HttpService("http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf", httpClient, false);
+            OkHttpClient       httpClient  = OkHttpUtil.buildOkHttpClient();
+            HttpService        httpService = new HttpService("http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf", httpClient, false);
             Web3j              web3j       = Web3j.build(httpService);
             EthBlockNumber     blockNumber = web3j.ethBlockNumber().send();
             TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0xb13b4da6108a19386c4f2d28c930994e30254d8d4b032356032fa1da1018622f").send().getResult();
