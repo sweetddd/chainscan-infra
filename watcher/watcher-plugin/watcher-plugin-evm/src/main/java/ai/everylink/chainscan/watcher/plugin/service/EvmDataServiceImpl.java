@@ -23,6 +23,7 @@ import ai.everylink.chainscan.watcher.core.util.DecodUtils;
 import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.dao.BlockDao;
+import ai.everylink.chainscan.watcher.dao.BlockDataDao;
 import ai.everylink.chainscan.watcher.dao.TransactionDao;
 import ai.everylink.chainscan.watcher.dao.TransactionLogDao;
 import ai.everylink.chainscan.watcher.entity.Block;
@@ -48,7 +49,6 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -71,6 +71,9 @@ public class EvmDataServiceImpl implements EvmDataService {
 
     @Autowired
     private BlockDao blockDao;
+
+    @Autowired
+    private BlockDataDao blockDataDao;
 
     @Autowired
     private TransactionDao transactionDao;
@@ -103,7 +106,8 @@ public class EvmDataServiceImpl implements EvmDataService {
     @TargetDataSource(value = DataSourceEnum.chainscan)
     @Override
     public Long getMaxBlockNum(int chainId) {
-        Long maxBlockNum = blockDao.getMaxBlockNum(chainId);
+       // Long maxBlockNum = blockDao.getMaxBlockNum(chainId);
+        Long maxBlockNum = blockDataDao.queryMaxBlockNumber(chainId);
         return maxBlockNum == null ? 0L : maxBlockNum;
     }
 
@@ -358,7 +362,7 @@ public class EvmDataServiceImpl implements EvmDataService {
     private void inputParams(Transaction tx) {
         try {
             String input = tx.getInput();
-            if (input.length() > 10 && input.substring(0, 2).equals("0x")) {
+            if (input.length() > 10 && input.startsWith("0x")) {
                 Object function = DecodUtils.getFunction(input);
                 if (function != null) {
                     tx.setInputMethod(function.toString());

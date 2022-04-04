@@ -2,9 +2,10 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 import ai.everylink.chainscan.watcher.core.config.DataSourceEnum;
 import ai.everylink.chainscan.watcher.core.config.TargetDataSource;
+import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.dao.BlockDataDao;
-import ai.everylink.chainscan.watcher.entity.*;
+import ai.everylink.chainscan.watcher.entity.BlockData;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -43,7 +44,8 @@ public class EvmScanDataServiceImpl implements EvmScanDataService {
     @TargetDataSource(value = DataSourceEnum.chainscan)
     @Override
     public Long queryMaxBlockNumber() {
-        Long maxBlockNumber = blockDataDao.queryMaxBlockNumber();
+        Integer chainId     = WatcherUtils.getChainId();
+        Long maxBlockNumber = blockDataDao.queryMaxBlockNumber(chainId);
         return maxBlockNumber == null ? 0L : maxBlockNumber;
     }
 
@@ -97,7 +99,7 @@ public class EvmScanDataServiceImpl implements EvmScanDataService {
         return retlist;
     }
 
-    private static Gson gson = new GsonBuilder().registerTypeAdapter(
+    private static final Gson gson = new GsonBuilder().registerTypeAdapter(
             EthBlock.TransactionResult.class, new TypeAdapter<EthBlock.TransactionResult>() {
 
                 @Override
