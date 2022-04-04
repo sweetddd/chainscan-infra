@@ -46,10 +46,6 @@ coin:
   chainIds: "4,230"
 evm:
   vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
-  chain:
-    scanStep: 100
-    chainId: 230
-    chainType: EVM_PoS
 watcher:
   L2Url: http://api.powx.io/l2-server-api/api/v0.2/
   rinkebyUrl: http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf

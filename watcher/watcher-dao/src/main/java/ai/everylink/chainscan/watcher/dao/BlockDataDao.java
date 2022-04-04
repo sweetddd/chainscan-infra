@@ -19,7 +19,9 @@ package ai.everylink.chainscan.watcher.dao;
 
 import ai.everylink.chainscan.watcher.entity.BlockData;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,8 +33,8 @@ import java.util.List;
  */
 public interface BlockDataDao extends JpaRepository<BlockData, Long> {
 
-    @Query(value = "select max(block_number) from block_data where chain_id=?1", nativeQuery = true)
-    Long queryMaxBlockNumber(int chainId);
+    @Query(value = "select max(block_number) from block_data", nativeQuery = true)
+    Long queryMaxBlockNumber();
 
     @Query(value = "select * from block_data where block_number > ?1 order by block_number asc limit ?2", nativeQuery = true)
     List<BlockData> listBlock(long startBlock, int limit);
