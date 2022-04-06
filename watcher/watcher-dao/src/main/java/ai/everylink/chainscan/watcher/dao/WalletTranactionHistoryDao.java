@@ -40,10 +40,10 @@ public interface WalletTranactionHistoryDao extends JpaRepository<WalletTransact
      * 更新交易记录
      * @param txHistory
      */
-    @Query(value = "update  wallet_transaction_history set from_tx_state = :#{#txHistory.fromTxState},from_tx_time = :#{#txHistory.fromTxTime},confirm_block = :#{#txHistory.confirmBlock}, from_deposit_nonce = :#{#txHistory.fromDepositNonce},tx_state =:#{#txHistory.txState}, submit_block =:#{#txHistory.submitBlock}   where id =:#{#txHistory.id}", nativeQuery = true)
+    @Query(value = "update  wallet_transaction_history set from_tx_state = :#{#txHistory.fromTxState},from_tx_time = :#{#txHistory.fromTxTime},confirm_block = :#{#txHistory.confirmBlock}, from_deposit_nonce = :#{#txHistory.fromDepositNonce},tx_state =:#{#txHistory.txState}, submit_block =:#{#txHistory.submitBlock},update_time = NOW()  where id =:#{#txHistory.id}", nativeQuery = true)
     @Modifying
     @Transactional
-    public void updateTxHistory(@Param("txHistory")WalletTransactionHistory txHistory);
+    void updateTxHistory(@Param("txHistory") WalletTransactionHistory txHistory);
 
     /**
      * 查询指定交易
@@ -52,16 +52,16 @@ public interface WalletTranactionHistoryDao extends JpaRepository<WalletTransact
      * @return
      */
     @Query(value = "select * from wallet_transaction_history where from_chain_id=:chainID and from_deposit_nonce =:depositNonce", nativeQuery = true)
-    public WalletTransactionHistory findByChainNonce(Integer chainID, Integer depositNonce);
+    WalletTransactionHistory findByChainNonce(Integer chainID, Integer depositNonce);
 
     /**
      * 更新 to的tx信息
      * @param txHistory
      */
-    @Query(value = "update  wallet_transaction_history set to_tx_state = :#{#txHistory.toTxState},to_tx_time = :#{#txHistory.toTxTime},confirm_block = :#{#txHistory.confirmBlock}, to_deposit_nonce = :#{#txHistory.toDepositNonce} where id =:#{#txHistory.id}", nativeQuery = true)
+    @Query(value = "update  wallet_transaction_history set to_tx_state = :#{#txHistory.toTxState},to_tx_time = :#{#txHistory.toTxTime},confirm_block = :#{#txHistory.confirmBlock}, to_deposit_nonce = :#{#txHistory.toDepositNonce},update_time = NOW() where id =:#{#txHistory.id}", nativeQuery = true)
     @Modifying
     @Transactional
-    public void updateTxToHistory(@Param("txHistory")WalletTransactionHistory txHistory);
+    void updateTxToHistory(@Param("txHistory") WalletTransactionHistory txHistory);
 
     /**
      * 查询指定deposit
@@ -77,5 +77,5 @@ public interface WalletTranactionHistoryDao extends JpaRepository<WalletTransact
      * @return
      */
     @Query(value = "select * from wallet_transaction_history where   tx_state != 'Failure'  and tx_state != 'Finalized'", nativeQuery = true)
-    public List<WalletTransactionHistory> findConfirmBlock();
+    List<WalletTransactionHistory> findConfirmBlock();
 }

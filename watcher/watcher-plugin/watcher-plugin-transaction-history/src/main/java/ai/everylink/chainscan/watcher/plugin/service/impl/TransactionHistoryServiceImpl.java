@@ -167,11 +167,19 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     } else {
                         txHistory.setTxState("To Chain Processing (" + number + "/12)");
                     }
+                } else if (type.equals("Bridge") && 0 == number.longValue()) {
+                    if (StringUtils.isEmpty(txHistory.getToTxHash())) {
+                        txHistory.setTxState("From Chain Processing (1/12)");
+                    } else {
+                        txHistory.setTxState("To Chain Processing (1/12)");
+                    }
                 } else if (number.longValue() > 13 && type.equals("Bridge") ) {
                     txHistory.setConfirmBlock(new BigInteger("12"));
                     txHistory.setTxState("Finalized");
                 } else if (number.longValue() < 13 && type.equals("Deposit") && 0 < number.longValue()) {
                     txHistory.setTxState("L1 Depositing (" + number + "/12)");
+                } else if ( type.equals("Deposit") && 0 == number.longValue()) {
+                    txHistory.setTxState("L1 Depositing (1/12)");
                 } else if (number.longValue() >= 12 && type.equals("Deposit")) {
                     txHistory.setConfirmBlock(new BigInteger("12"));
                     txHistory.setTxState("Finalized");
