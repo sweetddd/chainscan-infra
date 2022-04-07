@@ -68,7 +68,7 @@ class TransactionsService extends Service {
 
     const addTxSql =
       "INSERT INTO transaction (" +
-      "transaction_hash,block_hash,block_number,tx_timestamp,from_addr,to_addr,value,coin_symbol,price,buyer_fee,seller_fee,amount,chain_type,chain_id" +
+      "transaction_hash,block_hash,block_number,tx_timestamp,from_address,to_address,from_symbol,to_symbol,from_fee,to_fee,from_amount,to_amount,chain_type,chain_id" +
       ") VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     let time = tx.transaction_time.toString();
     if (time.length == 10) {
@@ -82,15 +82,15 @@ class TransactionsService extends Service {
       tx.transaction_hash,
       block.block_hash,
       block.block_height,
-      tx.transaction_time,
+      new Date(),
       tx.buyer_address,
       tx.seller_address,
-      tx.transaction_volume,
-      tx.buy_symbol +"-"+ tx.sell_symbol,
-      tx.price,
-      tx.buyer_fee,
-      tx.seller_fee,
-      tx.amount,
+      tx.token_0 ,
+      tx.token_1,
+      tx.fee_0,
+      tx.fee_1,
+      tx.amount_0,
+      tx.amount_1,
       "CPoS",
         tx.chain_id
     ];
