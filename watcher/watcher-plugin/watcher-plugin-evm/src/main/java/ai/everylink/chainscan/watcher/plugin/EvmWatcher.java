@@ -178,12 +178,14 @@ public class EvmWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        return "*/10 * * * * ?";
+       // return "*/10 * * * * ?";
+        return "*/5 * * * * ?";
     }
 
     public List<EvmData> listBlock() {
         Long dbHeight = evmDataService.getMaxBlockNum(chainId);
         logger.info("[EvmWatcher]listBlock.dbHeight={},processStep={}", dbHeight, processStep);
+      //  return evmScanDataService.queryBlockList(285116L, 1);
         return evmScanDataService.queryBlockList(dbHeight, processStep);
     }
 

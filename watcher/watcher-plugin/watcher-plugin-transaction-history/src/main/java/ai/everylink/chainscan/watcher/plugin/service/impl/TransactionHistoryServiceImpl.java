@@ -289,9 +289,9 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             HttpService        httpService = new HttpService("http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf", httpClient, false);
             Web3j              web3j       = Web3j.build(httpService);
             EthBlockNumber     blockNumber = web3j.ethBlockNumber().send();
-            TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0xb13b4da6108a19386c4f2d28c930994e30254d8d4b032356032fa1da1018622f").send().getResult();
+            TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0xc69d3c5031b0ce180ea7975720b376a7ef449388d36cd9d6c37a1590165a2731").send().getResult();
             System.out.println(receipt);
-            org.web3j.protocol.core.methods.response.Transaction tx = web3j.ethGetTransactionByHash("0xb13b4da6108a19386c4f2d28c930994e30254d8d4b032356032fa1da1018622f").send().getResult();
+            org.web3j.protocol.core.methods.response.Transaction tx = web3j.ethGetTransactionByHash("0xc69d3c5031b0ce180ea7975720b376a7ef449388d36cd9d6c37a1590165a2731").send().getResult();
             System.out.println(tx);
         } catch (IOException e) {
             e.printStackTrace();
