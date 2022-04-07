@@ -94,7 +94,7 @@ spec:
                 name: network-config
                 key: ether.rpc.api
           - name: "watcher.vmChainUrl"
-            value: http://ethereum-client-sandbox.chain-sandbox.svc.cluster.local:8545
+            value: http://ethereum-client-sandbox.chain-sandbox.svc.cluster.local.daivd:8545
           - name: "watcher.chain.scanStep"
             value: 200
           - name: "watcher.chain.processStep"
