@@ -154,6 +154,8 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 BigInteger confirmBlock = BigInteger.ZERO;
                 BigInteger newNumber    = BigInteger.ZERO;
                 long block = web3j.ethBlockNumber().send().getBlockNumber().longValue();
+
+                BigInteger chainId = web3j.ethChainId().send().getChainId();
                 newNumber = BigInteger.valueOf(block);
                 org.web3j.protocol.core.methods.response.Transaction result = web3j.ethGetTransactionByHash(fromTxHash).send().getResult();
                 confirmBlock = result.getBlockNumber();
@@ -175,7 +177,11 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     }
                 } else if (number.longValue() > 13 && type.equals("Bridge") ) {
                     txHistory.setConfirmBlock(new BigInteger("12"));
-                    txHistory.setTxState("Finalized");
+                    if(chainId.equals(txHistory.getToChainId())){
+                        txHistory.setTxState("Finalized");
+                    }else {
+                        txHistory.setTxState("In Consensus Processing");
+                    }
                 } else if (number.longValue() < 13 && type.equals("Deposit") && 0 < number.longValue()) {
                     txHistory.setTxState("L1 Depositing (" + number + "/12)");
                 } else if ( type.equals("Deposit") && 0 == number.longValue()) {
@@ -202,7 +208,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             return txList;
         }
         for (EthBlock.TransactionResult result : data.getBlock().getTransactions()) {
-            Transaction                                          tx   = new Transaction();
+            Transaction   tx   = new Transaction();
             org.web3j.protocol.core.methods.response.Transaction item = ((EthBlock.TransactionObject) result).get();
             tx.setTransactionHash(item.getHash());
             tx.setBlockHash(item.getBlockHash());
