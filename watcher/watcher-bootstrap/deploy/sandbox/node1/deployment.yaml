@@ -30,10 +30,10 @@ spec:
           failureThreshold: 3
         resources:
           requests:
-            cpu: 4
+            cpu: 2
             memory: 2Gi
           limits:
-            cpu: 4
+            cpu: 2
             memory: 8Gi
         volumeMounts:
         - name: host-time
