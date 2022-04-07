@@ -5,9 +5,18 @@
 const { ApiPromise, WsProvider, HttpProvider } = require("@polkadot/api");
 const fs = require("fs");
 const web3 = require("web3");
+const Axios = require('axios');
+
 // const { blake2AsHex } = require('@polkadot/util-crypto');
 // const { hexToU8a, isHex, stringToU8a,hexToBn,numberToHex } =  require('@polkadot/util');
+const BigNumber = require( 'bignumber.js');
+const crypto=require('crypto');
+let ethChainId = process.env.eth_chain_id;
+let dtxChainId = process.env.dtx_chain_id;
 
+const apiUrlList = new Map();
+apiUrlList.set(ethChainId,process.env.eth_l2_api_url);
+apiUrlList.set(dtxChainId,process.env.dtx_l2_api_url);
 
 const DTX_WEB3J_URL = process.env.DTX_WEB3J_URL;
 //const DTX_WEB3J_URL = 'http://vmdev.infra.powx.io';
@@ -16,19 +25,27 @@ const wsProvider = new HttpProvider(DTX_WEB3J_URL);
 let context = fs.readFileSync('./config/types.json');
 const typesData = JSON.parse(context);
 let api = null;
+let ethTokens = null;
+let dtxTokens = null;
 
 
 
 
 module.exports = {
     schedule: {
-        interval: '5s', // 1 分钟间隔
+        interval: '10s', // 1 分钟间隔
         type: 'worker', // 指定所有的 worker 都需要执行
     },
     async task(ctx) {
         vmchainWatcher(ctx)
-    },
-
+        // ethTokens = await initTokens(process.env.eth_l2_api_url);
+        // dtxTokens = await initTokens(process.env.dtx_l2_api_url);
+        // console.log("eth tokens is"+ethTokens);
+        //
+        // let tx = transactionFromData("00610000000100000002779aa036e122fc4f8924a093da59bf21f2e67b8a779aa036e122fc4f8924a093da59bf21f2e67b8a017d78400000bebc2000000000012540be40102cb4178010",1,0);
+        //     console.log(tx)
+        // },
+    }
 
 };
 
@@ -131,15 +148,15 @@ function blockFromData(data){
     console.log(txs_data.length)
 
 
-    if (txs_data.length % 185 != 0){
+    if (txs_data.length % 74 != 0){
         console.log("Error : Transaction list data is not public data "+txs_data);
     }
 
     let tx_list = [];
     for(var i = 0; i < transaction_count; i++){
 
-        let tx_data = txs_data.substring(i*370,i*370+370);
-        let tx = transactionFromData(tx_data);
+        let tx_data = txs_data.substring(i*148,i*148+148);
+        let tx = transactionFromData(tx_data,block_height,i);
         tx_list.push(tx);
     }
 
@@ -159,43 +176,89 @@ function blockFromData(data){
 }
 
 
-function transactionFromData(data){
+function transactionFromData(data,block_height,index){
 
 
-    let buy_symbol =hexToStr(data.substring(2,18)); //16
-    let sell_symbol =hexToStr(data.substring(18,34)); //16
-    let buyer_address = data.substring(34,74);  //
-    let seller_address = data.substring(74,114);  //
+    let chain_id = parseInt(data.substring(2,4),16);  //
 
 
-    let amount =parseInt(data.substring(114,146),16);  //32
-    let price =parseInt(data.substring(146,178),16); // 32
-    let buyer_fee =parseInt(data.substring(178,210),16); //16
-    let seller_fee =parseInt(data.substring(210,242),16); //16
-    let transaction_hash = data.substring(242,306);  //
-    let transaction_time = parseInt(data.substring(306,322),16);  //
-    let transaction_volume = parseInt(data.substring(322,354),16);  //
-    let chain_id = parseInt(data.substring(354,370),16);  //
-     console.log("transaction_time"+ transaction_time)
+    let token_0 =parseInt(data.substring(4,12),16); //16
+    let token_1 =parseInt(data.substring(12,20),16); //16
+
+
+    let buyer_address = data.substring(20,60);  //
+    let seller_address = data.substring(60,100);  //
+
+
+    let fee_0_number =unpack(parseInt(data.substring(100,110),16)); //16
+    let fee_1_number =unpack(parseInt(data.substring(110,120),16)); //16
+    let fee_token =parseInt(data.substring(120,128),16); //16
+    let amount_0 = unpack(parseInt(data.substring(128,138),16));  //
+    let amount_1 = unpack(parseInt(data.substring(138,148),16));  //
+    var obj=crypto.createHash('sha256');
+    obj.update(new Date()+""+block_height +""+index);
+    var str=obj.digest('hex');//hex是十六进制
+
+
+    let token_0_symbol = "";
+    let token_1_symbol = "";
+    let fee_token_symbol = "";
+    if(chain_id == dtxChainId){
+        console.log(dtxTokens.get(token_0)+"dtxTokens.get(token_0)")
+         token_0_symbol = dtxTokens.get(token_0).symbol;
+         token_1_symbol = dtxTokens.get(token_1).symbol;
+        fee_token_symbol = dtxTokens.get(fee_token).symbol;
+    }else{
+        console.log(ethTokens.get(token_0)+"ethTokens.get(token_0)")
+
+        token_0_symbol = ethTokens.get(token_0).symbol;
+         token_1_symbol = ethTokens.get(token_1).symbol;
+        fee_token_symbol = ethTokens.get(fee_token).symbol;
+    }
     let tx = {
-        buy_symbol:buy_symbol,
-        sell_symbol:sell_symbol,
+        token_0:token_0_symbol,
+        token_1:token_1_symbol,
         buyer_address:"0x"+buyer_address,
         seller_address:"0x"+seller_address,
-        amount:amount,
-        price:price,
-        buyer_fee:buyer_fee,
-        seller_fee:seller_fee,
-        transaction_hash:"0x"+transaction_hash,
-        transaction_time:transaction_time,
-        transaction_volume:transaction_volume,
-        chain_id:chain_id
+        amount_0:amount_0,
+        amount_1:amount_1,
+        fee_0:fee_0_number,
+        fee_1:fee_1_number,
+        chain_id:chain_id,
+        fee_token : fee_token_symbol,
+        transaction_time:new Date(),
+        transaction_hash : "0x"+str
     }
 
   //  console.log(tx);
     return tx;
 }
 
+
+
+function  unpack(number){
+    let binary =  number.toString(2);
+    let binary_data = "";
+    if(binary.length < 40 ){
+        let length = 40 - binary.length;
+        for(var i = 0; i < length; i++){
+            binary_data += "0";
+        }
+    }
+    binary_data += binary;
+
+    let mantissa_binary = binary_data.substring(0,35);
+    let exponent_pow_binary = binary_data.substring(35,40);
+
+    let mantissa = parseInt(mantissa_binary,2);
+    let exponent_pow = parseInt(exponent_pow_binary,2);
+
+    let res = mantissa * Math.pow(10, exponent_pow)
+    const bigNumber = new BigNumber(res);
+    const numberStr = bigNumber.toString(10);//转成10进制字符串
+
+    return numberStr;
+}
 
 function hexToStr(hex, encoding) {
     let trimedStr = hex.trim();
@@ -241,9 +304,44 @@ async function vmchainWatcher(ctx) {
             types: typesData,
         });
     }
+
+    if(!dtxTokens){
+        //初始化tokens
+        console.log("初始化");
+        ethTokens = await initTokens(process.env.eth_l2_api_url);
+        dtxTokens = await initTokens(process.env.dtx_l2_api_url);
+
+    }
     
 
 // numberToHex(0x1234, 32); // => 0x00001234
     await scanBlock(ctx,api);
 
 }
+
+async function initTokens(url){
+    let map = new Map();
+    await Axios({
+        method: 'get',
+        url: url+'/v0.2/tokens',
+        params: { //相当于url里的querystring
+            from: 'latest',
+            limit: '100',
+            direction:'older'
+        }
+    }).then(function (response) {
+        let list = response.data.result.list;
+
+
+        for(let index =0; index < list.length; index++ ){
+            let token = list[index];
+            map.set(token.id,token);
+        }
+
+    })
+        .catch(function (error) {
+            console.log(error);
+        });;
+    return map;
+}
+
