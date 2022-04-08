@@ -41,5 +41,6 @@ public interface BlockDataDao extends JpaRepository<BlockData, Long> {
 
     @Query(value = "delete from  block_data where block_number=?1 limit 1", nativeQuery = true)
     @Modifying
+    @Transactional
     int deleteBlockByBlockNumber(Long blockNumber);
 }
