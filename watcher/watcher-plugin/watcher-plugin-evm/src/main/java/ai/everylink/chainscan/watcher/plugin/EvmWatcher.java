@@ -178,19 +178,22 @@ public class EvmWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-       // return "*/10 * * * * ?";
         return "*/5 * * * * ?";
     }
 
     public List<EvmData> listBlock() {
         Long dbHeight = evmDataService.getMaxBlockNum(chainId);
-        logger.info("[EvmWatcher]listBlock.dbHeight={},processStep={}", dbHeight, processStep);
-      //  return evmScanDataService.queryBlockList(285116L, 1);
-        return evmScanDataService.queryBlockList(dbHeight, processStep);
+        List<EvmData> list = evmScanDataService.queryBlockList(dbHeight, processStep);
+        logger.info("[EvmWatcher]listBlock.dbHeight={},processStep={},list={}", dbHeight, processStep, list.size());
+        return list;
     }
 
-
     public void scanChain() {
+        if (WatcherUtils.isScanStop()) {
+            logger.info("[EvmWatcher]scan stopped.");
+            return;
+        }
+
         // 获取数据库保存的扫块高度
         Long dbHeight = evmScanDataService.queryMaxBlockNumber();
 
