@@ -35,4 +35,6 @@ public interface EvmScanDataService {
     boolean insert(List<EvmData> dataList);
 
     List<EvmData> queryBlockList(Long startBlock, Integer limit);
+
+    void deleteBlockData(Long blockNum);
 }

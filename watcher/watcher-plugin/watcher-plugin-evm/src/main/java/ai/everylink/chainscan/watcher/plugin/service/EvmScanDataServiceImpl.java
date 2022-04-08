@@ -73,6 +73,11 @@ public class EvmScanDataServiceImpl implements EvmScanDataService {
     }
 
     @Override
+    public void deleteBlockData(Long blockNumber) {
+        blockDataDao.deleteBlockByBlockNumber(blockNumber);
+    }
+
+    @Override
     public List<EvmData> queryBlockList(Long startBlock, Integer limit) {
         if (startBlock == null) {
             log.warn("startBlock is null");

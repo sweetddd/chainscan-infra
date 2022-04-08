@@ -107,6 +107,10 @@ spec:
             value: EVM_PoW
           - name: "watcher.notify.template"
             value: RINKEBY
+          - name: "watcher.scan.switch"
+            value: false
+          - name: "watcher.process.concurrent.switch"
+            value: false
       volumes:
       - name: host-time
         hostPath:

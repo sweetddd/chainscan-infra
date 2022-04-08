@@ -22,8 +22,11 @@ import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
+import ai.everylink.chainscan.watcher.plugin.service.EvmScanDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.math.BigInteger;
 
 /**
  * ERC20 chain data plugin
@@ -37,18 +40,30 @@ public class EvmPlugin implements IEvmWatcherPlugin {
 
     private EvmDataService evmDataService;
 
+    private EvmScanDataService evmScanDataService;
+
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
         EvmData blockData = (EvmData) block;
         initService();
-        System.out.println("EvmPlugin 处理: " + blockData.getBlock().getNumber()
+
+        BigInteger blockNumber = blockData.getBlock().getNumber();
+        System.out.println("EvmPlugin 处理: " + blockNumber
                                    + "; tx size=" + blockData.getBlock().getTransactions().size());
 
         try {
             evmDataService.saveEvmData(blockData);
         } catch (Exception e) {
-            logger.error("Error occured when process block=" + ((EvmData) block).getBlock().getNumber(), e);
+            logger.error("Error occured when process block=" + blockNumber, e);
             return false;
+        }
+
+        // 删除原生扫块数据
+        try {
+            evmScanDataService.deleteBlockData(blockNumber.longValue());
+            logger.info("Successfully delete old data:{}", blockNumber);
+        } catch (Exception e) {
+            logger.error("Error occured when delete old block=" + blockNumber, e);
         }
 
         return true;
@@ -57,6 +72,10 @@ public class EvmPlugin implements IEvmWatcherPlugin {
     private void initService() {
         if (evmDataService == null) {
             evmDataService = SpringApplicationUtils.getBean(EvmDataService.class);
+        }
+
+        if (evmScanDataService == null) {
+            evmScanDataService = SpringApplicationUtils.getBean(EvmScanDataService.class);
         }
     }
 }
