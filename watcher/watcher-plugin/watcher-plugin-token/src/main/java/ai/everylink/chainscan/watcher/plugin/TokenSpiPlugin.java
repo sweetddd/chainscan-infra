@@ -19,7 +19,13 @@ package ai.everylink.chainscan.watcher.plugin;
 
 import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
+import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
+import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import ai.everylink.chainscan.watcher.plugin.service.impl.TokenInfoServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.web3j.protocol.core.methods.response.EthBlock;
+
+import java.util.List;
 
 /**
  *
@@ -29,8 +35,25 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TokenSpiPlugin implements IEvmWatcherPlugin {
 
+
+    private TokenInfoServiceImpl tokenInfoService;
+
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
-        return false;
+        initService();
+        EvmData blockData = (EvmData) block;
+        List<EthBlock.TransactionResult> transactions = blockData.getBlock().getTransactions();
+
+        long    start     = System.currentTimeMillis();
+        log.info("TokenSpiPlugin-start:" + start);
+        tokenInfoService.tokenScan(blockData);
+        log.info("TokenSpiPlugin-end:" + System.currentTimeMillis());
+        return true;
+    }
+
+    private void initService() {
+        if (tokenInfoService == null) {
+            tokenInfoService = SpringApplicationUtils.getBean(TokenInfoServiceImpl.class);
+        }
     }
 }

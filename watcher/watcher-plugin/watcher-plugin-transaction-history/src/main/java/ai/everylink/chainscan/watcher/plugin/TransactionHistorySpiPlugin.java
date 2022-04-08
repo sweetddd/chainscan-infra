@@ -40,11 +40,10 @@ public class TransactionHistorySpiPlugin implements IEvmWatcherPlugin {
         EvmData blockData = (EvmData) block;
         long    start     = System.currentTimeMillis();
         log.info("BridgePlugin-start:" + start);
-
         transactionHistoryService.transactionHistoryScan(blockData);
         transactionHistoryService.updateConfirmBlock(blockData);
         log.info("BridgePlugin-end:" + System.currentTimeMillis());
-        return false;
+        return true;
     }
 
     private void initService() {

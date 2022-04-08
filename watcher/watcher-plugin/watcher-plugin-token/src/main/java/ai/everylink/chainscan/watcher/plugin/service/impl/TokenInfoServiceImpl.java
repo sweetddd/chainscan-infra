@@ -17,17 +17,14 @@
 
 package ai.everylink.chainscan.watcher.plugin.service.impl;
 
-import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
+import ai.everylink.chainscan.watcher.core.util.DecodUtils;
 import ai.everylink.chainscan.watcher.core.util.VM30Utils;
-import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
-import ai.everylink.chainscan.watcher.dao.NftAccountDao;
-import ai.everylink.chainscan.watcher.dao.TokenAccountBalanceDao;
-import ai.everylink.chainscan.watcher.dao.TokenInfoDao;
-import ai.everylink.chainscan.watcher.dao.TransactionDao;
-import ai.everylink.chainscan.watcher.dao.TransactionLogDao;
+import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import ai.everylink.chainscan.watcher.dao.*;
 import ai.everylink.chainscan.watcher.entity.*;
 import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
 import com.alibaba.fastjson.JSONArray;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
@@ -36,22 +33,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.web3j.abi.datatypes.*;
-import org.web3j.abi.datatypes.generated.*;
-import org.web3j.abi.datatypes.primitive.Byte;
+import org.springframework.util.CollectionUtils;
+import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Bool;
+import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.Utf8String;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameter;
-import org.web3j.protocol.core.Request;
-import org.web3j.protocol.core.methods.response.EthGetCode;
+import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
-import java.beans.Transient;
+import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -64,7 +60,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class TokenInfoServiceImpl implements TokenInfoService {
 
-    private static String BRIDGE_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+    private static final String BRIDGE_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
     private Web3j web3j;
 
@@ -108,9 +104,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
     }
 
     @Override
-    public void tokenScan() {
-        List<Transaction> all = transactionDao.findByTokenTag(0);
-        for (Transaction transaction : all) {
+    public void tokenScan(EvmData data) {
+        int               chainId = data.getChainId();
+        List<Transaction> txList  = buildTransactionList(data, chainId);
+        for (Transaction transaction : txList) {
             String method   = transaction.getInputMethod();
             String value    = transaction.getValue();
             String toAddr   = transaction.getToAddr();
@@ -122,7 +119,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             //账户信息余额更新;
             if (method != null) {
                 if (method.contains("mint(") || method.contains("transfer(") || method.contains("transferFrom(")
-                        || method.contains("burn(") || method.contains("burnFrom(")) {
+                        || method.contains("burn(") || method.contains("burnFrom(") || method.contains("deposit")
+                        || method.contains("ithdraw") || method.contains("burnFrom(") || method.contains("deposit")
+                ) {
                     //监控此方法更新用户余额信息;
                     saveOrUpdateBalance(fromAddr, toAddr);
                     updateNftAccount(fromAddr, toAddr);
@@ -132,7 +131,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         }
 
         // 事件监听;
-        for (Transaction transaction : all) {
+        for (Transaction transaction : txList) {
             List<TransactionLog> logs = transactionLogDao.findByTxHash(transaction.getTransactionHash());
             for (TransactionLog transactionLog : logs) {
                 String    contract  = transactionLog.getAddress();
@@ -204,8 +203,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         TokenInfo tokens = tokenInfoDao.findAllByAddress(contract);
         if (tokens != null) {
             symbol = tokens.getTokenSymbol();
+        }else {
+            return;
         }
-        assert StringUtils.isNotBlank(symbol);
         //查询账户余额
         BigInteger          amount  = vm30Utils.balanceOf(web3j, contract, fromAddr);
         TokenAccountBalance balance = new TokenAccountBalance();
@@ -349,6 +349,110 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             log.error("识别合约类型异常:" + e.getMessage());
             e.printStackTrace();
             tokenInfo.setTokenType(0);
+        }
+    }
+
+    private List<Transaction> buildTransactionList(EvmData data, int chainId) {
+        List<Transaction> txList = Lists.newArrayList();
+        if (CollectionUtils.isEmpty(data.getBlock().getTransactions())) {
+            return txList;
+        }
+        for (EthBlock.TransactionResult result : data.getBlock().getTransactions()) {
+            Transaction   tx   = new Transaction();
+            org.web3j.protocol.core.methods.response.Transaction item = ((EthBlock.TransactionObject) result).get();
+            tx.setTransactionHash(item.getHash());
+            tx.setBlockHash(item.getBlockHash());
+            tx.setBlockNumber(item.getBlockNumber().longValue());
+            tx.setChainId(chainId);
+            tx.setTransactionIndex(item.getTransactionIndex().intValue());
+            tx.setFailMsg("");
+            tx.setTxTimestamp(convertTime(data.getBlock().getTimestamp().longValue() * 1000));
+            tx.setFromAddr(item.getFrom());
+            if (Objects.nonNull(item.getTo())) {
+                tx.setToAddr(item.getTo());
+            }
+            tx.setValue(item.getValue().toString());
+            tx.setGasLimit(item.getGas());
+            tx.setGasPrice(item.getGasPrice().toString());
+            tx.setNonce(item.getNonce().toString());
+            tx.setInput(item.getInput());
+            if (StringUtils.equalsIgnoreCase("0x", item.getInput())) {
+                tx.setTxType(0);
+            } else {
+                tx.setTxType(1);
+            }
+            tx.setCreateTime(new Date());
+
+            try {
+                TransactionReceipt receipt = web3j.ethGetTransactionReceipt(item.getHash()).send().getResult();
+                if (receipt != null) {
+                    // status
+                    if (receipt.getStatus() != null &&
+                            (receipt.getStatus().equalsIgnoreCase("1")
+                                    || receipt.getStatus().equalsIgnoreCase("0x1"))) {
+                        tx.setStatus("0x1");
+                    } else {
+                        tx.setStatus("0x0");
+                    }
+                    // gas fee
+                    if (receipt.getGasUsed() != null) {
+                        tx.setGasUsed(receipt.getGasUsed());
+                        if (item.getGasPrice() != null) {
+                            tx.setTxFee(item.getGasPrice().multiply(receipt.getGasUsed()).toString());
+                        }
+                    }
+                    //创建合约交易
+                    if (item.getInput().length() > 10) {
+                        String function = item.getInput().substring(0, 10);
+                        if (function.equals("0x60806040") && receipt.getContractAddress() != null) {
+                            //设置to地址为合约地址
+                            tx.setToAddr(receipt.getContractAddress());
+                        }
+                        if (function.equals("0x60e06040") && receipt.getContractAddress() != null) {
+                            //设置to地址为合约地址
+                            tx.setToAddr(receipt.getContractAddress());
+                        }
+                    }
+                    //合约地址存储
+                    tx.setContractAddress(receipt.getContractAddress());
+                } else {
+                    log.info("[save]cannot get gas used and tx fee. txHash={}", item.getHash());
+                }
+            } catch (IOException e) {
+                log.error("[save]error occurred when query tx receipt. tx=" + item.getHash() + ",msg=" + e.getMessage(), e);
+            }
+            inputParams(tx);
+            tx.setTokenTag(0);
+            txList.add(tx);
+        }
+        return txList;
+    }
+
+    private Date convertTime(long mills) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(mills);
+        return cal.getTime();
+    }
+
+    private void inputParams(Transaction tx) {
+        try {
+            String input = tx.getInput();
+            if (input.length() > 10 && input.startsWith("0x")) {
+                Object function = DecodUtils.getFunction(input);
+                if (function != null) {
+                    tx.setInputMethod(function.toString());
+                    tx.setInputParams(DecodUtils.getParams(input));
+                } else {
+                    tx.setInputMethod(input);
+                    tx.setInputParams(input);
+                }
+            } else if (input.equals("0x")) {
+                tx.setInputMethod("Transfer");
+            } else {
+                tx.setInputParams(input);
+            }
+        } catch (Exception e) {
+            log.error("[Save]inputParams call error.txHash=" + tx.getTransactionHash(), e);
         }
     }
 

@@ -106,9 +106,6 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         int               chainId = data.getChainId();
         List<Transaction> txList  = buildTransactionList(data, chainId);
 
-        if (txList.size() > 0) {
-            log.error("transactionHistoryScan:txList" + txList);
-        }
         // 事件监听 解析;
         for (Transaction transaction : txList) {
             String input = transaction.getInput();
@@ -197,7 +194,6 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 //}
             } catch (Exception e) {
                 log.error("update txlog ERROR!");
-                e.printStackTrace();
             }
         }
     }
