@@ -96,7 +96,7 @@ spec:
           - name: "watcher.vmChainUrl"
             value: http://ethereum-client-sandbox.chain-sandbox.svc.cluster.local:8545
           - name: "watcher.chain.scanStep"
-            value: 200
+            value: 10
           - name: "watcher.chain.processStep"
             value: 200
           - name: "watcher.chain.chainId"
