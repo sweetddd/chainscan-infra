@@ -113,7 +113,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             String toAddr   = transaction.getToAddr();
             String fromAddr = transaction.getFromAddr();
             //交易value为0则为 合约方法调用;
-            if (value.equals("0") && StringUtils.isNotBlank(toAddr)) {
+            if (StringUtils.isNotBlank(toAddr)) {
                 addToken(toAddr, fromAddr); //增加合约信息;
             }
             //账户信息余额更新;
