@@ -193,7 +193,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 wTxHistoryDao.updateTxHistory(txHistory);
                 //}
             } catch (Exception e) {
-                log.error("update txlog ERROR!");
+                //log.info("update txlog error");
             }
         }
     }
