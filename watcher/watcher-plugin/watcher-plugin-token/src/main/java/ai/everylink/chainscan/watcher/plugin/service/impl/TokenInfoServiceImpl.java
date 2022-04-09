@@ -113,15 +113,14 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             String toAddr   = transaction.getToAddr();
             String fromAddr = transaction.getFromAddr();
             //交易value为0则为 合约方法调用;
-            if (StringUtils.isNotBlank(toAddr)) {
+            if (value.equals("0") && StringUtils.isNotBlank(toAddr)) {
                 addToken(toAddr, fromAddr); //增加合约信息;
             }
             //账户信息余额更新;
             if (method != null) {
                 if (method.contains("mint(") || method.contains("transfer(") || method.contains("transferFrom(")
                         || method.contains("burn(") || method.contains("burnFrom(") || method.contains("deposit")
-                        || method.contains("ithdraw") || method.contains("burnFrom(") || method.contains("deposit")
-                ) {
+                        || method.contains("ithdraw") ) {
                     //监控此方法更新用户余额信息;
                     saveOrUpdateBalance(fromAddr, toAddr);
                     updateNftAccount(fromAddr, toAddr);
