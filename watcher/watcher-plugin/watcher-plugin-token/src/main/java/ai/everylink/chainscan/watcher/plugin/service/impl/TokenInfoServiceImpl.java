@@ -122,6 +122,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                         || method.contains("burn(") || method.contains("burnFrom(") || method.contains("deposit")
                         || method.contains("ithdraw") ) {
                     //监控此方法更新用户余额信息;
+                    addToken(toAddr, fromAddr);
                     saveOrUpdateBalance(fromAddr, toAddr);
                     updateNftAccount(fromAddr, toAddr);
                 }
