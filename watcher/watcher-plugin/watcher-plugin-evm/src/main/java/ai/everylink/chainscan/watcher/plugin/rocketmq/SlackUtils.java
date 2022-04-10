@@ -79,25 +79,30 @@ public final class SlackUtils {
     }
 
     public static void main(String[] args) throws Exception {
-        SlackMessage bean = new SlackMessage();
-        bean.setId(UUID.randomUUID().toString());
-        Map<String, Object> params = Maps.newHashMap();
-        params.put("channelId", "C02UZMQUW5N");
-        params.put("title", "DTX Testnet");
-        params.put("msg", "闲着没事报个警");
-        bean.setParameters(params);
+            DefaultMQProducer producer = new DefaultMQProducer("producer_group_dtx_alert");
+            producer.setNamesrvAddr("rocketmq-namesrv.database.svc.cluster.local:9876");
+            producer.start();
 
-        //Create a message instance, specifying topic, tag and message body.
-        Message rocketMsg = new Message("notification-normal", "dtx_alert",
-                JSON.toJSONString(bean).getBytes(StandardCharsets.UTF_8));
+            for (int i = 0; i < 100; i++) {
+                SlackMessage bean = new SlackMessage();
+                bean.setId(UUID.randomUUID().toString());
+                Map<String, Object> params = Maps.newHashMap();
+                params.put("channelId", "C02UZMQUW5N");
+                params.put("title", "DTX Testnet");
+                params.put("msg", "闲着没事报个警-" + System.currentTimeMillis());
+                bean.setParameters(params);
 
 
-        DefaultMQProducer producer = new DefaultMQProducer("producer_group_dtx_alert");
-        producer.setNamesrvAddr("rocketmq-namesrv.database.svc.cluster.local:9876");
-        producer.start();
-        //Call send message to deliver message to one of brokers.
-        SendResult sendResult = producer.send(rocketMsg);
-        System.out.println(sendResult);
+                //Create a message instance, specifying topic, tag and message body.
+                Message rocketMsg = new Message("notification-normal", "dtx_alert",
+                        JSON.toJSONString(bean).getBytes(StandardCharsets.UTF_8));
+                //Call send message to deliver message to one of brokers.
+                SendResult sendResult = producer.send(rocketMsg);
+                System.out.println(sendResult);
+
+                Thread.sleep(3000);
+            }
+
     }
 
 }

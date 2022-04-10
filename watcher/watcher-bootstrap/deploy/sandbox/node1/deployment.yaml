@@ -96,19 +96,19 @@ spec:
           - name: "watcher.vmChainUrl"
             value: http://ethereum-client-sandbox.chain-sandbox.svc.cluster.local:8545
           - name: "watcher.chain.scanStep"
-            value: 10
+            value: 200
           - name: "watcher.chain.processStep"
             value: 200
           - name: "watcher.chain.chainId"
             value: 4
           - name: "watcher.chain.batchInsertSize"
-            value: 30
+            value: 500
           - name: "watcher.chain.chainType"
             value: EVM_PoW
           - name: "watcher.notify.template"
             value: RINKEBY
           - name: "watcher.scan.switch"
-            value: true
+            value: false
           - name: "watcher.process.concurrent.switch"
             value: true
       volumes:
