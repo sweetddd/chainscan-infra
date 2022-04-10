@@ -48,7 +48,6 @@ import org.web3j.protocol.http.HttpService;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -178,6 +177,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 accountInfo.setAddress(fromAddr);
                 accountInfo.setCreateTime(new Date());
                 accountInfo.setUpdateTime(new Date());
+                accountInfo.setDeleted(false);
                 accountInfoDao.save(accountInfo);
             }
         } catch (Exception e) {
@@ -236,19 +236,20 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             return;
         }
         //查询账户信息; 如果没有数据就新增
-        AccountInfo accountInfos = accountInfoDao.findByAddress(fromAddr);
-        if (accountInfos == null) {
+        AccountInfo accountInfo = accountInfoDao.findByAddress(fromAddr);
+        if (accountInfo == null) {
             new AccountInfo();
-            accountInfos.setAddress(fromAddr);
-            accountInfos.setCreateTime(new Date());
-            accountInfos.setUpdateTime(new Date());
-            accountInfoDao.save(accountInfos);
+            accountInfo.setAddress(fromAddr);
+            accountInfo.setCreateTime(new Date());
+            accountInfo.setUpdateTime(new Date());
+            accountInfo.setDeleted(false);
+            accountInfoDao.save(accountInfo);
         }
 
         //查询账户余额
         BigInteger          amount  = vm30Utils.balanceOf(web3j, contract, fromAddr);
         TokenAccountBalance balance = new TokenAccountBalance();
-        balance.setAccountId(accountInfos.getId());
+        balance.setAccountId(accountInfo.getId());
         balance.setContract(contract);
         balance.setTokenId(tokens.getId());
         Example<TokenAccountBalance> exp      = Example.of(balance);
@@ -282,6 +283,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             accountInfo.setAddress(fromAddr);
             accountInfo.setCreateTime(new Date());
             accountInfo.setUpdateTime(new Date());
+            accountInfo.setDeleted(false);
             accountInfoDao.save(accountInfo);
         }
         TokenInfo tokens = tokenInfoDao.findAllByAddress(contract);
