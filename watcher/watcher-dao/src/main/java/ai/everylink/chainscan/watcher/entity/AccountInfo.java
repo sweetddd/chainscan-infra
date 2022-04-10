@@ -3,28 +3,23 @@ package ai.everylink.chainscan.watcher.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.Date;
 
-@Table(name = "token_account_balance")
+@Table(name = "account_info")
 @Entity
 @Data
-public class TokenAccountBalance {
+public class AccountInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "account_id", nullable = false, length = 32)
-    private Long accountId;
+    @Column(name = "address", nullable = false, length = 80)
+    private String address;
 
-    @Column(name = "token_id", length = 32)
-    private Long tokenId;
-
-    @Column(name = "contract", length = 80)
-    private String contract;
-
-    @Column(name = "balance", nullable = false)
-    private String balance;
+    @Column(name = "deleted")
+    private Boolean deleted;
 
     @Column(name = "create_time", nullable = false)
     private Date createTime;

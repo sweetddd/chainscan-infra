@@ -39,8 +39,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthBlock;
-import org.web3j.protocol.core.methods.response.EthBlockNumber;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
@@ -284,11 +284,15 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             OkHttpClient       httpClient  = OkHttpUtil.buildOkHttpClient();
             HttpService        httpService = new HttpService("http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf", httpClient, false);
             Web3j              web3j       = Web3j.build(httpService);
-            EthBlockNumber     blockNumber = web3j.ethBlockNumber().send();
-            TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0xc69d3c5031b0ce180ea7975720b376a7ef449388d36cd9d6c37a1590165a2731").send().getResult();
-            System.out.println(receipt);
-            org.web3j.protocol.core.methods.response.Transaction tx = web3j.ethGetTransactionByHash("0xc69d3c5031b0ce180ea7975720b376a7ef449388d36cd9d6c37a1590165a2731").send().getResult();
-            System.out.println(tx);
+//            EthBlockNumber     blockNumber = web3j.ethBlockNumber().send();
+//            TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0xc69d3c5031b0ce180ea7975720b376a7ef449388d36cd9d6c37a1590165a2731").send().getResult();
+//            System.out.println(receipt);
+//            org.web3j.protocol.core.methods.response.Transaction tx = web3j.ethGetTransactionByHash("0xc69d3c5031b0ce180ea7975720b376a7ef449388d36cd9d6c37a1590165a2731").send().getResult();
+//            System.out.println(tx);
+
+            String result = web3j.ethGetCode("0x6Da573EEc80f63c98b88cED15D32CA270787FB5a", DefaultBlockParameterName.LATEST).send().getResult();
+            System.out.println(result.length());
+
         } catch (IOException e) {
             e.printStackTrace();
         }

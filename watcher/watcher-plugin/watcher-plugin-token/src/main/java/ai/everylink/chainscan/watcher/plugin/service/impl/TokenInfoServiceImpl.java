@@ -40,6 +40,7 @@ import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
@@ -47,6 +48,7 @@ import org.web3j.protocol.http.HttpService;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -78,6 +80,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
     @Autowired
     private TokenInfoDao tokenInfoDao;
+
+    @Autowired
+    private AccountInfoDao accountInfoDao;
 
     @Autowired
     private NftAccountDao nftAccountDao;
@@ -112,6 +117,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             String value    = transaction.getValue();
             String toAddr   = transaction.getToAddr();
             String fromAddr = transaction.getFromAddr();
+            if(StringUtils.isNotBlank(fromAddr)){
+                addAccountInfo(fromAddr); //增加用户信息;
+            }
             //交易value为0则为 合约方法调用;
             if (value.equals("0") && StringUtils.isNotBlank(toAddr)) {
                 addToken(toAddr, fromAddr); //增加合约信息;
@@ -153,6 +161,27 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     }
                 }
             }
+        }
+
+    }
+
+    /**
+     * 增加用户信息
+     * @param fromAddr
+     */
+    private void addAccountInfo(String fromAddr) {
+        try {
+            String result = web3j.ethGetCode(fromAddr, DefaultBlockParameterName.LATEST).send().getResult();
+            if (result.equals("0x")) {
+               //添加账户信息
+                AccountInfo accountInfo = new AccountInfo();
+                accountInfo.setAddress(fromAddr);
+                accountInfo.setCreateTime(new Date());
+                accountInfo.setUpdateTime(new Date());
+                accountInfoDao.save(accountInfo);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }
@@ -206,12 +235,22 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         }else {
             return;
         }
+        //查询账户信息; 如果没有数据就新增
+        AccountInfo accountInfos = accountInfoDao.findByAddress(fromAddr);
+        if (accountInfos == null) {
+            new AccountInfo();
+            accountInfos.setAddress(fromAddr);
+            accountInfos.setCreateTime(new Date());
+            accountInfos.setUpdateTime(new Date());
+            accountInfoDao.save(accountInfos);
+        }
+
         //查询账户余额
         BigInteger          amount  = vm30Utils.balanceOf(web3j, contract, fromAddr);
         TokenAccountBalance balance = new TokenAccountBalance();
-        balance.setAccount(fromAddr);
+        balance.setAccountId(accountInfos.getId());
         balance.setContract(contract);
-        balance.setToken(symbol);
+        balance.setTokenId(tokens.getId());
         Example<TokenAccountBalance> exp      = Example.of(balance);
         List<TokenAccountBalance>    balances = tokenAccountBalanceDao.findAll(exp);
         if (balances.size() < 1) {
@@ -236,13 +275,22 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      */
     @Transactional
     public void updateNftAccount(String fromAddr, String contract) {
+        AccountInfo accountInfo = accountInfoDao.findByAddress(fromAddr);
+        if (accountInfo == null) {
+            //新增用户数据;
+            accountInfo = new AccountInfo();
+            accountInfo.setAddress(fromAddr);
+            accountInfo.setCreateTime(new Date());
+            accountInfo.setUpdateTime(new Date());
+            accountInfoDao.save(accountInfo);
+        }
         TokenInfo tokens = tokenInfoDao.findAllByAddress(contract);
         if( tokens == null || tokens.getTokenType() != 2){
             return;
         }
         NftAccount nftAccountQuer = new NftAccount();
-        nftAccountQuer.setAccount(fromAddr);
-        nftAccountQuer.setContract(contract);
+        nftAccountQuer.setAccountId(accountInfo.getId());
+        nftAccountQuer.setTokenId(tokens.getId());
         nftAccountDao.deleteNftAccount(fromAddr, contract); //清楚账户的NFT旧信息;
         //批量获取nft的数据信息;
         BigInteger            count = vm30Utils.balanceOf(web3j, contract, fromAddr);
@@ -250,8 +298,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         for (int i = 0; i < count.intValue(); i++) {
             NftAccount nftAccount = new NftAccount();
             nftAccount.setContractName(tokens.getTokenName());
-            nftAccount.setAccount(fromAddr);
-            nftAccount.setContract(contract);
+            nftAccount.setAccountId(accountInfo.getId());
+            nftAccount.setTokenId(tokens.getId());
             //tokenOfOwnerByIndex
             BigInteger tokenId  = vm30Utils.tokenOfOwnerByIndex(web3j, contract, fromAddr, i);
             Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
