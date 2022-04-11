@@ -173,17 +173,19 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             String result = web3j.ethGetCode(fromAddr, DefaultBlockParameterName.LATEST).send().getResult();
             if (result.equals("0x")) {
                //添加账户信息
-                AccountInfo accountInfo = new AccountInfo();
-                accountInfo.setAddress(fromAddr);
-                accountInfo.setCreateTime(new Date());
-                accountInfo.setUpdateTime(new Date());
-                accountInfo.setDeleted(false);
-                accountInfoDao.save(accountInfo);
+                AccountInfo byAddress   = accountInfoDao.findByAddress(fromAddr);
+                if (byAddress == null) {
+                    AccountInfo accountInfo = new AccountInfo();
+                    accountInfo.setAddress(fromAddr);
+                    accountInfo.setCreateTime(new Date());
+                    accountInfo.setUpdateTime(new Date());
+                    accountInfo.setDeleted(false);
+                    accountInfoDao.save(accountInfo);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     /**
