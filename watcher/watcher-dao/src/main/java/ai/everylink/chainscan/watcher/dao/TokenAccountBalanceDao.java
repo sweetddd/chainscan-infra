@@ -39,8 +39,8 @@ public interface TokenAccountBalanceDao extends JpaRepository<TokenAccountBalanc
      * @param id
      * @param balance
      */
-    @Query(value = "update token_account_balance set balance=:balance where id=:id", nativeQuery = true)
+    @Query(value = "update token_account_balance set balance=:balance,update_time= NOW()  where id=:id", nativeQuery = true)
     @Modifying
     @Transactional
-    public void updateBalance(@Param("id")Long id,  @Param("balance") BigInteger balance);
+    void updateBalance(@Param("id") Long id, @Param("balance") BigInteger balance);
 }

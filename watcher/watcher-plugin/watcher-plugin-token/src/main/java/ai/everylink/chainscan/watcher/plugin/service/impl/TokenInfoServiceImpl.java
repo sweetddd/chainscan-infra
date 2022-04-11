@@ -259,6 +259,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         if (balances.size() < 1 && amount.compareTo(BigInteger.ZERO) > 0) {
             balance.setContract(contract);
             balance.setBalance(amount.toString());
+            balance.setCreateTime(new Date());
+            balance.setUpdateTime(new Date());
             tokenAccountBalanceDao.save(balance);
         } else if (balances.size() == 1) {
             TokenAccountBalance tokenAccountBalance = balances.get(0);
@@ -295,7 +297,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         NftAccount nftAccountQuer = new NftAccount();
         nftAccountQuer.setAccountId(accountInfo.getId());
         nftAccountQuer.setTokenId(tokens.getId());
-        nftAccountDao.deleteNftAccount(fromAddr, contract); //清楚账户的NFT旧信息;
+        nftAccountDao.deleteNftAccount(accountInfo.getId(), tokens.getId()); //清楚账户的NFT旧信息;
         //批量获取nft的数据信息;
         BigInteger            count = vm30Utils.balanceOf(web3j, contract, fromAddr);
         ArrayList<NftAccount> nfts  = new ArrayList<>();
