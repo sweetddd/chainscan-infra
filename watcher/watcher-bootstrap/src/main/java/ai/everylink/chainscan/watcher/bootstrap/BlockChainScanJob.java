@@ -113,10 +113,9 @@ public class BlockChainScanJob implements Job {
             log.error("["+id+"]Execute watcher error.watcher=["+watcher.getClass().getSimpleName()+"]", e);
         }
 
-
     }
 
-    private static final ThreadPoolExecutor blockProcessPool = new ThreadPoolExecutor(100, 200, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10000), new RejectedExecutionHandler() {
+    private static final ThreadPoolExecutor blockProcessPool = new ThreadPoolExecutor(300, 400, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10000), new RejectedExecutionHandler() {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             log.error("blockProcessPool queue is full");

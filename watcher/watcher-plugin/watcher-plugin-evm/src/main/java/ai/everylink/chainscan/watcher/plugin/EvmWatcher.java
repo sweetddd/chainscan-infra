@@ -89,7 +89,7 @@ public class EvmWatcher implements IWatcher {
      */
     private static final Long BLOCK_PRODUCE_TIMEOUT = 11*60*1000L;
 
-    private static final int MAX_SCAN_THREAD = 200;
+    private static final int MAX_SCAN_THREAD = 400;
     private static final int MAX_TX_SCAN_THREAD = 250;
 
     /**
@@ -102,7 +102,7 @@ public class EvmWatcher implements IWatcher {
     /**
      * 扫块时并发查询区块线程池。
      */
-    private static final ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(200, MAX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000), new RejectedExecutionHandler() {
+    private static final ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(300, MAX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000), new RejectedExecutionHandler() {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             logger.error("scanBlockPool queue is full");
@@ -134,6 +134,11 @@ public class EvmWatcher implements IWatcher {
     @Override
     public List<EvmData> scanBlock() {
         init();
+
+        if (chainId == 4) {
+            logger.info("Rinkeby scan optimize");
+            return rinkebyScanSpecial();
+        }
 
         List<EvmData> dataList = new CopyOnWriteArrayList<EvmData>();
 
@@ -186,6 +191,51 @@ public class EvmWatcher implements IWatcher {
         List<EvmData> list = evmScanDataService.queryBlockList(dbHeight, processStep);
         logger.info("[EvmWatcher]listBlock.dbHeight={},processStep={},list={}", dbHeight, processStep, list.size());
         return list;
+    }
+
+    private List<EvmData> rinkebyScanSpecial() {
+        List<EvmData> defaultList = Lists.newArrayList();
+        if (WatcherUtils.isScanStop()) {
+            logger.info("[rinkebyScan]scan stopped.");
+            return defaultList;
+        }
+
+        // 获取数据库保存的扫块高度
+        Long dbHeight = evmDataService.getMaxBlockNum(chainId);
+
+        // 获取链上高度
+        Long chainHeight = getNetworkBlockHeight();
+        if (dbHeight.equals(chainHeight)) {
+            logger.info("[rinkebyScan]dbHeight catch the chain height.");
+            return defaultList;
+        }
+
+        if (dbHeight > chainHeight) {
+            logger.info("[rinkebyScan]DB块高超过链上块高，maybe the chain was reset.");
+            return defaultList;
+        }
+
+        // 计算扫块区间
+        long start = dbHeight + 1;
+        long end = chainHeight;
+        if (chainHeight - start >= step) {
+            end = start + step - 1;
+        }
+        logger.info("[rinkebyScan]begin to scan.dbHeight={},chainHeight={},start={},end={}", dbHeight, chainHeight, start, end);
+
+        long t1 = System.currentTimeMillis();
+
+        // 并发扫块
+        List<EvmData> dataList = currentReplayBlock(start, end);
+
+        // 校验数据
+        if (CollectionUtils.isEmpty(dataList)) {
+            logger.error("[EvmWatcher]data is empty.expected: {} blocks", (end - start + 1));
+            return defaultList;
+        }
+
+        logger.info("[rinkebyScan]end to scan.size={},consume={}ms", dataList.size(), (System.currentTimeMillis() - t1));
+        return dataList;
     }
 
     public void scanChain() {
@@ -311,19 +361,22 @@ public class EvmWatcher implements IWatcher {
                 }
 
                 // 并发查询交易列表
-                if (!CollectionUtils.isEmpty(data.getBlock().getTransactions())) {
-                    CountDownLatch txLatch = new CountDownLatch(data.getBlock().getTransactions().size());
-                    for (EthBlock.TransactionResult transactionResult : data.getBlock().getTransactions()) {
-                        Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
-                        scanTxPool.submit(new ReplayTransactionThread(txLatch, data, tx.getHash()));
-                    }
-                    txLatch.await(3, TimeUnit.MINUTES);
+                if (chainId != 4
+                        || ( chainId == 4 && data.getBlock().getNumber().longValue() > 10000000L)) {
+                    if (!CollectionUtils.isEmpty(data.getBlock().getTransactions())) {
+                        CountDownLatch txLatch = new CountDownLatch(data.getBlock().getTransactions().size());
+                        for (EthBlock.TransactionResult transactionResult : data.getBlock().getTransactions()) {
+                            Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
+                            scanTxPool.submit(new ReplayTransactionThread(txLatch, data, tx.getHash()));
+                        }
+                        txLatch.await(3, TimeUnit.MINUTES);
 
-                    // 校验
-                    if (data.getBlock().getTransactions().size() != data.getTxList().size()) {
-                        logger.warn("[EvmWatcher]Scan tx size {} mismatch expect size {}. blockNum={}",
-                                data.getTxList().size(), data.getBlock().getTransactions().size(), blockNum);
+                        // 校验
+                        if (data.getBlock().getTransactions().size() != data.getTxList().size()) {
+                            logger.warn("[EvmWatcher]Scan tx size {} mismatch expect size {}. blockNum={}",
+                                    data.getTxList().size(), data.getBlock().getTransactions().size(), blockNum);
 //                        return;
+                        }
                     }
                 }
 

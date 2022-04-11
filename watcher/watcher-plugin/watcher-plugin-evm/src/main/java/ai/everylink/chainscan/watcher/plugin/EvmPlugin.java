@@ -61,12 +61,14 @@ public class EvmPlugin implements IEvmWatcherPlugin {
         }
 
         // 删除原生扫块数据
-        try {
-            long t2 = System.currentTimeMillis();
-            evmScanDataService.deleteBlockData(blockNumber.longValue());
-            logger.info("Successfully delete old data:{},consume={}ms", blockNumber, (System.currentTimeMillis() - t2));
-        } catch (Exception e) {
-            logger.error("Error occured when delete old block=" + blockNumber, e);
+        if (blockData.getChainId() != 4) {
+            try {
+                long t2 = System.currentTimeMillis();
+                evmScanDataService.deleteBlockData(blockNumber.longValue());
+                logger.info("Successfully delete old data:{},consume={}ms", blockNumber, (System.currentTimeMillis() - t2));
+            } catch (Exception e) {
+                logger.error("Error occured when delete old block=" + blockNumber, e);
+            }
         }
 
         return true;
