@@ -166,7 +166,16 @@ public class EvmDataServiceImpl implements EvmDataService {
         log.info("[buildBlock]consume: {}ms", (System.currentTimeMillis() - t2));
 
         long t3 = System.currentTimeMillis();
-        blockDao.save(block);
+        if (WatcherUtils.getProcessStep() <= 200) {
+            blockDao.save(block);
+        } else {
+            Block b = block;
+            blockDao.insertNative(b.getBlockNumber(), b.getBlockHash(), b.getChainId(), b.getBlockTimestamp(),
+                    b.getParentHash(), null, b.getNonce(), b.getValidator(), b.getBurnt(),
+                    b.getTxSize(), b.getReward(), b.getDifficulty(), b.getTotalDifficulty(),
+                    b.getBlockSize(), b.getGasUsed(), b.getGasLimit(), b.getExtraData(),
+                    b.getCreateTime(), b.getStatus(), b.getBlockFee(), b.getChainType(), 0);
+        }
         log.info("[save]block={},block saved", data.getBlock().getNumber());
         log.info("[saveBlock]consume: {}ms", (System.currentTimeMillis() - t3));
 

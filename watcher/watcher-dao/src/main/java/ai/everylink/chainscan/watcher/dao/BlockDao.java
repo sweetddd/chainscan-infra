@@ -24,6 +24,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 
 /**
@@ -66,5 +68,14 @@ public interface BlockDao extends JpaRepository<Block, Long> {
      */
     @Query(value = "select block_timestamp from block order by block_number desc limit 1", nativeQuery = true)
     Date getMaxBlockCreationTime(int chainId);
+
+    @Query(value = "INSERT INTO block (block_number, block_hash, chain_id, block_timestamp, parent_hash, miner, nonce, validator, burnt, tx_size, reward, difficulty, total_difficulty, block_size, gas_used, gas_limit, extra_data, create_time, status, block_fee, chain_type, finalized) VALUES ( ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?21, ?22)", nativeQuery = true)
+    @Modifying
+    @Transactional
+    int insertNative(Long blockNumber, String blockHash, Integer chainId, Date blockTimestamp,
+                     String parentHash, String miner, String nonce, String validator, String burnt,
+                     Integer txSize, String reward, String difficulty, String totalDifficulty,
+                     Integer blockSize, BigInteger gasUsed, BigInteger gasLimit, String extraData,
+                     Date createTime, Integer status, BigDecimal blockFee, String chainType, Integer finalized);
 
 }
