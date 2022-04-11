@@ -374,11 +374,5 @@ public class EvmDataServiceImpl implements EvmDataService {
             log.error("[Save]inputParams call error.txHash=" + tx.getTransactionHash(), e);
         }
     }
-
-    @Override
-    public  List<Long> listMissedBlockNumber(Long startBlockNum) {
-        blockDao.listBlockNumber(startBlockNum);
-        return Lists.newArrayList();
-    }
 }
 

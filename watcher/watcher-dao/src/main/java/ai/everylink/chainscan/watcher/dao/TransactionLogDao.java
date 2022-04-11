@@ -34,29 +34,8 @@ import java.util.List;
 public interface TransactionLogDao extends JpaRepository<TransactionLog, Long> {
 
     /**
-     * 批量删除
-     *
-     * @param transactionHashList
-     * @return
-     */
-    @Query(value = "delete from transaction_log where transaction_hash in(?1)", nativeQuery = true)
-    @Modifying
-    @Transactional
-    int deleteByTransactionHash(List<String> transactionHashList);
-
-
-    /**
      * 查询指定hash的log
      */
     @Query(value = "select * from transaction_log where transaction_hash=:txHash", nativeQuery = true)
-    public List<TransactionLog>  findByTxHash(String txHash);
-
-    /**
-     * 查询跨链event
-     * @param txHash
-     * @param logIndex
-     * @return
-     */
-    @Query(value = "select * from transaction_log where transaction_hash=:txHash and log_index =:logIndex", nativeQuery = true)
-    TransactionLog findTopic(String txHash, int logIndex);
+    List<TransactionLog>  findByTxHash(String txHash);
 }

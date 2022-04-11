@@ -21,6 +21,7 @@ import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.DateUtil;
 import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
+import ai.everylink.chainscan.watcher.plugin.EvmPlugin;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.util.CollectionUtils;
@@ -74,6 +75,10 @@ public class BlockChainScanJob implements Job {
 
             // 3.处理块信息
             for (IWatcherPlugin plugin : pluginList) {
+                if (WatcherUtils.onlyEvmPlugin() && plugin.getClass() != EvmPlugin.class) {
+                    log.info("Not EvmPlugin");
+                    continue;
+                }
                 long t1 = System.currentTimeMillis();
                 if (!WatcherUtils.isProcessConcurrent()) {
                     for (Object block : blockList) {
