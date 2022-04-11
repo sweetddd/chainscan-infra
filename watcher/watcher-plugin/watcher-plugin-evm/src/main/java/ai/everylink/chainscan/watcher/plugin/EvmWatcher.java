@@ -233,6 +233,7 @@ public class EvmWatcher implements IWatcher {
 
         // 落库
         try {
+            long t1 = System.currentTimeMillis();
             if (dataList.size() <= BATCH_INSERT_MAX_SIZE) {
                 evmScanDataService.insert(dataList);
             } else {
@@ -251,6 +252,7 @@ public class EvmWatcher implements IWatcher {
                     evmScanDataService.insert(dataList.subList(startIdx, endIdx));
                 }
             }
+            logger.info("[EvmWatcher]insert scanned blocks.consume={}ms", (System.currentTimeMillis() - t1));
         } catch (Exception e) {
             logger.error("[EvmWatcher]insert db failed.", e);
         }

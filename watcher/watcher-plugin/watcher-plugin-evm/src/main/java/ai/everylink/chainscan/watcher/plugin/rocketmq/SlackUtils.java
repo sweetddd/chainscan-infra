@@ -83,13 +83,13 @@ public final class SlackUtils {
             producer.setNamesrvAddr("rocketmq-namesrv.database.svc.cluster.local:9876");
             producer.start();
 
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 1; i++) {
                 SlackMessage bean = new SlackMessage();
                 bean.setId(UUID.randomUUID().toString());
                 Map<String, Object> params = Maps.newHashMap();
                 params.put("channelId", "C02UZMQUW5N");
                 params.put("title", "DTX Testnet");
-                params.put("msg", "闲着没事报个警-" + System.currentTimeMillis());
+                params.put("msg", "闲着没事  \r\n报个警-" + System.currentTimeMillis());
                 bean.setParameters(params);
 
 
@@ -100,7 +100,7 @@ public final class SlackUtils {
                 SendResult sendResult = producer.send(rocketMsg);
                 System.out.println(sendResult);
 
-                Thread.sleep(3000);
+                Thread.sleep(50);
             }
 
     }
