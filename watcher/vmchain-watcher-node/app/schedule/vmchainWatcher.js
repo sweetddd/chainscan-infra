@@ -29,7 +29,7 @@ let ethTokens = null;
 let dtxTokens = null;
 
 
-
+let max_transaction = 1000;
 
 module.exports = {
     schedule: {
@@ -38,13 +38,6 @@ module.exports = {
     },
     async task(ctx) {
         vmchainWatcher(ctx)
-        // ethTokens = await initTokens(process.env.eth_l2_api_url);
-        // dtxTokens = await initTokens(process.env.dtx_l2_api_url);
-        // console.log("eth tokens is"+ethTokens);
-        //
-        // let tx = transactionFromData("00610000000100000002779aa036e122fc4f8924a093da59bf21f2e67b8a779aa036e122fc4f8924a093da59bf21f2e67b8a017d78400000bebc2000000000012540be40102cb4178010",1,0);
-        //     console.log(tx)
-        // },
     }
 
 };
@@ -53,26 +46,22 @@ module.exports = {
 let next_schedule = true;
 
 async function scanBlock(ctx,api){
-    console.log('next_schedule')
-    console.log(next_schedule)
-    if(!next_schedule){
-        return
-    }
+
     let maxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
     if(!maxBlockNumber){
-        maxBlockNumber=1;
+        maxBlockNumber=0;
     }
-    
+    maxBlockNumber++;
+
     await baseBlock(ctx,api,maxBlockNumber);
-    if(next_schedule){
-        await baseBlock(ctx,api,maxBlockNumber+1);
-    }
-    
+    // if(next_schedule){
+    //     await baseBlock(ctx,api,maxBlockNumber+1);
+    // }
+
 
 }
 
 async function baseBlock(ctx,api,maxBlockNumber){
-    console.log('maxBlockNumber')
     console.log(maxBlockNumber)
     next_schedule = false;
     let newBlock =  await api.query.cposContribution.cPoSBlocks(maxBlockNumber);
@@ -83,7 +72,7 @@ async function baseBlock(ctx,api,maxBlockNumber){
     }else{
 
         try {
-            let newBlockJson = blockFromData(newBlock.toString());
+            let newBlockJson = await blockFromData(api,newBlock.toString());
             let blockTime = newBlockJson.create_time.toString();
 
 
@@ -104,15 +93,7 @@ async function baseBlock(ctx,api,maxBlockNumber){
             next_schedule = true;
 
         } catch (error) {
-            // let currentMaxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
-            // if(!currentMaxBlockNumber){
-            //     next_schedule = true;
-            //     return
-            // }
-            console.log('scan_error')
-            console.log('scan_error')
-            console.log('scan_error')
-            console.log('scan_error')
+
             console.log(error.message)
 
             const IS_DUP_ENTRY = error.message.indexOf('ER_DUP_ENTRY')!==-1;
@@ -133,7 +114,7 @@ async function baseBlock(ctx,api,maxBlockNumber){
 }
 
 
-function blockFromData(data){
+async function blockFromData(api,data){
     data = data.substring(2,data.length);
 
     let version = parseInt(data.substring(0,2),16);
@@ -144,21 +125,11 @@ function blockFromData(data){
     let block_hash = data.substring(98,162);  //
     let rewards = parseInt(data.substring(162,194),16); //16
     let transaction_count = parseInt(Number(web3.utils.hexToNumberString('0x'+data.substring(194,210))));  //
-    let txs_data = data.substring(210,data.length);
-    console.log(txs_data.length)
 
+    let tx_index = transaction_count/max_transaction;
 
-    if (txs_data.length % 74 != 0){
-        console.log("Error : Transaction list data is not public data "+txs_data);
-    }
+    let tx_list = await  getTransactions(api,block_height,tx_index);
 
-    let tx_list = [];
-    for(var i = 0; i < transaction_count; i++){
-
-        let tx_data = txs_data.substring(i*148,i*148+148);
-        let tx = transactionFromData(tx_data,block_height,i);
-        tx_list.push(tx);
-    }
 
 
     let block = {
@@ -172,7 +143,40 @@ function blockFromData(data){
         transaction_count:transaction_count,
         transactions:tx_list
     };
+
     return block;
+}
+
+
+async function getTransactions(api,blockNumber,transactionIndex){
+
+    let tx_list = [];
+    for(var j = 0;j < transactionIndex;j++){
+
+        let txs_data = await api.query.cposContribution.blockTransactions(blockNumber,j);
+
+        txs_data =  txs_data.toString().substring(2);
+        if (txs_data.length % 74 != 0){
+            console.log("Error : Transaction list data is not public data "+txs_data);
+        }
+
+
+        let transaction_count = txs_data.length/148;
+
+        for(var i = 0; i <= transaction_count; i++){
+
+            let tx_data = txs_data.substring(i*148,i*148+148);
+            if(tx_data.length > 0){
+                let tx = transactionFromData(tx_data,blockNumber,i);
+                tx_list.push(tx);
+            }
+        }
+
+    }
+
+    return tx_list;
+
+
 }
 
 
@@ -204,13 +208,10 @@ function transactionFromData(data,block_height,index){
     let token_1_symbol = "";
     let fee_token_symbol = "";
     if(chain_id == dtxChainId){
-        console.log(dtxTokens.get(token_0)+"dtxTokens.get(token_0)")
          token_0_symbol = dtxTokens.get(token_0).symbol;
          token_1_symbol = dtxTokens.get(token_1).symbol;
         fee_token_symbol = dtxTokens.get(fee_token).symbol;
     }else{
-        console.log(ethTokens.get(token_0)+"ethTokens.get(token_0)")
-
         token_0_symbol = ethTokens.get(token_0).symbol;
          token_1_symbol = ethTokens.get(token_1).symbol;
         fee_token_symbol = ethTokens.get(fee_token).symbol;
@@ -230,7 +231,6 @@ function transactionFromData(data,block_height,index){
         transaction_hash : "0x"+str
     }
 
-  //  console.log(tx);
     return tx;
 }
 
