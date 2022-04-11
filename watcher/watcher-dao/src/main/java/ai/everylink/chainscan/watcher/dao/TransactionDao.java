@@ -24,7 +24,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 /**
  * TransactionDao
@@ -33,34 +32,6 @@ import java.util.List;
  * @since 2021-11-30
  */
 public interface TransactionDao extends JpaRepository<Transaction, Long> {
-
-    /**
-     * 删除某个block下的所有transaction
-     *
-     * @param blockNum
-     * @param chainId
-     * @return
-     */
-    @Query(value = "delete from transaction where block_num=:blockNum and chain_id=:chainId", nativeQuery = true)
-    @Modifying
-    @Transactional
-    int deleteByBlockNum(@Param("blockNum") Long blockNum, @Param("chainId") int chainId);
-
-    /**
-     * 更新input字段
-     *
-     * @param transactionHash
-     * @param inputMethod
-     * @param inputParams
-     * @return
-     */
-    @Query(value = "update transaction set input_method=:inputMethod,input_params=:inputParams where transaction_hash=:transactionHash", nativeQuery = true)
-    @Modifying
-    @Transactional
-    int updateInputByHash(@Param("transactionHash") String transactionHash, @Param("inputMethod") String inputMethod,
-                          @Param("inputParams") String inputParams);
-
-
     /**
      * 更新token插件扫描状态
      * @param id
@@ -68,14 +39,5 @@ public interface TransactionDao extends JpaRepository<Transaction, Long> {
     @Query(value = "update transaction set token_tag=1 where id=:id", nativeQuery = true)
     @Modifying
     @Transactional
-    public void updateTokenTag( @Param("id")Long id);
-
-
-    /**
-     * token查询未扫描的交易;
-     * @param tokenTag
-     * @return
-     */
-    @Query(value = "select * from transaction where token_tag=:tokenTag order by token_tag limit 200", nativeQuery = true)
-    List<Transaction> findByTokenTag(int tokenTag);
+    void updateTokenTag( @Param("id")Long id);
 }

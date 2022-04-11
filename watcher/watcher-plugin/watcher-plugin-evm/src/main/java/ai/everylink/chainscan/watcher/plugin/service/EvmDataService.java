@@ -56,11 +56,4 @@ public interface EvmDataService {
      * @param finalizedHash
      */
     void updateBlockByHash(String finalizedHash);
-
-    /**
-     * 查询缺失的区块id
-     *
-     * @return
-     */
-    List<Long> listMissedBlockNumber(Long startBlockNum);
 }

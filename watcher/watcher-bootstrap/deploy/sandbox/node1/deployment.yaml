@@ -111,6 +111,8 @@ spec:
             value: false
           - name: "watcher.process.concurrent.switch"
             value: true
+          - name: "watcher.process.only.evmplugin"
+            value: false
       volumes:
       - name: host-time
         hostPath:

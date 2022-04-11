@@ -467,8 +467,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     }
                     //合约地址存储
                     tx.setContractAddress(receipt.getContractAddress());
-                } else {
-                    log.info("[save]cannot get gas used and tx fee. txHash={}", item.getHash());
                 }
             } catch (IOException e) {
                 log.error("[save]error occurred when query tx receipt. tx=" + item.getHash() + ",msg=" + e.getMessage(), e);
