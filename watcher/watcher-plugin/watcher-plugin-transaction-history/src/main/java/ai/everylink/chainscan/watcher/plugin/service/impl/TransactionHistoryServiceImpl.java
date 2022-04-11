@@ -39,8 +39,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthBlock;
-import org.web3j.protocol.core.methods.response.EthBlockNumber;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
@@ -106,9 +106,6 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         int               chainId = data.getChainId();
         List<Transaction> txList  = buildTransactionList(data, chainId);
 
-        if (txList.size() > 0) {
-            log.error("transactionHistoryScan:txList" + txList);
-        }
         // 事件监听 解析;
         for (Transaction transaction : txList) {
             String input = transaction.getInput();
@@ -196,8 +193,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 wTxHistoryDao.updateTxHistory(txHistory);
                 //}
             } catch (Exception e) {
-                log.error("update txlog ERROR!");
-                e.printStackTrace();
+                //log.info("update txlog error");
             }
         }
     }
@@ -265,8 +261,6 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     }
                     //合约地址存储
                     tx.setContractAddress(receipt.getContractAddress());
-                } else {
-                    log.info("[save]cannot get gas used and tx fee. txHash={}", item.getHash());
                 }
             } catch (IOException e) {
                 log.error("[save]error occurred when query tx receipt. tx=" + item.getHash() + ",msg=" + e.getMessage(), e);
@@ -288,11 +282,15 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             OkHttpClient       httpClient  = OkHttpUtil.buildOkHttpClient();
             HttpService        httpService = new HttpService("http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf", httpClient, false);
             Web3j              web3j       = Web3j.build(httpService);
-            EthBlockNumber     blockNumber = web3j.ethBlockNumber().send();
-            TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0xb13b4da6108a19386c4f2d28c930994e30254d8d4b032356032fa1da1018622f").send().getResult();
-            System.out.println(receipt);
-            org.web3j.protocol.core.methods.response.Transaction tx = web3j.ethGetTransactionByHash("0xb13b4da6108a19386c4f2d28c930994e30254d8d4b032356032fa1da1018622f").send().getResult();
-            System.out.println(tx);
+//            EthBlockNumber     blockNumber = web3j.ethBlockNumber().send();
+//            TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0xc69d3c5031b0ce180ea7975720b376a7ef449388d36cd9d6c37a1590165a2731").send().getResult();
+//            System.out.println(receipt);
+//            org.web3j.protocol.core.methods.response.Transaction tx = web3j.ethGetTransactionByHash("0xc69d3c5031b0ce180ea7975720b376a7ef449388d36cd9d6c37a1590165a2731").send().getResult();
+//            System.out.println(tx);
+
+            String result = web3j.ethGetCode("0x6Da573EEc80f63c98b88cED15D32CA270787FB5a", DefaultBlockParameterName.LATEST).send().getResult();
+            System.out.println(result.length());
+
         } catch (IOException e) {
             e.printStackTrace();
         }

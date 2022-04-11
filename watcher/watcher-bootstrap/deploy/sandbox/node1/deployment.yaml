@@ -30,10 +30,10 @@ spec:
           failureThreshold: 3
         resources:
           requests:
-            cpu: 4
+            cpu: 2
             memory: 2Gi
           limits:
-            cpu: 4
+            cpu: 2
             memory: 8Gi
         volumeMounts:
         - name: host-time
@@ -102,11 +102,17 @@ spec:
           - name: "watcher.chain.chainId"
             value: 4
           - name: "watcher.chain.batchInsertSize"
-            value: 30
+            value: 500
           - name: "watcher.chain.chainType"
             value: EVM_PoW
           - name: "watcher.notify.template"
             value: RINKEBY
+          - name: "watcher.scan.switch"
+            value: false
+          - name: "watcher.process.concurrent.switch"
+            value: true
+          - name: "watcher.process.only.evmplugin"
+            value: false
       volumes:
       - name: host-time
         hostPath:

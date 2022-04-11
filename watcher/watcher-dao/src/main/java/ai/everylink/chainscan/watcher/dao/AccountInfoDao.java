@@ -17,27 +17,23 @@
 
 package ai.everylink.chainscan.watcher.dao;
 
-import ai.everylink.chainscan.watcher.entity.Transaction;
+import ai.everylink.chainscan.watcher.entity.AccountInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;
-
 
 /**
- * TransactionDao
+ * BlockDao
  *
- * @author david.zhang@everylink.ai
- * @since 2021-11-30
+ * @author brett
+ * @since 2022-04-09
  */
-public interface TransactionDao extends JpaRepository<Transaction, Long> {
+public interface AccountInfoDao extends JpaRepository<AccountInfo, Long> {
+
     /**
-     * 更新token插件扫描状态
-     * @param id
+     * 查询指定账户信息;
+     * @param fromAddr
+     * @return
      */
-    @Query(value = "update transaction set token_tag=1 where id=:id", nativeQuery = true)
-    @Modifying
-    @Transactional
-    void updateTokenTag( @Param("id")Long id);
+    @Query(value = "select * from account_info where address=:fromAddr", nativeQuery = true)
+    AccountInfo findByAddress(String fromAddr);
 }

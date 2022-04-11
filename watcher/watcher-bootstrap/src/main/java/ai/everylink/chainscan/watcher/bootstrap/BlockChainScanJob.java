@@ -20,10 +20,15 @@ package ai.everylink.chainscan.watcher.bootstrap;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.DateUtil;
+import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
+import ai.everylink.chainscan.watcher.plugin.EvmPlugin;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * 扫块模块
@@ -71,21 +76,41 @@ public class BlockChainScanJob implements Job {
 
             // 3.处理块信息
             for (IWatcherPlugin plugin : pluginList) {
-                for (Object block : blockList) {
-                    try {
-                        boolean result = plugin.processBlock(block);
-                        log.info("[{}]Processed block.watcher=[{}],plugin=[{}],result={}",
-                                id, watcher.getClass().getSimpleName(), plugin.getClass().getSimpleName(), result);
-
-                        // block需要按顺序处理，一个处理失败，后续不能再继续
-                        if (!result) {
-                            break;
-                        }
-                    } catch (Throwable e) {
-                        log.error(String.format("[%s]Process block error. watcher=[%s],plugin=[%s]",
-                                id+"", watcher.getClass().getSimpleName(), plugin.getClass().getSimpleName()), e);
-                    }
+                if (onlyEvmPlugin() && plugin.getClass() != EvmPlugin.class) {
+                    log.info("Not EvmPlugin");
+                    continue;
                 }
+                long t1 = System.currentTimeMillis();
+                if (!WatcherUtils.isProcessConcurrent()) {
+                    for (Object block : blockList) {
+                        try {
+                            boolean result = plugin.processBlock(block);
+                            log.info("[{}]Processed block.watcher=[{}],plugin=[{}],result={}",
+                                    id, watcher.getClass().getSimpleName(), plugin.getClass().getSimpleName(), result);
+
+                            // block需要按顺序处理，一个处理失败，后续不能再继续
+                            if (!result) {
+                                break;
+                            }
+                        } catch (Throwable e) {
+                            log.error(String.format("[%s]Process block error. watcher=[%s],plugin=[%s]",
+                                    id+"", watcher.getClass().getSimpleName(), plugin.getClass().getSimpleName()), e);
+                        }
+                    }
+                } else {
+                    // 并发处理区块
+                    log.info("Concurrent process block start. total {} blocks", blockList.size());
+                    CountDownLatch latch = new CountDownLatch(blockList.size());
+                    for (Object block : blockList) {
+                        blockProcessPool.submit(new BlockProcessThread(latch, watcher, plugin, block));
+                    }
+                    latch.await(3, TimeUnit.MINUTES);
+                    log.info("Concurrent process block end. {} blocks processed", blockList.size());
+                }
+
+                log.info("Plugin process blocks end. consume={}ms,blockSize={},plugin={}",
+                        (System.currentTimeMillis() - t1), blockList.size(), plugin.getClass().getSimpleName());
+
             }
         } catch (Throwable e) {
             log.error("["+id+"]Execute watcher error.watcher=["+watcher.getClass().getSimpleName()+"]", e);
@@ -97,5 +122,49 @@ public class BlockChainScanJob implements Job {
         } catch (Throwable e) {
             log.error("["+id+"]Execute watcher error.watcher=["+watcher.getClass().getSimpleName()+"]", e);
         }
+
     }
+
+    public static boolean onlyEvmPlugin() {
+        String flag = System.getenv("watcher.process.only.evmplugin");
+        if (!StringUtils.isEmpty(flag)) {
+            return flag.trim().equalsIgnoreCase("true");
+        }
+
+        return false;
+    }
+
+    private static final ThreadPoolExecutor blockProcessPool = new ThreadPoolExecutor(300, 400, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10000), new RejectedExecutionHandler() {
+        @Override
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            log.error("blockProcessPool queue is full");
+        }
+    });
+
+    public static class BlockProcessThread implements Runnable {
+        private final CountDownLatch latch;
+        private final IWatcher watcher;
+        private final IWatcherPlugin plugin;
+        private final Object block;
+
+        public BlockProcessThread(CountDownLatch latch, IWatcher watcher, IWatcherPlugin plugin, Object block) {
+            this.latch = latch;
+            this.watcher = watcher;
+            this.plugin = plugin;
+            this.block = block;
+        }
+
+        @Override
+        public void run() {
+            try {
+                plugin.processBlock(block);
+            } catch (Throwable e) {
+                log.error(String.format("Process block error. watcher=[%s],plugin=[%s]",
+                        watcher.getClass().getSimpleName(), plugin.getClass().getSimpleName()), e);
+            } finally {
+                latch.countDown();
+            }
+        }
+    }
+
 }

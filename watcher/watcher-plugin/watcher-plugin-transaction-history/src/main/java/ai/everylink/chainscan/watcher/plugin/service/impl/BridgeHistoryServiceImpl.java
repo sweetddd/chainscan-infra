@@ -43,7 +43,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
             txHistory.setFromTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
             txHistory.setConfirmBlock(new BigInteger("0"));
             txHistory.setSubmitBlock(data.getBlock().getNumber());
-            if(logs.size() ==3){
+            if(logs!= null && logs.size() ==3 ){
                 String    topicData    = logs.get(2).getTopics().get(3);
                 Integer depositNonce = Integer.parseInt(topicData.replace("0x", ""), 16);
                 txHistory.setFromDepositNonce(depositNonce);

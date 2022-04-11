@@ -13,7 +13,7 @@ public class DynamicRoutingDataSource extends AbstractRoutingDataSource {
     @Override
     protected Object determineCurrentLookupKey() {
         Object lookupKey = DynamicRoutingDataSource.getRoutingDataSource();
-        log.info(Thread.currentThread().getName() + " determineCurrentLookupKey : " + lookupKey);
+        //log.info(Thread.currentThread().getName() + " determineCurrentLookupKey : " + lookupKey);
         return lookupKey;
     }
 

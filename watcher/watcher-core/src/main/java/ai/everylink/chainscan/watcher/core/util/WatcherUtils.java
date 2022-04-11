@@ -81,4 +81,24 @@ public final class WatcherUtils {
 
         return 30;
     }
+
+    public static boolean isScanStop() {
+        String flag = System.getenv("watcher.scan.switch");
+        if (!StringUtils.isEmpty(flag)) {
+            return flag.trim().equalsIgnoreCase("true");
+        }
+
+        return false;
+    }
+
+    public static boolean isProcessConcurrent() {
+        String flag = System.getenv("watcher.process.concurrent.switch");
+        if (!StringUtils.isEmpty(flag)) {
+            return flag.trim().equalsIgnoreCase("true");
+        }
+
+        return false;
+    }
+
+
 }
