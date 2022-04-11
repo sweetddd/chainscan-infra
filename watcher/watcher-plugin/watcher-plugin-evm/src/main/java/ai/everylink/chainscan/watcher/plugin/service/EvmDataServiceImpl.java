@@ -128,6 +128,7 @@ public class EvmDataServiceImpl implements EvmDataService {
     @TargetDataSource(value = DataSourceEnum.chainscan)
     @Override
     public void saveEvmData(EvmData data) {
+        long t1 = System.currentTimeMillis();
         if (isBlockExist(data.getBlock().getNumber().longValue(), data.getChainId())) {
             log.info("[save]block exist.");
             return;
@@ -174,6 +175,7 @@ public class EvmDataServiceImpl implements EvmDataService {
             transactionLogDao.saveAll(logList);
             log.info("[save]block={},logs saved,size={}", data.getBlock().getNumber(), logList.size());
         }
+        log.info("save total consume={}", System.currentTimeMillis() - t1);
     }
 
     private Block buildBlock(EvmData data, int chainId) {
