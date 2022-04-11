@@ -25,6 +25,7 @@ import ai.everylink.chainscan.watcher.plugin.EvmPlugin;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.concurrent.*;
@@ -75,7 +76,7 @@ public class BlockChainScanJob implements Job {
 
             // 3.处理块信息
             for (IWatcherPlugin plugin : pluginList) {
-                if (WatcherUtils.onlyEvmPlugin() && plugin.getClass() != EvmPlugin.class) {
+                if (onlyEvmPlugin() && plugin.getClass() != EvmPlugin.class) {
                     log.info("Not EvmPlugin");
                     continue;
                 }
@@ -122,6 +123,15 @@ public class BlockChainScanJob implements Job {
             log.error("["+id+"]Execute watcher error.watcher=["+watcher.getClass().getSimpleName()+"]", e);
         }
 
+    }
+
+    public static boolean onlyEvmPlugin() {
+        String flag = System.getenv("watcher.process.only.evmplugin");
+        if (!StringUtils.isEmpty(flag)) {
+            return flag.trim().equalsIgnoreCase("true");
+        }
+
+        return false;
     }
 
     private static final ThreadPoolExecutor blockProcessPool = new ThreadPoolExecutor(300, 400, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10000), new RejectedExecutionHandler() {

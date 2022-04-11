@@ -100,12 +100,5 @@ public final class WatcherUtils {
         return false;
     }
 
-    public static boolean onlyEvmPlugin() {
-        String flag = System.getenv("watcher.process.only.evmplugin");
-        if (!StringUtils.isEmpty(flag)) {
-            return flag.trim().equalsIgnoreCase("true");
-        }
 
-        return false;
-    }
 }
