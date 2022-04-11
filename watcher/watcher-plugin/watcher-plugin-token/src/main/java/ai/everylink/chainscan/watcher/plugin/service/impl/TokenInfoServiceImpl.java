@@ -254,7 +254,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         balance.setTokenId(tokens.getId());
         Example<TokenAccountBalance> exp      = Example.of(balance);
         List<TokenAccountBalance>    balances = tokenAccountBalanceDao.findAll(exp);
-        if (balances.size() < 1) {
+        if (balances.size() < 1 && amount.compareTo(BigInteger.ZERO) > 0) {
             balance.setContract(contract);
             balance.setBalance(amount.toString());
             tokenAccountBalanceDao.save(balance);
