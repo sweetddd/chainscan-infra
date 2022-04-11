@@ -74,6 +74,7 @@ public class BlockChainScanJob implements Job {
 
             // 3.处理块信息
             for (IWatcherPlugin plugin : pluginList) {
+                long t1 = System.currentTimeMillis();
                 if (!WatcherUtils.isProcessConcurrent()) {
                     for (Object block : blockList) {
                         try {
@@ -100,6 +101,9 @@ public class BlockChainScanJob implements Job {
                     latch.await(3, TimeUnit.MINUTES);
                     log.info("Concurrent process block end. {} blocks processed", blockList.size());
                 }
+
+                log.info("Plugin process blocks end. consume={}ms,blockSize={},plugin={}",
+                        (System.currentTimeMillis() - t1), blockList.size(), plugin.getClass().getSimpleName());
 
             }
         } catch (Throwable e) {
