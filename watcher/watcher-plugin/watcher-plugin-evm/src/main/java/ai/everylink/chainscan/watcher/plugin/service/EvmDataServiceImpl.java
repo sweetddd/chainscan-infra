@@ -133,7 +133,9 @@ public class EvmDataServiceImpl implements EvmDataService {
             log.info("[save]block exist.");
             return;
         }
+        log.info("[isBlockExist]consume: {}ms", (System.currentTimeMillis() - t1));
 
+        long t2 = System.currentTimeMillis();
         int   chainId = data.getChainId();
         int   gasUsed = 0;
         Block block = buildBlock(data, chainId);
@@ -161,20 +163,29 @@ public class EvmDataServiceImpl implements EvmDataService {
         }
         sumTxsFee = sumTxsFee.multiply(BigInteger.valueOf(20)).divide(BigInteger.valueOf(100));
         block.setReward(sumTxsFee.toString());
+        log.info("[buildBlock]consume: {}ms", (System.currentTimeMillis() - t2));
 
+        long t3 = System.currentTimeMillis();
         blockDao.save(block);
         log.info("[save]block={},block saved", data.getBlock().getNumber());
+        log.info("[saveBlock]consume: {}ms", (System.currentTimeMillis() - t3));
 
+        long t4 = System.currentTimeMillis();
         if (!CollectionUtils.isEmpty(txList)) {
             transactionDao.saveAll(txList);
             log.info("[save]block={},txs saved.size={}", data.getBlock().getNumber(), txList.size());
         }
+        log.info("[saveTransaction]consume: {}ms", (System.currentTimeMillis() - t4));
 
+
+        long t5 = System.currentTimeMillis();
         List<TransactionLog> logList = buildTransactionLogList(data, chainId);
         if (!CollectionUtils.isEmpty(logList)) {
             transactionLogDao.saveAll(logList);
             log.info("[save]block={},logs saved,size={}", data.getBlock().getNumber(), logList.size());
         }
+        log.info("[saveTransactionLog]consume: {}ms", (System.currentTimeMillis() - t5));
+
         log.info("save total consume={}", System.currentTimeMillis() - t1);
     }
 
