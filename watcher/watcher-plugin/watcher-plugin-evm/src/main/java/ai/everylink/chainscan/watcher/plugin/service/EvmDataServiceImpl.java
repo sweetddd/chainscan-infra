@@ -169,8 +169,6 @@ public class EvmDataServiceImpl implements EvmDataService {
         List<TransactionLog> logList = buildTransactionLogList(data);
 
         insertDB(block, txList, logList);
-
-        log.info("save total consume={}", System.currentTimeMillis() - t1);
     }
 
     private Block buildBlock(EvmData data, int chainId) {
@@ -374,7 +372,6 @@ public class EvmDataServiceImpl implements EvmDataService {
 
 
     private void insertDB(Block block, List<Transaction> txList, List<TransactionLog> logList) {
-        long t3 = System.currentTimeMillis();
         if (WatcherUtils.getProcessStep() <= 200) {
             blockDao.save(block);
         } else {
@@ -421,13 +418,11 @@ public class EvmDataServiceImpl implements EvmDataService {
             }
         }
         log.info("[save]block={},block saved", block.getBlockNumber());
-        log.info("[saveBlock]consume: {}ms", (System.currentTimeMillis() - t3));
 
-        long t4 = System.currentTimeMillis();
         if (!CollectionUtils.isEmpty(txList)) {
             if (WatcherUtils.getProcessStep() <= 200) {
                 transactionDao.saveAll(txList);
-//            } else {
+            } else {
                 // use origin jdbc
                 Connection connection = null;
                 PreparedStatement preparedStatement = null;
@@ -476,15 +471,12 @@ public class EvmDataServiceImpl implements EvmDataService {
             }
             log.info("[save]block={},txs saved.size={}", block.getBlockNumber(), txList.size());
         }
-        log.info("[saveTransaction]consume: {}ms", (System.currentTimeMillis() - t4));
 
 
-        long t5 = System.currentTimeMillis();
         if (!CollectionUtils.isEmpty(logList)) {
             transactionLogDao.saveAll(logList);
             log.info("[save]block={},logs saved,size={}", block.getBlockNumber(), logList.size());
         }
-        log.info("[saveTransactionLog]consume: {}ms", (System.currentTimeMillis() - t5));
     }
 }
 
