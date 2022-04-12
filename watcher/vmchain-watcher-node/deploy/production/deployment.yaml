@@ -55,6 +55,26 @@ spec:
               configMapKeyRef:
                 name: watcher-contribution-config
                 key: vm-web3-url
+          - name: eth_l2_api_url
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-contribution-config
+                key: eth_l2_api_url
+          - name: dtx_l2_api_url
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-contribution-config
+                key: dtx_l2_api_url
+          - name: eth_chain_id
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-contribution-config
+                key: eth_chain_id
+          - name: dtx_chain_id
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-contribution-config
+                key: dtx_chain_id
         resources:
           requests:
             cpu: 100m
