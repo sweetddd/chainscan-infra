@@ -377,13 +377,6 @@ public class EvmDataServiceImpl implements EvmDataService {
         long t3 = System.currentTimeMillis();
         if (WatcherUtils.getProcessStep() <= 200) {
             blockDao.save(block);
-        } else if (WatcherUtils.getProcessStep() <= 201){
-            Block b = block;
-            blockDao.insertNative(b.getBlockNumber(), b.getBlockHash(), b.getChainId(), b.getBlockTimestamp(),
-                    b.getParentHash(), "", b.getNonce(), b.getValidator(), b.getBurnt(),
-                    b.getTxSize(), b.getReward(), b.getDifficulty(), b.getTotalDifficulty(),
-                    b.getBlockSize(), b.getGasUsed(), b.getGasLimit(), b.getExtraData(),
-                    b.getCreateTime(), b.getStatus(), b.getBlockFee(), b.getChainType(), 0);
         } else {
             // use origin jdbc
             Connection connection = null;
@@ -416,7 +409,10 @@ public class EvmDataServiceImpl implements EvmDataService {
                 preparedStatement.setObject(21, b.getChainType());
                 preparedStatement.setObject(22, 0);
 
-                preparedStatement.executeUpdate();
+                int rows = preparedStatement.executeUpdate();
+                if (rows <= 0) {
+                    log.info("[saveBlock]fail.rows={}", rows);
+                }
             } catch (SQLException e) {
                 e.printStackTrace();
             }finally {
@@ -429,7 +425,55 @@ public class EvmDataServiceImpl implements EvmDataService {
 
         long t4 = System.currentTimeMillis();
         if (!CollectionUtils.isEmpty(txList)) {
-            transactionDao.saveAll(txList);
+            if (WatcherUtils.getProcessStep() <= 200) {
+                transactionDao.saveAll(txList);
+//            } else {
+                // use origin jdbc
+                Connection connection = null;
+                PreparedStatement preparedStatement = null;
+                try {
+                    connection = JDBCUtils.getConnection();
+                    String sql = "INSERT INTO transaction (transaction_hash, transaction_index, block_hash, block_number, chain_id, status, fail_msg, tx_timestamp, " +
+                            "from_addr, to_addr, contract_address, value, tx_fee, gas_limit, gas_used, gas_price, nonce, input, input_method, input_params, tx_type, " +
+                            "create_time, chain_type, token_tag) " +
+                            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    preparedStatement = connection.prepareStatement(sql);
+                    for (Transaction b : txList) {
+                        preparedStatement.setObject(1, b.getTransactionHash());
+                        preparedStatement.setObject(2, b.getTransactionIndex());
+                        preparedStatement.setObject(3, b.getBlockHash());
+                        preparedStatement.setObject(4, b.getBlockNumber());
+                        preparedStatement.setObject(5, b.getChainId());
+                        preparedStatement.setObject(6, b.getStatus());
+                        preparedStatement.setObject(7, b.getFailMsg());
+                        preparedStatement.setObject(8, b.getTxTimestamp());
+                        preparedStatement.setObject(9, b.getFromAddr());
+                        preparedStatement.setObject(10, b.getToAddr());
+                        preparedStatement.setObject(11, b.getContractAddress());
+                        preparedStatement.setObject(12, b.getValue());
+                        preparedStatement.setObject(13, b.getTxFee());
+                        preparedStatement.setObject(14, b.getGasLimit());
+                        preparedStatement.setObject(15, b.getGasUsed());
+                        preparedStatement.setObject(16, b.getGasPrice());
+                        preparedStatement.setObject(17, b.getNonce());
+                        preparedStatement.setObject(18, b.getInput());
+                        preparedStatement.setObject(19, b.getInputMethod());
+                        preparedStatement.setObject(20, b.getInputParams());
+                        preparedStatement.setObject(21, b.getTxType());
+                        preparedStatement.setObject(22, b.getCreateTime());
+                        preparedStatement.setObject(23, b.getChainType());
+                        preparedStatement.setObject(24, b.getTokenTag());
+
+                        preparedStatement.addBatch();
+                    }
+                    preparedStatement.executeBatch();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }finally {
+                    // 6. 释放资源
+                    JDBCUtils.close(preparedStatement,connection);
+                }
+            }
             log.info("[save]block={},txs saved.size={}", block.getBlockNumber(), txList.size());
         }
         log.info("[saveTransaction]consume: {}ms", (System.currentTimeMillis() - t4));
