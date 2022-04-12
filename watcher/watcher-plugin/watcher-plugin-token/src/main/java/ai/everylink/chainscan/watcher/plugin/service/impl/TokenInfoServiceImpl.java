@@ -195,29 +195,32 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * @param toAddr
      */
     private void addToken(String toAddr, String fromAddr) {
-        String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
-        String     name     = vm30Utils.name(web3j, toAddr).toString();
-        BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
-        if (StringUtils.isNotBlank(symbol) && StringUtils.isNotBlank(name)) {
-            TokenInfo tokenQuery = new TokenInfo();
-            tokenQuery.setAddress(toAddr);
-            Example<TokenInfo> exp    = Example.of(tokenQuery);
-            List<TokenInfo>    tokens = tokenInfoDao.findAll(exp);
-            tokenQuery.setTokenName(name);
-            tokenQuery.setTokenSymbol(symbol);
-            tokenQuery.setDecimals(decimals);
-            checkTokenType(toAddr, fromAddr, tokenQuery);
-            if (tokens.size() < 1) {
-                //判断合约类型
-                checkTokenType(toAddr, fromAddr, tokenQuery);
+        TokenInfo  tokenInfo = tokenInfoDao.findAllByAddress(toAddr);
+        if( tokenInfo == null ){
+            String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
+            String     name     = vm30Utils.name(web3j, toAddr).toString();
+            BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
+            if (StringUtils.isNotBlank(symbol) && StringUtils.isNotBlank(name)) {
+                TokenInfo tokenQuery = new TokenInfo();
                 tokenQuery.setAddress(toAddr);
-                tokenQuery.setCreateTime(new Date());
-                tokenQuery.setCreateTime(new Date());
-                tokenInfoDao.save(tokenQuery);
+                Example<TokenInfo> exp    = Example.of(tokenQuery);
+                List<TokenInfo>    tokens = tokenInfoDao.findAll(exp);
+                tokenQuery.setTokenName(name);
+                tokenQuery.setTokenSymbol(symbol);
+                tokenQuery.setDecimals(decimals);
+                checkTokenType(toAddr, fromAddr, tokenQuery);
+                if (tokens.size() < 1) {
+                    //判断合约类型
+                    checkTokenType(toAddr, fromAddr, tokenQuery);
+                    tokenQuery.setAddress(toAddr);
+                    tokenQuery.setCreateTime(new Date());
+                    tokenQuery.setCreateTime(new Date());
+                    tokenInfoDao.save(tokenQuery);
+                }
+                //增加账户与token关系数据;
+                saveOrUpdateBalance(fromAddr, toAddr);
+                updateNftAccount(fromAddr, toAddr);
             }
-            //增加账户与token关系数据;
-            saveOrUpdateBalance(fromAddr, toAddr);
-            updateNftAccount(fromAddr, toAddr);
         }
     }
 
@@ -228,47 +231,48 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * @param contract
      */
     private void saveOrUpdateBalance(String fromAddr, String contract) {
-        assert !fromAddr.equals(contract);
 
-        String    symbol = "";
-        TokenInfo tokens = tokenInfoDao.findAllByAddress(contract);
-        if (tokens != null) {
-            symbol = tokens.getTokenSymbol();
-        }else {
-            return;
-        }
-        //查询账户信息; 如果没有数据就新增
-        AccountInfo accountInfo = accountInfoDao.findByAddress(fromAddr);
-        if (accountInfo == null) {
-            new AccountInfo();
-            accountInfo.setAddress(fromAddr);
-            accountInfo.setCreateTime(new Date());
-            accountInfo.setUpdateTime(new Date());
-            accountInfo.setDeleted(false);
-            accountInfoDao.save(accountInfo);
-        }
 
-        //查询账户余额
-        BigInteger          amount  = vm30Utils.balanceOf(web3j, contract, fromAddr);
-        TokenAccountBalance balance = new TokenAccountBalance();
-        balance.setAccountId(accountInfo.getId());
-        balance.setContract(contract);
-        balance.setTokenId(tokens.getId());
-        Example<TokenAccountBalance> exp      = Example.of(balance);
-        List<TokenAccountBalance>    balances = tokenAccountBalanceDao.findAll(exp);
-        if (balances.size() < 1 && amount.compareTo(BigInteger.ZERO) > 0) {
+        if( !fromAddr.equals(contract) ){
+            String    symbol = "";
+            TokenInfo tokens = tokenInfoDao.findAllByAddress(contract);
+            if (tokens != null) {
+                symbol = tokens.getTokenSymbol();
+            }else {
+                return;
+            }
+            //查询账户信息; 如果没有数据就新增
+            AccountInfo accountInfo = accountInfoDao.findByAddress(fromAddr);
+            if (accountInfo == null) {
+                new AccountInfo();
+                accountInfo.setAddress(fromAddr);
+                accountInfo.setCreateTime(new Date());
+                accountInfo.setUpdateTime(new Date());
+                accountInfo.setDeleted(false);
+                accountInfoDao.save(accountInfo);
+            }
+
+            //查询账户余额
+            BigInteger          amount  = vm30Utils.balanceOf(web3j, contract, fromAddr);
+            TokenAccountBalance balance = new TokenAccountBalance();
+            balance.setAccountId(accountInfo.getId());
             balance.setContract(contract);
-            balance.setBalance(amount.toString());
-            balance.setCreateTime(new Date());
-            balance.setUpdateTime(new Date());
-            tokenAccountBalanceDao.save(balance);
-        } else if (balances.size() == 1) {
-            TokenAccountBalance tokenAccountBalance = balances.get(0);
-            tokenAccountBalance.setBalance(amount.toString());
-            //更新账户余额
-            tokenAccountBalanceDao.updateBalance(tokenAccountBalance.getId(), amount);
+            balance.setTokenId(tokens.getId());
+            Example<TokenAccountBalance> exp      = Example.of(balance);
+            List<TokenAccountBalance>    balances = tokenAccountBalanceDao.findAll(exp);
+            if (balances.size() < 1 && amount.compareTo(BigInteger.ZERO) > 0) {
+                balance.setContract(contract);
+                balance.setBalance(amount.toString());
+                balance.setCreateTime(new Date());
+                balance.setUpdateTime(new Date());
+                tokenAccountBalanceDao.save(balance);
+            } else if (balances.size() == 1) {
+                TokenAccountBalance tokenAccountBalance = balances.get(0);
+                tokenAccountBalance.setBalance(amount.toString());
+                //更新账户余额
+                tokenAccountBalanceDao.updateBalance(tokenAccountBalance.getId(), amount);
+            }
         }
-
     }
 
 
