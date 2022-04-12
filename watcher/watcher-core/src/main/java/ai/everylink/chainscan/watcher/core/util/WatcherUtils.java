@@ -100,5 +100,31 @@ public final class WatcherUtils {
         return false;
     }
 
+    public static String dbUrl() {
+        String val = System.getenv("spring.datasource.chainscan.jdbc-url");
+        if (StringUtils.isEmpty(val)) {
+            return "jdbc:mysql://rinkeby-mysql8.database.svc.cluster.local:3306/chainscan_rinkeby?characterEncoding=utf-8&serverTimezone=UTC&useSSL=false";
+        }
+
+        return val;
+    }
+
+    public static String dbUserName() {
+        String val = System.getenv("spring.datasource.chainscan.username");
+        if (StringUtils.isEmpty(val)) {
+            return "root";
+        }
+
+        return val;
+    }
+
+    public static String dbPassword() {
+        String val = System.getenv("spring.datasource.chainscan.password");
+        if (StringUtils.isEmpty(val)) {
+            return "ZxcvAsdf";
+        }
+
+        return val;
+    }
 
 }
