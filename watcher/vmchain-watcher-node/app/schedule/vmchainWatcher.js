@@ -203,6 +203,7 @@ function transactionFromData(data,block_height,index){
     obj.update(new Date()+""+block_height +""+index);
     var str=obj.digest('hex');//hex是十六进制
 
+    console.log("token_0 = "+token_0+",token_1 = "+token_1+"");
 
     let token_0_symbol = "";
     let token_1_symbol = "";
@@ -216,6 +217,9 @@ function transactionFromData(data,block_height,index){
          token_1_symbol = ethTokens.get(token_1).symbol;
         fee_token_symbol = ethTokens.get(fee_token).symbol;
     }
+
+    console.log("token_0_symbol = "+token_0_symbol+",token_1_symbol = "+token_1_symbol+"");
+
     let tx = {
         token_0:token_0_symbol,
         token_1:token_1_symbol,
