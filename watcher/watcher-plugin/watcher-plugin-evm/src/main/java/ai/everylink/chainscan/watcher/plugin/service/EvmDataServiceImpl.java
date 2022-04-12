@@ -372,6 +372,7 @@ public class EvmDataServiceImpl implements EvmDataService {
 
 
     private void insertDB(Block block, List<Transaction> txList, List<TransactionLog> logList) {
+        long t1 = System.currentTimeMillis();
         if (WatcherUtils.getProcessStep() <= 200) {
             blockDao.save(block);
         } else {
@@ -418,9 +419,11 @@ public class EvmDataServiceImpl implements EvmDataService {
             }
         }
         log.info("[save]block={},block saved", block.getBlockNumber());
+        log.info("[saveBlock]consume: {}ms", (System.currentTimeMillis() - t1));
 
         if (!CollectionUtils.isEmpty(txList)) {
-            if (WatcherUtils.getProcessStep() <= 200) {
+            long t2 = System.currentTimeMillis();
+            if (WatcherUtils.getProcessStep() <= 400) {
                 transactionDao.saveAll(txList);
             } else {
                 // use origin jdbc
@@ -470,6 +473,7 @@ public class EvmDataServiceImpl implements EvmDataService {
                 }
             }
             log.info("[save]block={},txs saved.size={}", block.getBlockNumber(), txList.size());
+            log.info("[saveTransaction]consume: {}ms", (System.currentTimeMillis() - t2));
         }
 
 
