@@ -170,11 +170,11 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      */
     private void addAccountInfo(String fromAddr) {
         try {
-            String result = web3j.ethGetCode(fromAddr, DefaultBlockParameterName.LATEST).send().getResult();
-            if (result.equals("0x")) {
-               //添加账户信息
-                AccountInfo byAddress   = accountInfoDao.findByAddress(fromAddr);
-                if (byAddress == null) {
+            AccountInfo byAddress   = accountInfoDao.findByAddress(fromAddr);
+            if (byAddress == null) {
+                String result = web3j.ethGetCode(fromAddr, DefaultBlockParameterName.LATEST).send().getResult();
+                if (result.equals("0x")) {
+                   //添加账户信息
                     AccountInfo accountInfo = new AccountInfo();
                     accountInfo.setAddress(fromAddr);
                     accountInfo.setCreateTime(new Date());
@@ -506,6 +506,11 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         } catch (Exception e) {
             log.error("[Save]inputParams call error.txHash=" + tx.getTransactionHash(), e);
         }
+    }
+
+
+    public static void main(String[] args) {
+        System.out.println("false".trim().equalsIgnoreCase("true"));
     }
 
 }
