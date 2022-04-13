@@ -128,7 +128,7 @@ async function blockFromData(api,data){
 
     let tx_index = transaction_count/max_transaction;
 
-    let tx_list = await  getTransactions(api,block_height,tx_index);
+    let tx_list = await  getTransactions(api,block_height,tx_index,create_time);
 
 
 
@@ -148,7 +148,7 @@ async function blockFromData(api,data){
 }
 
 
-async function getTransactions(api,blockNumber,transactionIndex){
+async function getTransactions(api,blockNumber,transactionIndex,create_time){
 
     let tx_list = [];
     for(var j = 0;j < transactionIndex;j++){
@@ -167,7 +167,7 @@ async function getTransactions(api,blockNumber,transactionIndex){
 
             let tx_data = txs_data.substring(i*148,i*148+148);
             if(tx_data.length > 0){
-                let tx = transactionFromData(tx_data,blockNumber,i);
+                let tx = transactionFromData(tx_data,blockNumber,i,create_time);
                 tx_list.push(tx);
             }
         }
@@ -180,7 +180,7 @@ async function getTransactions(api,blockNumber,transactionIndex){
 }
 
 
-function transactionFromData(data,block_height,index){
+function transactionFromData(data,block_height,index,create_time){
 
 
     let chain_id = parseInt(data.substring(2,4),16);  //
@@ -231,7 +231,7 @@ function transactionFromData(data,block_height,index){
         fee_1:fee_1_number,
         chain_id:chain_id,
         fee_token : fee_token_symbol,
-        transaction_time:new Date(),
+        transaction_time:create_time,
         transaction_hash : "0x"+str
     }
 
@@ -314,6 +314,9 @@ async function vmchainWatcher(ctx) {
         console.log("初始化");
         ethTokens = await initTokens(process.env.eth_l2_api_url);
         dtxTokens = await initTokens(process.env.dtx_l2_api_url);
+        if(ethTokens.size == 0 || dtxTokens.size == 0){
+            return;
+        }
 
     }
     
@@ -345,6 +348,7 @@ async function initTokens(url){
     })
         .catch(function (error) {
             console.log(error);
+            return map;
         });;
     return map;
 }
