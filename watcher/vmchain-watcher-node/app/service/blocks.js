@@ -67,7 +67,7 @@ class BlockService extends Service {
     if(exitBlock[0]) {
       await this.updateBlock(exitBlock[0],block);
     }else{
-      if(block.block_height  >1 && block.block_height % dividend_block == 1){
+      if(block.block_height  >1 && block.block_height % dividend_block == 0){
         let dividend_height = parseInt(block.block_height / dividend_block)
         let start_height = dividend_height*dividend_block - dividend_block+1;
         let end_height = dividend_height*dividend_block;
