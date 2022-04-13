@@ -186,7 +186,7 @@ public class EvmWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        return "*/2 * * * * ?";
+        return "*/5 * * * * ?";
     }
 
     public List<EvmData> listBlock() {
