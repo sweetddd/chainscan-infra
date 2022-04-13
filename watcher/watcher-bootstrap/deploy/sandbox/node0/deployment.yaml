@@ -132,7 +132,7 @@ spec:
           - name: "watcher.process.only.evmplugin"
             value: false
           - name: "watcher.bridge.contract.address"
-              value: "0x5880de22d3f6b727d0bab4af64d43c0bc242a8c0"
+            value: "0x5880de22d3f6b727d0bab4af64d43c0bc242a8c0"
       volumes:
       - name: host-time
         hostPath:
