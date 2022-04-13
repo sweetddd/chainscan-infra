@@ -23,7 +23,6 @@ import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.dao.*;
 import ai.everylink.chainscan.watcher.entity.*;
 import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
-import com.alibaba.fastjson.JSONArray;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -42,11 +41,9 @@ import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthBlock;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -61,7 +58,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class TokenInfoServiceImpl implements TokenInfoService {
 
-    private static final String BRIDGE_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+    private static final String TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
     private Web3j web3j;
 
@@ -124,44 +121,28 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 addToken(toAddr, fromAddr); //增加合约信息;
             }
             //账户信息余额更新;
-            if (method != null) {
-                if (method.contains("mint(") || method.contains("transfer(") || method.contains("transferFrom(")
-                        || method.contains("burn(") || method.contains("burnFrom(") || method.contains("deposit")
-                        || method.contains("ithdraw") ) {
-                    //监控此方法更新用户余额信息;
-                    addToken(toAddr, fromAddr);
-                    saveOrUpdateBalance(fromAddr, toAddr);
-                    updateNftAccount(fromAddr, toAddr);
-                }
-            }
-            transactionDao.updateTokenTag(transaction.getId());
-        }
-
-        // 事件监听;
-        for (Transaction transaction : txList) {
-            List<TransactionLog> logs = transactionLogDao.findByTxHash(transaction.getTransactionHash());
-            for (TransactionLog transactionLog : logs) {
-                String    contract  = transactionLog.getAddress();
-                TokenInfo tokens    = tokenInfoDao.findAllByAddress(contract);
-                String    topics    = transactionLog.getTopics();
-                JSONArray topicList = JSONArray.parseArray(topics);
-
-                //断言: 为跨链;
-                if (topicList.get(0).equals(BRIDGE_TOPIC)) {
-                    // ERC20 跨链:
-                    if (tokens != null && tokens.getTokenType() == 1) {
-                        String address = topicList.get(2).toString().replace("000000000000000000000000","");
-                        saveOrUpdateBalance(address, contract);
-                    } else if (tokens != null && tokens.getTokenType() == 2) {
-                        // ERC721 跨链:
-                        String address = topicList.get(2).toString().replace("000000000000000000000000","");
-                        saveOrUpdateBalance(address, contract);
-                        updateNftAccount(address, contract);
+//            if (method != null && method.length() > 40) {
+//                if (method.contains("mint(") || method.contains("transfer(") || method.contains("transferFrom(")
+//                        || method.contains("burn(") || method.contains("burnFrom(") || method.contains("deposit")
+//                        || method.contains("ithdraw") ) {
+//                    //监控此方法更新用户余额信息;
+//                    addToken(toAddr, fromAddr);
+//                    saveOrUpdateBalance(fromAddr, toAddr);
+//                    updateNftAccount(fromAddr, toAddr);
+//                }
+//            }
+            // 转账事件监听;
+            data.getTransactionLogMap().get(transaction.getTransactionHash()).forEach(log -> {
+                if (log.getTopics().size() > 0) {
+                    String topic = log.getTopics().get(0);
+                    if (topic.equals(TRANSFER_TOPIC)) {
+                        addToken(toAddr, fromAddr);
+                        saveOrUpdateBalance(fromAddr, toAddr);
+                        updateNftAccount(fromAddr, toAddr);
                     }
                 }
-            }
+            } );
         }
-
     }
 
     /**
@@ -198,25 +179,23 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         TokenInfo  tokenInfo = tokenInfoDao.findAllByAddress(toAddr);
         if( tokenInfo == null ){
             String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
+            if(StringUtils.isBlank(symbol)){
+                return;
+            }
             String     name     = vm30Utils.name(web3j, toAddr).toString();
+            if(StringUtils.isBlank(name)){
+                return;
+            }
             BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
             if (StringUtils.isNotBlank(symbol) && StringUtils.isNotBlank(name)) {
                 TokenInfo tokenQuery = new TokenInfo();
-                tokenQuery.setAddress(toAddr);
-                Example<TokenInfo> exp    = Example.of(tokenQuery);
-                List<TokenInfo>    tokens = tokenInfoDao.findAll(exp);
-                tokenQuery.setTokenName(name);
-                tokenQuery.setTokenSymbol(symbol);
-                tokenQuery.setDecimals(decimals);
+                //判断合约类型
                 checkTokenType(toAddr, fromAddr, tokenQuery);
-                if (tokens.size() < 1) {
-                    //判断合约类型
-                    checkTokenType(toAddr, fromAddr, tokenQuery);
-                    tokenQuery.setAddress(toAddr);
-                    tokenQuery.setCreateTime(new Date());
-                    tokenQuery.setCreateTime(new Date());
-                    tokenInfoDao.save(tokenQuery);
-                }
+                tokenQuery.setDecimals(decimals);
+                tokenQuery.setAddress(toAddr);
+                tokenQuery.setCreateTime(new Date());
+                tokenQuery.setCreateTime(new Date());
+                tokenInfoDao.save(tokenQuery);
                 //增加账户与token关系数据;
                 saveOrUpdateBalance(fromAddr, toAddr);
                 updateNftAccount(fromAddr, toAddr);
@@ -231,8 +210,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * @param contract
      */
     private void saveOrUpdateBalance(String fromAddr, String contract) {
-
-
         if( !fromAddr.equals(contract) ){
             String    symbol = "";
             TokenInfo tokens = tokenInfoDao.findAllByAddress(contract);
@@ -440,43 +417,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 tx.setTxType(1);
             }
             tx.setCreateTime(new Date());
-
-            try {
-                TransactionReceipt receipt = web3j.ethGetTransactionReceipt(item.getHash()).send().getResult();
-                if (receipt != null) {
-                    // status
-                    if (receipt.getStatus() != null &&
-                            (receipt.getStatus().equalsIgnoreCase("1")
-                                    || receipt.getStatus().equalsIgnoreCase("0x1"))) {
-                        tx.setStatus("0x1");
-                    } else {
-                        tx.setStatus("0x0");
-                    }
-                    // gas fee
-                    if (receipt.getGasUsed() != null) {
-                        tx.setGasUsed(receipt.getGasUsed());
-                        if (item.getGasPrice() != null) {
-                            tx.setTxFee(item.getGasPrice().multiply(receipt.getGasUsed()).toString());
-                        }
-                    }
-                    //创建合约交易
-                    if (item.getInput().length() > 10) {
-                        String function = item.getInput().substring(0, 10);
-                        if (function.equals("0x60806040") && receipt.getContractAddress() != null) {
-                            //设置to地址为合约地址
-                            tx.setToAddr(receipt.getContractAddress());
-                        }
-                        if (function.equals("0x60e06040") && receipt.getContractAddress() != null) {
-                            //设置to地址为合约地址
-                            tx.setToAddr(receipt.getContractAddress());
-                        }
-                    }
-                    //合约地址存储
-                    tx.setContractAddress(receipt.getContractAddress());
-                }
-            } catch (IOException e) {
-                log.error("[save]error occurred when query tx receipt. tx=" + item.getHash() + ",msg=" + e.getMessage(), e);
-            }
             inputParams(tx);
             tx.setTokenTag(0);
             txList.add(tx);

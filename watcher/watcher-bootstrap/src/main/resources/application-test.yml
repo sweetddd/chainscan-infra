@@ -49,5 +49,6 @@ watcher:
   L2Url: http://xapi.powx.io/l2-server-api/api/v0.2/
   rinkebyUrl: http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
   vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
-etherScanApi:
-  key: RAWVEBW2RS6EEETNQ83ASVE972E415G5C3
+  bridge:
+    contract:
+      address: "0x5880de22d3f6b727d0bab4af64d43c0bc242a8c0"

@@ -23,9 +23,6 @@ import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.service.impl.TokenInfoServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.web3j.protocol.core.methods.response.EthBlock;
-
-import java.util.List;
 
 /**
  *
@@ -42,8 +39,6 @@ public class TokenSpiPlugin implements IEvmWatcherPlugin {
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
         initService();
         EvmData blockData = (EvmData) block;
-        List<EthBlock.TransactionResult> transactions = blockData.getBlock().getTransactions();
-
         long    start     = System.currentTimeMillis();
         log.info("TokenSpiPlugin-start:" + start);
         tokenInfoService.tokenScan(blockData);

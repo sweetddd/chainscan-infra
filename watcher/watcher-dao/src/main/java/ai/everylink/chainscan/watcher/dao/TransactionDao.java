@@ -19,10 +19,6 @@ package ai.everylink.chainscan.watcher.dao;
 
 import ai.everylink.chainscan.watcher.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -32,12 +28,5 @@ import org.springframework.transaction.annotation.Transactional;
  * @since 2021-11-30
  */
 public interface TransactionDao extends JpaRepository<Transaction, Long> {
-    /**
-     * 更新token插件扫描状态
-     * @param id
-     */
-    @Query(value = "update transaction set token_tag=1 where id=:id", nativeQuery = true)
-    @Modifying
-    @Transactional
-    void updateTokenTag( @Param("id")Long id);
+
 }
