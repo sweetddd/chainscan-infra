@@ -118,7 +118,7 @@ spec:
           - name: "watcher.chain.processStep"
             value: 200
           - name: "watcher.chain.chainId"
-            value: 230
+            value: 97
           - name: "watcher.chain.batchInsertSize"
             value: 30
           - name: "watcher.chain.chainType"
@@ -130,7 +130,9 @@ spec:
           - name: "watcher.process.concurrent.switch"
             value: false
           - name: "watcher.process.only.evmplugin"
-            value: true
+            value: false
+          - name: "watcher.bridge.contract.address"
+              value: "0x5880de22d3f6b727d0bab4af64d43c0bc242a8c0"
       volumes:
       - name: host-time
         hostPath:
