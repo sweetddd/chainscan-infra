@@ -127,4 +127,16 @@ public final class WatcherUtils {
         return val;
     }
 
+    public static Integer getWatcherFixTxBatchSize() {
+        String str = System.getenv("watcher.fixtx.batch");
+        if (!StringUtils.isEmpty(str)) {
+            try {
+                return Integer.parseInt(str);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+
+        return 1000;
+    }
 }
