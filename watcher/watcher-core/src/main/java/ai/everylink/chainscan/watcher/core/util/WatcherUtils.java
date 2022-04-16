@@ -128,7 +128,15 @@ public final class WatcherUtils {
     }
 
     public static Integer getWatcherFixTxBatchSize() {
-        String str = System.getenv("watcher.fixtx.batch");
+        return getInteger("watcher.fixtx.batch", 1000);
+    }
+
+    public static Integer getWatcherMonitorIntervalSecs() {
+        return getInteger("watcher.monitor.interval.secs", 60);
+    }
+
+    private static Integer getInteger(String key, Integer defaultVal) {
+        String str = System.getenv(key);
         if (!StringUtils.isEmpty(str)) {
             try {
                 return Integer.parseInt(str);
@@ -137,6 +145,6 @@ public final class WatcherUtils {
             }
         }
 
-        return 1000;
+        return defaultVal;
     }
 }

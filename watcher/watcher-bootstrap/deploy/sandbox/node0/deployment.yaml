@@ -133,6 +133,8 @@ spec:
             value: false
           - name: "watcher.bridge.contract.address"
             value: "0x5880de22d3f6b727d0bab4af64d43c0bc242a8c0"
+          - name: "watcher.monitor.interval.secs"
+            value: 60
       volumes:
       - name: host-time
         hostPath:

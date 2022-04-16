@@ -79,20 +79,9 @@ public class EvmWatcher implements IWatcher {
 
     private static Web3j web3j;
 
-    /**
-     * 从数据库里面获取处理进度
-     */
     private EvmDataService evmDataService;
 
     private EvmScanDataService evmScanDataService;
-
-    /**
-     * 区块生产超时时间
-     */
-    private static final Long BLOCK_PRODUCE_TIMEOUT = 10*60*1000L;
-
-    private static final int MAX_SCAN_THREAD = 400;
-    private static final int MAX_TX_SCAN_THREAD = 250;
 
     /**
      * 任务线程池。
@@ -104,24 +93,12 @@ public class EvmWatcher implements IWatcher {
     /**
      * 扫块时并发查询区块线程池。
      */
-    private static final ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(300, MAX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000), new RejectedExecutionHandler() {
-        @Override
-        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-            logger.error("scanBlockPool queue is full");
-            printThreadPoolStat();
-        }
-    });
+    private static final ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(300, 400, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000));
 
     /**
      * 扫块时并发查询区块下的交易线程池。
      */
-    private static final ThreadPoolExecutor scanTxPool = new ThreadPoolExecutor(250, MAX_TX_SCAN_THREAD, 2, TimeUnit.HOURS, new ArrayBlockingQueue<>(500000), new RejectedExecutionHandler() {
-        @Override
-        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-            logger.error("scanTxPool queue is full");
-            printThreadPoolStat();
-        }
-    });
+    private static final ThreadPoolExecutor scanTxPool = new ThreadPoolExecutor(250, 250, 2, TimeUnit.HOURS, new ArrayBlockingQueue<>(500000));
 
     /**
      * 一次插入数据库记录数
@@ -330,7 +307,6 @@ public class EvmWatcher implements IWatcher {
 
             if (CollectionUtils.isEmpty(list)) {
                 logger.info("[EvmWatcher]replay block failied. start=" + start + ", end=" + end);
-                sendVmAlertMsgToSlack();
                 return Lists.newArrayList();
             }
         } catch (Exception e) {
@@ -458,9 +434,20 @@ public class EvmWatcher implements IWatcher {
         }
     }
 
+    /**
+     * 通过SPI机制发现所有三方开发的支持Erc20区块的plugin
+     *
+     * @return
+     */
+    private List<IEvmWatcherPlugin> findErc20WatcherPluginBySPI() {
+        ServiceLoader<IEvmWatcherPlugin> list = ServiceLoader.load(IEvmWatcherPlugin.class);
+        return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
+    }
+
     private void init() {
-        initWeb3j();
         initService();
+        initMonitor();
+        initWeb3j();
         step = WatcherUtils.getScanStep();
         processStep = WatcherUtils.getProcessStep();
         chainId = WatcherUtils.getChainId();
@@ -468,9 +455,6 @@ public class EvmWatcher implements IWatcher {
         logger.info("[EvmWatcher]config info. step={},processStep={},chainId={},batchInsertSize={},chainType={}",
                     step, processStep, chainId, BATCH_INSERT_MAX_SIZE, WatcherUtils.getChainType());
     }
-
-
-
 
     private void initService() {
         if (evmDataService == null) {
@@ -483,12 +467,12 @@ public class EvmWatcher implements IWatcher {
         if (evmScanDataService == null) {
             evmScanDataService = SpringApplicationUtils.getBean(EvmScanDataService.class);
         }
-
     }
 
-    /**
-     * 初始化web3j
-     */
+    private void initMonitor() {
+        new MonitorThread(evmDataService).start();
+    }
+
     private void initWeb3j() {
         if (web3j != null) {
             return;
@@ -505,79 +489,53 @@ public class EvmWatcher implements IWatcher {
         }
     }
 
-    /**
-     * 获取最新区块高度
-     *
-     * @return 高度
-     */
     private Long getNetworkBlockHeight() {
         try {
             EthBlockNumber blockNumber = web3j.ethBlockNumber().send();
             return blockNumber.getBlockNumber().longValue();
         } catch (Throwable e) {
-            sendVmAlertMsgToSlack();
             logger.error("Error occured when request web3j.ethBlockNumber.", e);
             return 0L;
         }
     }
 
-    /**
-     * 通过SPI机制发现所有三方开发的支持Erc20区块的plugin
-     *
-     * @return
-     */
-    private List<IEvmWatcherPlugin> findErc20WatcherPluginBySPI() {
-        ServiceLoader<IEvmWatcherPlugin> list = ServiceLoader.load(IEvmWatcherPlugin.class);
-        return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
-    }
+    private static AtomicBoolean monitorInit = new AtomicBoolean(false);
+    public static class MonitorThread extends Thread {
+        private EvmDataService evmDataService;
 
-    private static void printThreadPoolStat() {
-        logger.info("[monitor]scanBlockPool.{},{},{},{},{},{},{};{},{},{}",
-                scanBlockPool.getCorePoolSize(),
-                scanBlockPool.getMaximumPoolSize(),
-                scanBlockPool.getLargestPoolSize(),
-                scanBlockPool.getTaskCount(),
-                scanBlockPool.getActiveCount(),
-                scanBlockPool.getCompletedTaskCount(),
-                scanBlockPool.getPoolSize(),
-                scanBlockPool.getQueue().size(),
-                scanBlockPool.isShutdown(),
-                scanBlockPool.isTerminated()
-        );
-
-        logger.info("[monitor]scanTxPool.{},{},{},{},{},{},{};{},{},{}",
-                scanTxPool.getCorePoolSize(),
-                scanTxPool.getMaximumPoolSize(),
-                scanTxPool.getLargestPoolSize(),
-                scanTxPool.getTaskCount(),
-                scanTxPool.getActiveCount(),
-                scanTxPool.getCompletedTaskCount(),
-                scanTxPool.getPoolSize(),
-                scanTxPool.getQueue().size(),
-                scanTxPool.isShutdown(),
-                scanTxPool.isTerminated()
-        );
-    }
-
-
-    private static final RateLimiter slackNotifiyLimiter = RateLimiter.create(0.01);
-    private void sendVmAlertMsgToSlack() {
-        // slack notification limiter
-        if (!slackNotifiyLimiter.tryAcquire()) {
-            return;
-        }
-        Date lastBlockCreateTime = evmDataService.getMaxBlockCreationTime(chainId);
-        if (lastBlockCreateTime == null) {
-            return;
+        public MonitorThread(EvmDataService evmDataService) {
+            this.evmDataService = evmDataService;
         }
 
-        long diff = System.currentTimeMillis() - lastBlockCreateTime.getTime();
-        if (diff < BLOCK_PRODUCE_TIMEOUT) {
-            return;
-        }
+        @Override
+        public void run() {
+            if (!monitorInit.compareAndSet(false, true)) {
+                return;
+            }
 
-        SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警",
-                "VM链长时间未出块，请关注！最后出块于(\"" + diff/1000/60 + "\")分钟前");
+            while (true) {
+                try {
+                    Date lastBlockCreateTime = evmDataService.getMaxBlockCreationTime(chainId);
+                    logger.info("[MonitorThread]last block time:{}", lastBlockCreateTime);
+                    if (lastBlockCreateTime == null) {
+                        return;
+                    }
+
+                    long diff = System.currentTimeMillis() - lastBlockCreateTime.getTime();
+                    if (diff < 60 * 1000) {
+                        return;
+                    }
+
+                    SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警",
+                            "VM链长时间未出块，请关注！最后出块于(\"" + diff/1000/60 + "\")分钟前");
+
+                    Thread.sleep(WatcherUtils.getWatcherMonitorIntervalSecs() * 1000);
+                } catch (Exception e) {
+                    logger.error("[MonitorThread]error:{}", e.getMessage());
+                }
+            }
+
+        }
     }
 
 

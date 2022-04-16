@@ -117,6 +117,8 @@ spec:
             value: "0xf62B76556f86503C9986F25D3DC59CC538f50f51"
           - name: "watcher.fixtx.batch"
             value: 1000
+          - name: "watcher.monitor.interval.secs"
+            value: 60
       volumes:
       - name: host-time
         hostPath:
