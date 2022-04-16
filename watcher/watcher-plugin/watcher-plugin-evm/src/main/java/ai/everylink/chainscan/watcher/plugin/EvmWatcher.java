@@ -446,8 +446,8 @@ public class EvmWatcher implements IWatcher {
 
     private void init() {
         initService();
-        initMonitor();
         initWeb3j();
+        initMonitor();
         step = WatcherUtils.getScanStep();
         processStep = WatcherUtils.getProcessStep();
         chainId = WatcherUtils.getChainId();
@@ -515,26 +515,35 @@ public class EvmWatcher implements IWatcher {
 
             while (true) {
                 try {
+                    Thread.sleep(WatcherUtils.getWatcherMonitorIntervalSecs() * 1000);
+                } catch (Exception e) {
+                }
+
+                try {
+                    web3j.ethBlockNumber().send();
+                } catch (Throwable e) {
+                    SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警", "VM链连接出错: " + WatcherUtils.getVmChainUrl());
+                    continue;
+                }
+
+                try {
                     Date lastBlockCreateTime = evmDataService.getMaxBlockCreationTime(chainId);
                     logger.info("[MonitorThread]last block time:{}", lastBlockCreateTime);
                     if (lastBlockCreateTime == null) {
-                        return;
+                        continue;
                     }
 
                     long diff = System.currentTimeMillis() - lastBlockCreateTime.getTime();
                     if (diff < 60 * 1000) {
-                        return;
+                        continue;
                     }
 
                     SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警",
-                            "VM链长时间未出块，请关注！最后出块于(\"" + diff/1000/60 + "\")分钟前");
-
-                    Thread.sleep(WatcherUtils.getWatcherMonitorIntervalSecs() * 1000);
+                            "VM链长时间未出块，请关注！最后出块于(\"" + diff / 1000 / 60 + "\")分钟前");
                 } catch (Exception e) {
                     logger.error("[MonitorThread]error:{}", e.getMessage());
                 }
             }
-
         }
     }
 
