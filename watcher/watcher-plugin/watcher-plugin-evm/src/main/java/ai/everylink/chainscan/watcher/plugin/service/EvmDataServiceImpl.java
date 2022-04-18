@@ -37,7 +37,6 @@ import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
@@ -49,11 +48,9 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -351,20 +348,22 @@ public class EvmDataServiceImpl implements EvmDataService {
     private void inputParams(Transaction tx) {
         try {
             String input = tx.getInput();
-            if (input.length() > 10 && input.substring(0, 2).equals("0x")) {
-                Object function = DecodUtils.getFunction(input);
+            Object function = "";
+            if (input.length() > 10 && input.startsWith("0x")) {
+                function = DecodUtils.getFunction(input);
                 if (function != null) {
                     tx.setInputMethod(function.toString());
                     tx.setInputParams(DecodUtils.getParams(input));
                 } else {
-                    tx.setInputMethod(input);
-                    tx.setInputParams(input);
+                   // tx.setInputMethod(input);
+                  //  tx.setInputParams(input);
                 }
             } else if (input.equals("0x")) {
                 tx.setInputMethod("Transfer");
             } else {
                 tx.setInputParams(input);
             }
+
         } catch (Exception e) {
             log.error("[Save]inputParams call error.txHash=" + tx.getTransactionHash(), e);
         }

@@ -47,4 +47,4 @@ watcher:
   vmChainUrl: http://vmdev.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
   bridge:
     contract:
-      address: "0x5880de22d3f6b727d0bab4af64d43c0bc242a8c0"
+      address: "0xb382f247ef75878cac13c8a8b63816249b43f4b9"
