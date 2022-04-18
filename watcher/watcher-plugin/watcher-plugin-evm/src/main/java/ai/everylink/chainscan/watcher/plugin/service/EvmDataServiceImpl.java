@@ -265,7 +265,9 @@ public class EvmDataServiceImpl implements EvmDataService {
 
             tx.setTokenTag(0);
             tx.setChainType(WatcherUtils.getChainType());
-            inputParams(tx);
+            if (chainId != 4) {
+                inputParams(tx);
+            }
             txList.add(tx);
         }
         return txList;
