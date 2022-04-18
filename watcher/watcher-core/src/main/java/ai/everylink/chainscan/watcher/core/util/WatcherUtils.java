@@ -127,10 +127,6 @@ public final class WatcherUtils {
         return val;
     }
 
-    public static Integer getWatcherFixTxBatchSize() {
-        return getInteger("watcher.fixtx.batch", 1000);
-    }
-
     public static Integer getWatcherMonitorIntervalSecs() {
         return getInteger("watcher.monitor.interval.secs", 60);
     }

@@ -85,9 +85,10 @@ public class WatcherBootstrapApplication {
     }
 
     private static List<IWatcher> listWatcher() {
+        return Lists.newArrayList(new EvmWatcher());
         // 通过JAVA SPI机制加载所有的watcher
-        ServiceLoader<IWatcher> watcherList = ServiceLoader.load(IWatcher.class);
-        return watcherList == null ? Lists.newArrayList() : Lists.newArrayList(watcherList);
+//        ServiceLoader<IWatcher> watcherList = ServiceLoader.load(IWatcher.class);
+//        return watcherList == null ? Lists.newArrayList() : Lists.newArrayList(watcherList);
     }
 
 }
