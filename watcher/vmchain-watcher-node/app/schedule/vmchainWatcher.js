@@ -156,16 +156,16 @@ async function getTransactions(api,blockNumber,transactionIndex,create_time){
         let txs_data = await api.query.cposContribution.blockTransactions(blockNumber,j);
 
         txs_data =  txs_data.toString().substring(2);
-        if (txs_data.length % 74 != 0){
+        if (txs_data.length % 75 != 0){
             console.log("Error : Transaction list data is not public data "+txs_data);
         }
 
 
-        let transaction_count = txs_data.length/148;
+        let transaction_count = txs_data.length/150;
 
         for(var i = 0; i <= transaction_count; i++){
 
-            let tx_data = txs_data.substring(i*148,i*148+148);
+            let tx_data = txs_data.substring(i*150,i*150+150);
             if(tx_data.length > 0){
                 let tx = transactionFromData(tx_data,blockNumber,i,create_time);
                 tx_list.push(tx);
@@ -182,23 +182,24 @@ async function getTransactions(api,blockNumber,transactionIndex,create_time){
 
 function transactionFromData(data,block_height,index,create_time){
 
+    let application_id = parseInt(data.substring(2,4),16);  //
 
-    let chain_id = parseInt(data.substring(2,4),16);  //
-
-
-    let token_0 =parseInt(data.substring(4,12),16); //16
-    let token_1 =parseInt(data.substring(12,20),16); //16
+    let chain_id = parseInt(data.substring(4,6),16);  //
 
 
-    let buyer_address = data.substring(20,60);  //
-    let seller_address = data.substring(60,100);  //
+    let token_0 =parseInt(data.substring(6,14),16); //16
+    let token_1 =parseInt(data.substring(14,22),16); //16
 
 
-    let fee_0_number =unpack(parseInt(data.substring(100,110),16)); //16
-    let fee_1_number =unpack(parseInt(data.substring(110,120),16)); //16
-    let fee_token =parseInt(data.substring(120,128),16); //16
-    let amount_0 = unpack(parseInt(data.substring(128,138),16));  //
-    let amount_1 = unpack(parseInt(data.substring(138,148),16));  //
+    let buyer_address = data.substring(22,62);  //
+    let seller_address = data.substring(62,102);  //
+
+
+    let fee_0_number =unpack(parseInt(data.substring(102,112),16)); //16
+    let fee_1_number =unpack(parseInt(data.substring(112,122),16)); //16
+    let fee_token =parseInt(data.substring(122,130),16); //16
+    let amount_0 = unpack(parseInt(data.substring(130,140),16));  //
+    let amount_1 = unpack(parseInt(data.substring(140,150),16));  //
     var obj=crypto.createHash('sha256');
     obj.update(new Date()+""+block_height +""+index);
     var str=obj.digest('hex');//hex是十六进制
