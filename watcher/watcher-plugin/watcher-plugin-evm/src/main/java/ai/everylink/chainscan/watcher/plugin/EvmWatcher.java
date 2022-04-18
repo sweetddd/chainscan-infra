@@ -20,10 +20,7 @@ package ai.everylink.chainscan.watcher.plugin;
 import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
-import ai.everylink.chainscan.watcher.core.util.OkHttpUtil;
-import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
-import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
-import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
+import ai.everylink.chainscan.watcher.core.util.*;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.rocketmq.SlackUtils;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
@@ -44,8 +41,13 @@ import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.http.HttpService;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 以太坊扫块
@@ -77,20 +79,9 @@ public class EvmWatcher implements IWatcher {
 
     private static Web3j web3j;
 
-    /**
-     * 从数据库里面获取处理进度
-     */
     private EvmDataService evmDataService;
 
     private EvmScanDataService evmScanDataService;
-
-    /**
-     * 区块生产超时时间
-     */
-    private static final Long BLOCK_PRODUCE_TIMEOUT = 11*60*1000L;
-
-    private static final int MAX_SCAN_THREAD = 400;
-    private static final int MAX_TX_SCAN_THREAD = 250;
 
     /**
      * 任务线程池。
@@ -102,24 +93,12 @@ public class EvmWatcher implements IWatcher {
     /**
      * 扫块时并发查询区块线程池。
      */
-    private static final ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(300, MAX_SCAN_THREAD, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000), new RejectedExecutionHandler() {
-        @Override
-        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-            logger.error("scanBlockPool queue is full");
-            printThreadPoolStat();
-        }
-    });
+    private static final ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(300, 400, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000));
 
     /**
      * 扫块时并发查询区块下的交易线程池。
      */
-    private static final ThreadPoolExecutor scanTxPool = new ThreadPoolExecutor(250, MAX_TX_SCAN_THREAD, 2, TimeUnit.HOURS, new ArrayBlockingQueue<>(500000), new RejectedExecutionHandler() {
-        @Override
-        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-            logger.error("scanTxPool queue is full");
-            printThreadPoolStat();
-        }
-    });
+    private static final ThreadPoolExecutor scanTxPool = new ThreadPoolExecutor(250, 250, 2, TimeUnit.HOURS, new ArrayBlockingQueue<>(500000));
 
     /**
      * 一次插入数据库记录数
@@ -137,7 +116,10 @@ public class EvmWatcher implements IWatcher {
 
         if (chainId == 4) {
             logger.info("Rinkeby scan optimize");
-            return rinkebyScanSpecial();
+            transactionFix();
+            logger.info("Rinkeby scan optimize end");
+            return Lists.newArrayList();
+//            return rinkebyScanSpecial();
         }
 
         List<EvmData> dataList = new CopyOnWriteArrayList<EvmData>();
@@ -325,7 +307,6 @@ public class EvmWatcher implements IWatcher {
 
             if (CollectionUtils.isEmpty(list)) {
                 logger.info("[EvmWatcher]replay block failied. start=" + start + ", end=" + end);
-                sendVmAlertMsgToSlack();
                 return Lists.newArrayList();
             }
         } catch (Exception e) {
@@ -453,21 +434,27 @@ public class EvmWatcher implements IWatcher {
         }
     }
 
+    /**
+     * 通过SPI机制发现所有三方开发的支持Erc20区块的plugin
+     *
+     * @return
+     */
+    private List<IEvmWatcherPlugin> findErc20WatcherPluginBySPI() {
+        ServiceLoader<IEvmWatcherPlugin> list = ServiceLoader.load(IEvmWatcherPlugin.class);
+        return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
+    }
+
     private void init() {
-        logger.info("[EvmWatcher]timeZone={}", Calendar.getInstance().getTimeZone());
-        initWeb3j();
         initService();
+        initWeb3j();
+        initMonitor();
         step = WatcherUtils.getScanStep();
         processStep = WatcherUtils.getProcessStep();
         chainId = WatcherUtils.getChainId();
         BATCH_INSERT_MAX_SIZE = WatcherUtils.getBatchInsertSize();
-        logger.info("[EvmWatcher]init config. step={},processStep={},chainId={},batchInsertSize={},rpcUrl={}, chainType={},db={}",
-                    step, processStep, chainId, BATCH_INSERT_MAX_SIZE, WatcherUtils.getVmChainUrl(), WatcherUtils.getChainType(), System.getenv("spring.datasource.chainscan.jdbc-url"));
-        logger.info("[EvmWatcher]got rocketmq name srv addr:{}", SlackUtils.getNamesrvAddr());
+        logger.info("[EvmWatcher]config info. step={},processStep={},chainId={},batchInsertSize={},chainType={}",
+                    step, processStep, chainId, BATCH_INSERT_MAX_SIZE, WatcherUtils.getChainType());
     }
-
-
-
 
     private void initService() {
         if (evmDataService == null) {
@@ -480,12 +467,12 @@ public class EvmWatcher implements IWatcher {
         if (evmScanDataService == null) {
             evmScanDataService = SpringApplicationUtils.getBean(EvmScanDataService.class);
         }
-
     }
 
-    /**
-     * 初始化web3j
-     */
+    private void initMonitor() {
+        new MonitorThread(evmDataService).start();
+    }
+
     private void initWeb3j() {
         if (web3j != null) {
             return;
@@ -493,7 +480,6 @@ public class EvmWatcher implements IWatcher {
 
         try {
             String rpcUrl = WatcherUtils.getVmChainUrl();
-            logger.info("[rpc_url]url=" + rpcUrl);
 
             OkHttpClient httpClient = OkHttpUtil.buildOkHttpClient();
             HttpService httpService = new HttpService(rpcUrl, httpClient, false);
@@ -503,11 +489,6 @@ public class EvmWatcher implements IWatcher {
         }
     }
 
-    /**
-     * 获取最新区块高度
-     *
-     * @return 高度
-     */
     private Long getNetworkBlockHeight() {
         try {
             EthBlockNumber blockNumber = web3j.ethBlockNumber().send();
@@ -518,62 +499,144 @@ public class EvmWatcher implements IWatcher {
         }
     }
 
+    private static AtomicBoolean monitorInit = new AtomicBoolean(false);
+    public static class MonitorThread extends Thread {
+        private EvmDataService evmDataService;
+
+        public MonitorThread(EvmDataService evmDataService) {
+            this.evmDataService = evmDataService;
+        }
+
+        @Override
+        public void run() {
+            if (!monitorInit.compareAndSet(false, true)) {
+                return;
+            }
+
+            while (true) {
+                try {
+                    Thread.sleep(WatcherUtils.getWatcherMonitorIntervalSecs() * 1000);
+                } catch (Exception e) {
+                }
+
+                try {
+                    web3j.ethBlockNumber().send();
+                } catch (Throwable e) {
+                    SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警", "VM链连接出错: " + WatcherUtils.getVmChainUrl());
+                    continue;
+                }
+
+                try {
+                    Date lastBlockCreateTime = evmDataService.getMaxBlockCreationTime(chainId);
+                    logger.info("[MonitorThread]last block time:{}", lastBlockCreateTime);
+                    if (lastBlockCreateTime == null) {
+                        continue;
+                    }
+
+                    long diff = System.currentTimeMillis() - lastBlockCreateTime.getTime();
+                    if (diff < 60 * 1000) {
+                        continue;
+                    }
+
+                    SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警",
+                            "VM链长时间未出块，请关注！最后出块于(\"" + diff / 1000 / 60 + "\")分钟前");
+                } catch (Exception e) {
+                    logger.error("[MonitorThread]error:{}", e.getMessage());
+                }
+            }
+        }
+    }
+
+
     /**
-     * 通过SPI机制发现所有三方开发的支持Erc20区块的plugin
-     *
-     * @return
+     * rinkeby transaction表数据修复
      */
-    private List<IEvmWatcherPlugin> findErc20WatcherPluginBySPI() {
-        ServiceLoader<IEvmWatcherPlugin> list = ServiceLoader.load(IEvmWatcherPlugin.class);
-        return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
+    private static AtomicBoolean init = new AtomicBoolean(false);
+    private static void transactionFix() {
+        if (chainId != 4) {
+            logger.info("[watcher_fix]not rinkeby");
+            return;
+        }
+        if (!init.compareAndSet(false, true)) {
+            logger.info("[watcher_fix]already init");
+            return;
+        }
+
+        long max = 80000000;
+        long step = WatcherUtils.getWatcherFixTxBatchSize();
+        while (true) {
+            long start = getMaxTid();
+            if (start <= 0) {
+                logger.error("[watcher_fix]incorrect start:{}", start);
+                break;
+            }
+            long end = start + step;
+            if (end > max) {
+                logger.error("[watcher_fix]done.end:{}", end);
+                break;
+            }
+
+            logger.info("[watcher_fix]begin to fix. step:{},start:{},end:{}", step, start, end);
+
+            // use origin jdbc
+            Connection connection = null;
+            PreparedStatement preparedStatement = null;
+            try {
+                connection = JDBCUtils.getConnection();
+                String sql = "update transaction set input_method='', input_params='' where id>=? and id<?";
+                preparedStatement = connection.prepareStatement(sql);
+                preparedStatement.setLong(1, start);
+                preparedStatement.setLong(2, end);
+                int rows = preparedStatement.executeUpdate();
+                logger.info("[watcher_fix]end to fix. start={},end={},rows={}", start, end, rows);
+                updateTid(end);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }finally {
+                // 6. 释放资源
+                JDBCUtils.close(preparedStatement,connection);
+            }
+        }
+
+
     }
 
-    private static void printThreadPoolStat() {
-        logger.info("[monitor]scanBlockPool.{},{},{},{},{},{},{};{},{},{}",
-                scanBlockPool.getCorePoolSize(),
-                scanBlockPool.getMaximumPoolSize(),
-                scanBlockPool.getLargestPoolSize(),
-                scanBlockPool.getTaskCount(),
-                scanBlockPool.getActiveCount(),
-                scanBlockPool.getCompletedTaskCount(),
-                scanBlockPool.getPoolSize(),
-                scanBlockPool.getQueue().size(),
-                scanBlockPool.isShutdown(),
-                scanBlockPool.isTerminated()
-        );
+    private static long getMaxTid() {
+        Connection conn = null;
+        PreparedStatement pst = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            String sql = "select max(tid) from tid";
+            pst = conn.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getLong(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            // 6. 释放资源
+            JDBCUtils.close(pst,conn);
+        }
 
-        logger.info("[monitor]scanTxPool.{},{},{},{},{},{},{};{},{},{}",
-                scanTxPool.getCorePoolSize(),
-                scanTxPool.getMaximumPoolSize(),
-                scanTxPool.getLargestPoolSize(),
-                scanTxPool.getTaskCount(),
-                scanTxPool.getActiveCount(),
-                scanTxPool.getCompletedTaskCount(),
-                scanTxPool.getPoolSize(),
-                scanTxPool.getQueue().size(),
-                scanTxPool.isShutdown(),
-                scanTxPool.isTerminated()
-        );
+        return 0;
     }
 
-
-    private static final RateLimiter slackNotifiyLimiter = RateLimiter.create(0.001);
-    private void sendVmAlertMsgToSlack() {
-        // slack notification limiter
-        if (!slackNotifiyLimiter.tryAcquire()) {
-            return;
+    private static void updateTid(long tid) {
+        Connection conn = null;
+        PreparedStatement pst = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            String sql = "insert into tid(tid) values(?)";
+            pst = conn.prepareStatement(sql);
+            pst.setLong(1, tid);
+            int rows = pst.executeUpdate();
+            logger.info("[watcher_fix]updateTid.tid={},rows={}", tid, rows);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            // 6. 释放资源
+            JDBCUtils.close(pst,conn);
         }
-        Date lastBlockCreateTime = evmDataService.getMaxBlockCreationTime(chainId);
-        if (lastBlockCreateTime == null) {
-            return;
-        }
-
-        long diff = System.currentTimeMillis() - lastBlockCreateTime.getTime();
-        if (diff < BLOCK_PRODUCE_TIMEOUT) {
-            return;
-        }
-
-        SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警",
-                "VM链长时间未出块，请关注！最后出块于(\"" + diff/1000/60 + "\")分钟前");
     }
 }

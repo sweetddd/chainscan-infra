@@ -129,6 +129,8 @@ spec:
             value: false
           - name: "watcher.process.concurrent.switch"
             value: false
+          - name: "watcher.monitor.interval.secs"
+            value: 60
       volumes:
       - name: host-time
         hostPath:

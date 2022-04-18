@@ -27,10 +27,10 @@ public class JDBCUtils {
         map.put("url", url);
         map.put("username", un);
         map.put("password", pw);
-        map.put("initialSize", "50");
-        map.put("minIdle", "50");
-        map.put("maxActive", "300");
-        map.put("maxWait", "30000");
+        map.put("initialSize", "10");
+        map.put("minIdle", "10");
+        map.put("maxActive", "200");
+        map.put("maxWait", "60000");
 
         // 2. 获取DataSource
         try {

@@ -127,4 +127,24 @@ public final class WatcherUtils {
         return val;
     }
 
+    public static Integer getWatcherFixTxBatchSize() {
+        return getInteger("watcher.fixtx.batch", 1000);
+    }
+
+    public static Integer getWatcherMonitorIntervalSecs() {
+        return getInteger("watcher.monitor.interval.secs", 60);
+    }
+
+    private static Integer getInteger(String key, Integer defaultVal) {
+        String str = System.getenv(key);
+        if (!StringUtils.isEmpty(str)) {
+            try {
+                return Integer.parseInt(str);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+
+        return defaultVal;
+    }
 }
