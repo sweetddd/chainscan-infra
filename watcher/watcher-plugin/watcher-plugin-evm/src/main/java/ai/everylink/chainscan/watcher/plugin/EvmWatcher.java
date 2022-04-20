@@ -544,7 +544,7 @@ public class EvmWatcher implements IWatcher {
                     SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警",
                             "VM链长时间未出块，请关注！最后出块于(\"" + diff / 1000 / 60 + "\")分钟前");
                 } catch (Exception e) {
-                    logger.error("[MonitorThread]error:{}", e.getMessage());
+                    logger.error("[MonitorThread]error:" + e.getMessage(), e);
                 }
             }
         }
