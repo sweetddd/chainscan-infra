@@ -224,6 +224,13 @@ public class EvmDataServiceImpl implements EvmDataService {
             tx.setCreateTime(new Date());
 
             TransactionReceipt receipt = data.getTxList().get(item.getHash());
+            if (chainId != 4) {
+                if (receipt == null) {
+                    log.info("[buildTransactionList]get receipt isNull. tx:{}", item.getHash());
+                } else {
+                    log.info("[buildTransactionList]get receipt. tx:{},gasUsed:{}", item.getHash(), receipt.getGasUsed());
+                }
+            }
             if (receipt != null) {
                 // status
                 if (receipt.getStatus() != null &&
