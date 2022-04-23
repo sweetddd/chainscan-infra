@@ -321,14 +321,18 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         ArrayList<NftAccount> nfts  = new ArrayList<>();
         for (int i = 0; i < count.intValue(); i++) {
             NftAccount nftAccount = new NftAccount();
-            nftAccount.setContractName(tokens.getTokenName());
-            nftAccount.setAccountId(accountInfo.getId());
-            nftAccount.setTokenId(tokens.getId());
-            //tokenOfOwnerByIndex
-            BigInteger tokenId  = vm30Utils.tokenOfOwnerByIndex(web3j, contract, fromAddr, i);
-            Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
-            nftAccount.setNftData(tokenURL.toString());
-            nftAccount.setNftId(tokenId.longValue());
+            try {
+                nftAccount.setContractName(tokens.getTokenName());
+                nftAccount.setAccountId(accountInfo.getId());
+                nftAccount.setTokenId(tokens.getId());
+                //tokenOfOwnerByIndex
+                BigInteger tokenId  = vm30Utils.tokenOfOwnerByIndex(web3j, contract, fromAddr, i);
+                Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
+                nftAccount.setNftData(tokenURL.toString());
+                nftAccount.setNftId(tokenId.longValue());
+            }   catch (Exception e) {
+                log.info("updateNftAccount.");
+            }
             nfts.add(nftAccount);
         }
         nftAccountDao.saveAll(nfts);
@@ -419,7 +423,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             }
         } catch (Exception e) {
             log.error("识别合约类型异常:" + e.getMessage());
-            e.printStackTrace();
+           // e.printStackTrace();
             tokenInfo.setTokenType(0);
         }
     }
