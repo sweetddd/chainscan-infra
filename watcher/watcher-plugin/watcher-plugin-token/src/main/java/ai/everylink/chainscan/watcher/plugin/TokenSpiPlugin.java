@@ -21,6 +21,7 @@ import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.plugin.service.impl.TokenInfoServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,13 +39,24 @@ public class TokenSpiPlugin implements IEvmWatcherPlugin {
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
         initService();
-        EvmData blockData = (EvmData) block;
-        long    start     = System.currentTimeMillis();
-        log.info("TokenSpiPlugin-start:" + start);
-        tokenInfoService.tokenScan(blockData);
-        log.info("TokenSpiPlugin-end:" + System.currentTimeMillis());
-        return true;
-    }
+        Transaction transaction = null;
+        try {
+            transaction =   (Transaction) block;
+        }   catch (Exception e) {
+           // log.error("block is not a transaction", e);
+        }
+        if (transaction != null) {
+            tokenInfoService.tokenTxScan(transaction);
+            return true;
+        }else {
+            EvmData blockData = (EvmData) block;
+            long    start     = System.currentTimeMillis();
+            log.info("TokenSpiPlugin-start:" + start);
+            tokenInfoService.tokenScan(blockData);
+            log.info("TokenSpiPlugin-end:" + System.currentTimeMillis());
+            return true;
+        }
+}
 
     private void initService() {
         if (tokenInfoService == null) {

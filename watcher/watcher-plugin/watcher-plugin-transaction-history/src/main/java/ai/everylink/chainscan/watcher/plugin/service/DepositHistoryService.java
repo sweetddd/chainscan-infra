@@ -18,7 +18,6 @@
 package ai.everylink.chainscan.watcher.plugin.service;
 
 
-import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.entity.Transaction;
 
 /**
@@ -32,12 +31,12 @@ public interface DepositHistoryService {
     /**
      *Deposit 信息扫描
      */
-    public void depositERC20HistoryScan(Transaction transaction, EvmData data);
+    void depositERC20HistoryScan(Transaction transaction);
 
 
     /**
      *Deposit 信息扫描
      */
-    public void depositNativeTokenHistoryScan(Transaction transaction, EvmData data);
+    void depositNativeTokenHistoryScan(Transaction transaction);
 
 }

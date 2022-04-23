@@ -21,6 +21,7 @@ import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.plugin.service.TransactionHistoryService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,11 +38,22 @@ public class TransactionHistorySpiPlugin implements IEvmWatcherPlugin {
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
         initService();
-        EvmData blockData = (EvmData) block;
+
         long    start     = System.currentTimeMillis();
         log.info("TxHistory-start:" + start);
-        transactionHistoryService.transactionHistoryScan(blockData);
-        transactionHistoryService.updateConfirmBlock(blockData);
+        Transaction transaction = null;
+        try {
+            transaction =   (Transaction) block;
+        }   catch (Exception e) {
+            // log.error("block is not a transaction", e);
+        }
+        if (transaction != null) {
+            transactionHistoryService.transactionHistoryTxScan(transaction);
+        }else {
+            EvmData blockData = (EvmData) block;
+            transactionHistoryService.transactionHistoryScan(blockData);
+            transactionHistoryService.updateConfirmBlock(blockData);
+        }
         log.info("TxHistory-end:" + System.currentTimeMillis());
         return true;
     }

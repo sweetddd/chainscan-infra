@@ -1,16 +1,17 @@
 package ai.everylink.chainscan.watcher.plugin.service.impl;
 
 import ai.everylink.chainscan.watcher.core.util.DecodUtils;
-import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import ai.everylink.chainscan.watcher.dao.TransactionLogDao;
 import ai.everylink.chainscan.watcher.dao.WalletTranactionHistoryDao;
 import ai.everylink.chainscan.watcher.entity.Transaction;
+import ai.everylink.chainscan.watcher.entity.TransactionLog;
 import ai.everylink.chainscan.watcher.entity.WalletTransactionHistory;
 import ai.everylink.chainscan.watcher.plugin.service.BridgeHistoryService;
+import com.alibaba.fastjson.JSONArray;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
-import org.web3j.protocol.core.methods.response.Log;
 
 import java.math.BigInteger;
 import java.sql.Timestamp;
@@ -28,8 +29,12 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
     @Autowired
     private WalletTranactionHistoryDao wTxHistoryDao;
 
+    @Autowired
+    private TransactionLogDao transactionLogDao;
+
+
     @Override
-    public void depositBridge(Transaction transaction, EvmData data) {
+    public void depositBridge(Transaction transaction) {
         String transactionHash = transaction.getTransactionHash();
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
         WalletTransactionHistory walletTxHistory = new WalletTransactionHistory();
@@ -37,14 +42,19 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         walletTxHistory.setFromAddress(transaction.getFromAddr());
         Example<WalletTransactionHistory> exp       = Example.of(walletTxHistory);
         List<WalletTransactionHistory>   txHistorys = wTxHistoryDao.findAll(exp);
-        List<Log> logs = data.getTransactionLogMap().get(transactionHash);
+       // List<Log> logs = data.getTransactionLogMap().get(transactionHash);
+        List<TransactionLog> logs  = transactionLogDao.findByTxHash(transactionHash);
+
         for (WalletTransactionHistory txHistory : txHistorys) {
             txHistory.setFromTxState(txSatte);
             txHistory.setFromTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
             txHistory.setConfirmBlock(new BigInteger("0"));
-            txHistory.setSubmitBlock(data.getBlock().getNumber());
+            txHistory.setSubmitBlock(new BigInteger(transaction.getBlockNumber().toString()));
             if(logs!= null && logs.size() ==3 ){
-                String    topicData    = logs.get(2).getTopics().get(3);
+                String topicsStr = logs.get(2).getTopics();
+                //topics转为数组
+                JSONArray topics = JSONArray.parseArray(topicsStr);
+                String    topicData    = topics.get(3).toString();
                 Integer depositNonce = Integer.parseInt(topicData.replace("0x", ""), 16);
                 txHistory.setFromDepositNonce(depositNonce);
             }
@@ -58,7 +68,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
     }
 
     @Override
-    public void bridgeHistoryScan(Transaction transaction, EvmData data) {
+    public void bridgeHistoryScan(Transaction transaction) {
         String                   transactionHash = transaction.getTransactionHash();
         String                   input           = transaction.getInput();
         List<String>             params          = DecodUtils.getParams2List(input);

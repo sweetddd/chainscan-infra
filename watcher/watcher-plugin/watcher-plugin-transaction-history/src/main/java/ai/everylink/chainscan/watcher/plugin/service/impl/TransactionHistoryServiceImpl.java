@@ -96,8 +96,46 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         }
     }
 
+
+
     @Override
     @TargetDataSource(value = DataSourceEnum.wallet)
+    public void transactionHistoryTxScan(Transaction transaction) {
+        String bridgeContracts = environment.getProperty("watcher.bridge.contract.address");
+        String toAddr = transaction.getToAddr();
+        //监听指定合约:
+        if (StringUtils.isNotBlank(toAddr) && bridgeContracts.equals(toAddr)) {
+            String input = transaction.getInput();
+            if (StringUtils.isNotBlank(input) && input.length() > 10) {
+                List<String> params = DecodUtils.getParams2List(input);
+                String       method = params.get(0);
+                //发起跨链
+                if (params.size() > 2 && (method.contains("0xa44f5fe6") ||   //ERC20
+                        method.contains("0xee1c1c7b") ||  //原生币
+                        method.contains("0xfe4464a7"))) {  //NFT
+                    bridgeHistoryService.depositBridge(transaction);
+                    //目标链接收跨链交易解析;
+                } else if (params.size() > 1 && method.contains("0x20e82d03")) {
+                    log.info("transactionHistoryScan:method" + "0x20e82d03");
+                    bridgeHistoryService.bridgeHistoryScan(transaction);
+                }
+
+                //Deposit depositERC20 :0x58242801d371a53f9cddac5a44a17e4ca2523fc7ba7b171a9d71e0b8fd069630
+                if (params.size() > 1 && method.contains("0xe17376b5")) {
+                    log.info("transactionHistoryScan:method" + "0xe17376b5");
+                    depositHistoryService.depositERC20HistoryScan(transaction);
+                }
+                // depositNativeToken :0x79031410a6b2e95b5cc4e954c236e45c9dab96ad22ea80b26c2611097819b001
+                if (params.size() > 1 && method.contains("0x20e2d818")) {
+                    log.info("transactionHistoryScan:method" + "0x20e2d818");
+                    depositHistoryService.depositNativeTokenHistoryScan(transaction);
+                }
+            }
+        }
+    }
+
+    @Override
+
     public void transactionHistoryScan(EvmData data) {
         String            bridgeContracts = environment.getProperty("watcher.bridge.contract.address");
         int               chainId         = data.getChainId();
@@ -116,22 +154,22 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     if (params.size() > 2 && (method.contains("0xa44f5fe6") ||   //ERC20
                             method.contains("0xee1c1c7b") ||  //原生币
                             method.contains("0xfe4464a7"))) {  //NFT
-                        bridgeHistoryService.depositBridge(transaction, data);
+                        bridgeHistoryService.depositBridge(transaction);
                         //目标链接收跨链交易解析;
                     } else if (params.size() > 1 && method.contains("0x20e82d03")) {
                         log.info("transactionHistoryScan:method" + "0x20e82d03");
-                        bridgeHistoryService.bridgeHistoryScan(transaction, data);
+                        bridgeHistoryService.bridgeHistoryScan(transaction);
                     }
 
                     //Deposit depositERC20 :0x58242801d371a53f9cddac5a44a17e4ca2523fc7ba7b171a9d71e0b8fd069630
                     if (params.size() > 1 && method.contains("0xe17376b5")) {
                         log.info("transactionHistoryScan:method" + "0xe17376b5");
-                        depositHistoryService.depositERC20HistoryScan(transaction, data);
+                        depositHistoryService.depositERC20HistoryScan(transaction);
                     }
                     // depositNativeToken :0x79031410a6b2e95b5cc4e954c236e45c9dab96ad22ea80b26c2611097819b001
                     if (params.size() > 1 && method.contains("0x20e2d818")) {
                         log.info("transactionHistoryScan:method" + "0x20e2d818");
-                        depositHistoryService.depositNativeTokenHistoryScan(transaction, data);
+                        depositHistoryService.depositNativeTokenHistoryScan(transaction);
                     }
                 }
             }
@@ -196,6 +234,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             }
         }
     }
+
 
     private List<Transaction> buildTransactionList(EvmData data, int chainId) {
         List<Transaction> txList = Lists.newArrayList();
@@ -282,8 +321,8 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             HttpService        httpService = new HttpService("http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf", httpClient, false);
             Web3j              web3j       = Web3j.build(httpService);
 //            EthBlockNumber     blockNumber = web3j.ethBlockNumber().send();
-//            TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0xc69d3c5031b0ce180ea7975720b376a7ef449388d36cd9d6c37a1590165a2731").send().getResult();
-//            System.out.println(receipt);
+            TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0xc69cb77ede3ae7fa1875a7362a38573ef9855a3a411fa60ea597ab8e1cef0787").send().getResult();
+            System.out.println(receipt);
 //            org.web3j.protocol.core.methods.response.Transaction tx = web3j.ethGetTransactionByHash("0xc69d3c5031b0ce180ea7975720b376a7ef449388d36cd9d6c37a1590165a2731").send().getResult();
 //            System.out.println(tx);
 

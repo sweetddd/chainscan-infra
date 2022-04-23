@@ -19,6 +19,7 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import ai.everylink.chainscan.watcher.entity.Transaction;
 
 /**
  * transaction数据统计service
@@ -31,11 +32,17 @@ public interface TransactionHistoryService {
     /**
      *transaction 信息扫描
      */
-    public void transactionHistoryScan(EvmData blockData);
+    void transactionHistoryScan(EvmData blockData);
 
     /**
      * 更新交易区块确认信息;
      * @param blockData
      */
-    public void updateConfirmBlock(EvmData blockData);
+    void updateConfirmBlock(EvmData blockData);
+
+    /**
+     * 扫描现有数据加载插件
+     * @param transaction
+     */
+    void transactionHistoryTxScan(Transaction transaction);
 }

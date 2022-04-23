@@ -26,17 +26,17 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
     private WalletTranactionHistoryDao wTxHistoryDao;
 
     @Override
-    public void depositERC20HistoryScan(Transaction transaction, EvmData data) {
+    public void depositERC20HistoryScan(Transaction transaction) {
         String  transactionHash = transaction.getTransactionHash();
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
         WalletTransactionHistory txHistory  = wTxHistoryDao.findByAddTxHash(transaction.getFromAddr(), transactionHash);
-        log.error("txHistory:params" + transaction.getFromAddr() + ",Hash=" + transactionHash);
-        log.error("txHistory" + txHistory.toString());
+        log.info("txHistory:params" + transaction.getFromAddr() + ",Hash=" + transactionHash);
+        log.info("txHistory" + txHistory.toString());
         if(txHistory != null){
             txHistory.setFromTxState(txSatte);
             txHistory.setFromTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
             txHistory.setConfirmBlock(new BigInteger("0"));
-            txHistory.setSubmitBlock(data.getBlock().getNumber());
+            txHistory.setSubmitBlock(new BigInteger(transaction.getBlockNumber().toString()));
             if(txSatte == 1){
                 txHistory.setTxState("L1 Depositing (1/12)");
             }else if(txSatte == 0){
@@ -49,7 +49,7 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
     }
 
     @Override
-    public void depositNativeTokenHistoryScan(Transaction transaction, EvmData data) {
+    public void depositNativeTokenHistoryScan(Transaction transaction) {
         String  transactionHash = transaction.getTransactionHash();
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
         WalletTransactionHistory txHistory  = wTxHistoryDao.findByAddTxHash(transaction.getFromAddr(), transactionHash);
@@ -57,7 +57,7 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
             txHistory.setFromTxState(txSatte);
             txHistory.setFromTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
             txHistory.setConfirmBlock(new BigInteger("0"));
-            txHistory.setSubmitBlock(data.getBlock().getNumber());
+            txHistory.setSubmitBlock(new BigInteger(transaction.getBlockNumber().toString()));
             if(txSatte == 1){
                 txHistory.setTxState("L1 Depositing (1/12)");
             }else if(txSatte == 0){
@@ -71,7 +71,7 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
 
     public static void main(String[] args) {
         String s = "0000000000000000000000006da573eec80f63c98b88ced15d32ca270787fb5a";
-        String substring = s.substring(s.length() - 40, s.length());
+        String substring = s.substring(s.length() - 40);
         System.out.println(substring);
     }
 

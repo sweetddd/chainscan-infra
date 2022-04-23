@@ -19,6 +19,7 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import ai.everylink.chainscan.watcher.entity.Transaction;
 
 /**
  * token数据统计service
@@ -32,5 +33,10 @@ public interface TokenInfoService {
      *token 信息扫描
      */
     void tokenScan(EvmData blockData);
+
+    /**
+     * tx token 信息扫描
+     */
+    void tokenTxScan(Transaction transaction);
 
 }

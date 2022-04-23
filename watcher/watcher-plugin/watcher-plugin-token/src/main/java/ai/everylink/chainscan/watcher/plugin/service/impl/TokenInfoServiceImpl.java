@@ -23,6 +23,7 @@ import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.dao.*;
 import ai.everylink.chainscan.watcher.entity.*;
 import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
+import com.alibaba.fastjson.JSONArray;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -104,12 +105,44 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         }
     }
 
+    /**
+     * tx扫描
+     * @param transaction
+     */
+    @Override
+    public void tokenTxScan(Transaction transaction) {
+        String value    = transaction.getValue();
+        String toAddr   = transaction.getToAddr();
+        String fromAddr = transaction.getFromAddr();
+        if(StringUtils.isNotBlank(fromAddr)){
+            addAccountInfo(fromAddr); //增加用户信息;
+        }
+        //交易value为0则为 合约方法调用;
+        if (value.equals("0") && StringUtils.isNotBlank(toAddr)) {
+            addToken(toAddr, fromAddr); //增加合约信息;
+        }
+        //转账事件
+        transactionLogDao.findByTxHash(transaction.getTransactionHash()).forEach(transactionLog -> {
+            String topicsStr = transactionLog.getTopics();
+            //topics转为数组
+            JSONArray topics = JSONArray.parseArray(topicsStr);
+            if (topics.size() > 0) {
+                String topic = topics.get(0).toString();
+                if (topic.equals(TRANSFER_TOPIC)) {
+                    addToken(toAddr, fromAddr);
+                    saveOrUpdateBalance(fromAddr, toAddr);
+                    updateNftAccount(fromAddr, toAddr);
+                }
+            }
+        } );
+    }
+
+
     @Override
     public void tokenScan(EvmData data) {
         int               chainId = data.getChainId();
         List<Transaction> txList  = buildTransactionList(data, chainId);
         for (Transaction transaction : txList) {
-            String method   = transaction.getInputMethod();
             String value    = transaction.getValue();
             String toAddr   = transaction.getToAddr();
             String fromAddr = transaction.getFromAddr();
@@ -132,16 +165,18 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 //                }
 //            }
             // 转账事件监听;
-            data.getTransactionLogMap().get(transaction.getTransactionHash()).forEach(log -> {
-                if (log.getTopics().size() > 0) {
-                    String topic = log.getTopics().get(0);
-                    if (topic.equals(TRANSFER_TOPIC)) {
-                        addToken(toAddr, fromAddr);
-                        saveOrUpdateBalance(fromAddr, toAddr);
-                        updateNftAccount(fromAddr, toAddr);
+            if(data.getTransactionLogMap().size() > 0){
+                data.getTransactionLogMap().get(transaction.getTransactionHash()).forEach(log -> {
+                    if (log.getTopics().size() > 0) {
+                        String topic = log.getTopics().get(0);
+                        if (topic.equals(TRANSFER_TOPIC)) {
+                            addToken(toAddr, fromAddr);
+                            saveOrUpdateBalance(fromAddr, toAddr);
+                            updateNftAccount(fromAddr, toAddr);
+                        }
                     }
-                }
-            } );
+                } );
+            }
         }
     }
 
@@ -191,6 +226,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 TokenInfo tokenQuery = new TokenInfo();
                 //判断合约类型
                 checkTokenType(toAddr, fromAddr, tokenQuery);
+                tokenQuery.setTokenName(name);
+                tokenQuery.setTokenSymbol(symbol);
                 tokenQuery.setDecimals(decimals);
                 tokenQuery.setAddress(toAddr);
                 tokenQuery.setCreateTime(new Date());
@@ -454,8 +491,11 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
 
     public static void main(String[] args) {
-        System.out.println("false".trim().equalsIgnoreCase("true"));
+//        String str ="[\"0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d\",\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"0x0000000000000000000000006da573eec80f63c98b88ced15d32ca270787fb5a\",\"0x0000000000000000000000006da573eec80f63c98b88ced15d32ca270787fb5a\"]";
+//        JSONArray jsonArray = JSONArray.parseArray();
+//        System.out.println(jsonArray);
     }
+
 
 }
 

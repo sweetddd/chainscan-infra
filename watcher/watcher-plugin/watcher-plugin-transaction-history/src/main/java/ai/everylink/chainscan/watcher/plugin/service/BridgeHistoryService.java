@@ -18,7 +18,6 @@
 package ai.everylink.chainscan.watcher.plugin.service;
 
 
-import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.entity.Transaction;
 
 /**
@@ -32,11 +31,11 @@ public interface BridgeHistoryService {
     /**
      *depositBridge 信息扫描
      */
-    public void depositBridge(Transaction transaction,EvmData data);
+    void depositBridge(Transaction transaction);
 
     /**
      *bridge 信息扫描
      */
-    public void bridgeHistoryScan(Transaction transaction,EvmData data);
+    void bridgeHistoryScan(Transaction transaction);
 
 }
