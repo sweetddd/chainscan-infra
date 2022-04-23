@@ -7,8 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.*;
-import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.abi.datatypes.Function;
+import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
@@ -21,16 +22,14 @@ import org.web3j.tx.gas.ContractGasProvider;
 import org.web3j.tx.gas.StaticGasProvider;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @Component
 public class VM30Utils {
 
-    private BigInteger gasLimit = BigInteger.valueOf(9000000);
+    private final BigInteger gasLimit = BigInteger.valueOf(9000000);
 
     private Credentials credentials;
 
@@ -227,7 +226,7 @@ public class VM30Utils {
         try {
             tokenId = contract.tokenOfOwnerByIndex(address,index).send();
         } catch (Exception ex) {
-            ex.printStackTrace();
+          //  ex.printStackTrace();
             log.debug("获取tokenId失败:" + contractAddress);
         }
         return tokenId;
@@ -246,7 +245,7 @@ public class VM30Utils {
         try {
             tokenURI= contract.tokenURL(tokenId).send().toString();
         } catch (Exception ex) {
-            ex.printStackTrace();
+           // ex.printStackTrace();
             log.debug("获取tokenURI失败:" + contractAddress);
         }
         return tokenURI;
@@ -291,7 +290,7 @@ public class VM30Utils {
         try {
             Function function = new Function(functionName,
                                              parameters,
-                                             Collections.<TypeReference<?>>emptyList());
+                                             Collections.emptyList());
             String encodedFunction = FunctionEncoder.encode(function);
             org.web3j.protocol.core.methods.response.EthCall response = null;
 
