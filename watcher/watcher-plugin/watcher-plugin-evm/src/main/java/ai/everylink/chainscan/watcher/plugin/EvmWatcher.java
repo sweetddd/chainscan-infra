@@ -41,6 +41,7 @@ import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.http.HttpService;
 
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -93,7 +94,7 @@ public class EvmWatcher implements IWatcher {
     /**
      * 扫块时并发查询区块线程池。
      */
-    private static final ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(300, 400, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(1000));
+    private static final ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(300, 400, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(2000));
 
     /**
      * 扫块时并发查询区块下的交易线程池。
@@ -116,10 +117,7 @@ public class EvmWatcher implements IWatcher {
 
         if (chainId == 4) {
             logger.info("Rinkeby scan optimize");
-            transactionFix();
-            logger.info("Rinkeby scan optimize end");
-            return Lists.newArrayList();
-//            return rinkebyScanSpecial();
+            return rinkebyScanSpecial();
         }
 
         List<EvmData> dataList = new CopyOnWriteArrayList<EvmData>();
@@ -178,6 +176,7 @@ public class EvmWatcher implements IWatcher {
         return list;
     }
 
+    // 不存block_data表，扫完后直接传给plugin
     private List<EvmData> rinkebyScanSpecial() {
         List<EvmData> defaultList = Lists.newArrayList();
         if (WatcherUtils.isScanStop()) {
@@ -185,7 +184,6 @@ public class EvmWatcher implements IWatcher {
             return defaultList;
         }
 
-        // 获取数据库保存的扫块高度
         Long dbHeight = evmDataService.getMaxBlockNum(chainId);
 
         // 获取链上高度
@@ -215,14 +213,15 @@ public class EvmWatcher implements IWatcher {
 
         // 校验数据
         if (CollectionUtils.isEmpty(dataList)) {
-            logger.error("[EvmWatcher]data is empty.expected: {} blocks", (end - start + 1));
+            logger.error("[rinkebyScan]data is empty.expected: {} blocks", (end - start + 1));
             return defaultList;
         }
 
-        logger.info("[rinkebyScan]end to scan.size={},consume={}ms", dataList.size(), (System.currentTimeMillis() - t1));
+        logger.info("[rinkebyScan]end to scan. start={},end={},size={},consume={}ms", start, end, dataList.size(), (System.currentTimeMillis() - t1));
         return dataList;
     }
 
+    // 扫块，存入block_data表
     public void scanChain() {
         if (WatcherUtils.isScanStop()) {
             logger.info("[EvmWatcher]scan stopped.");
@@ -541,102 +540,10 @@ public class EvmWatcher implements IWatcher {
                     SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警",
                             "VM链长时间未出块，请关注！最后出块于(\"" + diff / 1000 / 60 + "\")分钟前");
                 } catch (Exception e) {
-                    logger.error("[MonitorThread]error:{}", e.getMessage());
+                    logger.error("[MonitorThread]error:" + e.getMessage(), e);
                 }
             }
         }
     }
 
-
-    /**
-     * rinkeby transaction表数据修复
-     */
-    private static AtomicBoolean init = new AtomicBoolean(false);
-    private static void transactionFix() {
-        if (chainId != 4) {
-            logger.info("[watcher_fix]not rinkeby");
-            return;
-        }
-        if (!init.compareAndSet(false, true)) {
-            logger.info("[watcher_fix]already init");
-            return;
-        }
-
-        long max = 80000000;
-        long step = WatcherUtils.getWatcherFixTxBatchSize();
-        while (true) {
-            long start = getMaxTid();
-            if (start <= 0) {
-                logger.error("[watcher_fix]incorrect start:{}", start);
-                break;
-            }
-            long end = start + step;
-            if (end > max) {
-                logger.error("[watcher_fix]done.end:{}", end);
-                break;
-            }
-
-            logger.info("[watcher_fix]begin to fix. step:{},start:{},end:{}", step, start, end);
-
-            // use origin jdbc
-            Connection connection = null;
-            PreparedStatement preparedStatement = null;
-            try {
-                connection = JDBCUtils.getConnection();
-                String sql = "update transaction set input_method='', input_params='' where id>=? and id<?";
-                preparedStatement = connection.prepareStatement(sql);
-                preparedStatement.setLong(1, start);
-                preparedStatement.setLong(2, end);
-                int rows = preparedStatement.executeUpdate();
-                logger.info("[watcher_fix]end to fix. start={},end={},rows={}", start, end, rows);
-                updateTid(end);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }finally {
-                // 6. 释放资源
-                JDBCUtils.close(preparedStatement,connection);
-            }
-        }
-
-
-    }
-
-    private static long getMaxTid() {
-        Connection conn = null;
-        PreparedStatement pst = null;
-        try {
-            conn = JDBCUtils.getConnection();
-            String sql = "select max(tid) from tid";
-            pst = conn.prepareStatement(sql);
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                return rs.getLong(1);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally {
-            // 6. 释放资源
-            JDBCUtils.close(pst,conn);
-        }
-
-        return 0;
-    }
-
-    private static void updateTid(long tid) {
-        Connection conn = null;
-        PreparedStatement pst = null;
-        try {
-            conn = JDBCUtils.getConnection();
-            String sql = "insert into tid(tid) values(?)";
-            pst = conn.prepareStatement(sql);
-            pst.setLong(1, tid);
-            int rows = pst.executeUpdate();
-            logger.info("[watcher_fix]updateTid.tid={},rows={}", tid, rows);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally {
-            // 6. 释放资源
-            JDBCUtils.close(pst,conn);
-        }
-    }
 }

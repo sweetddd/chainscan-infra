@@ -115,10 +115,8 @@ spec:
             value: true
           - name: "watcher.bridge.contract.address"
             value: "0xf62B76556f86503C9986F25D3DC59CC538f50f51"
-          - name: "watcher.fixtx.batch"
-            value: 1000
           - name: "watcher.monitor.interval.secs"
-            value: 60
+            value: 6000000
       volumes:
       - name: host-time
         hostPath:
