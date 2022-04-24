@@ -41,10 +41,7 @@ import org.springframework.util.CollectionUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.Request;
-import org.web3j.protocol.core.methods.response.EthBlock;
-import org.web3j.protocol.core.methods.response.EthCall;
-import org.web3j.protocol.core.methods.response.Log;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
@@ -137,6 +134,11 @@ public class EvmDataServiceImpl implements EvmDataService {
         for (Transaction transaction : txList) {
             if (transaction.getGasUsed() != null) {
                 gasUsed += transaction.getGasUsed().intValue();
+            } else {
+                tryGetGasUsedAgain(chainId, transaction);
+                if  (transaction.getGasUsed() != null) {
+                    gasUsed += transaction.getGasUsed().intValue();
+                }
             }
         }
         block.setGasUsed(new BigInteger(String.valueOf(gasUsed)));
@@ -160,6 +162,34 @@ public class EvmDataServiceImpl implements EvmDataService {
         List<TransactionLog> logList = buildTransactionLogList(data);
 
         insertDB(block, txList, logList);
+    }
+
+    private void tryGetGasUsedAgain(int chainId, Transaction tx) {
+        if (chainId == 4 || chainId == 1) {
+            // skip ethereum
+            return;
+        }
+
+        String txHash = tx.getTransactionHash();
+        try {
+            EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(txHash).send();
+            if (receipt == null || receipt.getResult() == null) {
+                log.info("[tryGetGasUsedAgain]receipt is null.txHash:{}", txHash);
+                return;
+            }
+            if (receipt.getResult().getGasUsed() == null) {
+                log.info("[tryGetGasUsedAgain]gasUsed is null.txHash:{}", txHash);
+                return;
+            }
+            tx.setGasUsed(receipt.getResult().getGasUsed());
+            if (!StringUtils.isEmpty(tx.getGasPrice())) {
+                tx.setGasPrice(BigInteger.valueOf(Long.parseLong(tx.getGasPrice())).multiply(tx.getGasUsed()).toString());
+            }
+        } catch (Exception e) {
+            log.info("[tryGetGasUsedAgain]error.txHash:{}", txHash);
+        } finally {
+            log.info("[tryGetGasUsedAgain]txHash:{},gasUsed={}", txHash, tx.getGasUsed());
+        }
     }
 
     private Block buildBlock(EvmData data, int chainId) {
