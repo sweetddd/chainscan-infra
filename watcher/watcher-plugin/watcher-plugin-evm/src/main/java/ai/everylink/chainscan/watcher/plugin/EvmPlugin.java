@@ -36,7 +36,7 @@ import java.math.BigInteger;
  */
 public class EvmPlugin implements IEvmWatcherPlugin {
 
-    private Logger logger = LoggerFactory.getLogger(EvmPlugin.class);
+    private final Logger logger = LoggerFactory.getLogger(EvmPlugin.class);
 
     private EvmDataService evmDataService;
 
@@ -64,7 +64,7 @@ public class EvmPlugin implements IEvmWatcherPlugin {
         if (blockData.getChainId() != 4) {
             try {
                 long t2 = System.currentTimeMillis();
-                evmScanDataService.deleteBlockData(blockNumber.longValue());
+              //  evmScanDataService.deleteBlockData(blockNumber.longValue());
                 logger.info("Successfully delete old data:{},consume={}ms", blockNumber, (System.currentTimeMillis() - t2));
             } catch (Exception e) {
                 logger.error("Error occured when delete old block=" + blockNumber, e);

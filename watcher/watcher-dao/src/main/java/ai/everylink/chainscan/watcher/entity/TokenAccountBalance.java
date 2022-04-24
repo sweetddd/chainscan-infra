@@ -20,9 +20,6 @@ public class TokenAccountBalance {
     @Column(name = "token_id", length = 32)
     private Long tokenId;
 
-    @Column(name = "contract", length = 80)
-    private String contract;
-
     @Column(name = "balance", nullable = false)
     private String balance;
 

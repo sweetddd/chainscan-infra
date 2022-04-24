@@ -211,33 +211,39 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * @param toAddr
      */
     private void addToken(String toAddr, String fromAddr) {
-        TokenInfo  tokenInfo = tokenInfoDao.findAllByAddress(toAddr);
-        if( tokenInfo == null ){
-            String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
-            if(StringUtils.isBlank(symbol)){
-                return;
+        try {
+            TokenInfo  tokenInfo = tokenInfoDao.findAllByAddress(toAddr);
+            if( tokenInfo == null ){
+                String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
+                if(StringUtils.isBlank(symbol)){
+                    return;
+                }
+                String     name     = vm30Utils.name(web3j, toAddr).toString();
+                if(StringUtils.isBlank(name)){
+                    return;
+                }
+                BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
+                if (StringUtils.isNotBlank(symbol) && StringUtils.isNotBlank(name)) {
+                    TokenInfo tokenQuery = new TokenInfo();
+                    //判断合约类型
+                    checkTokenType(toAddr, fromAddr, tokenQuery);
+                    tokenQuery.setTokenName(name);
+                    tokenQuery.setTokenSymbol(symbol);
+                    tokenQuery.setDecimals(decimals);
+                    tokenQuery.setAddress(toAddr);
+                    tokenQuery.setCreateTime(new Date());
+                    tokenQuery.setCreateTime(new Date());
+                    tokenInfoDao.save(tokenQuery);
+                    //增加账户与token关系数据;
+                    saveOrUpdateBalance(fromAddr, toAddr);
+                    updateNftAccount(fromAddr, toAddr);
+                }
             }
-            String     name     = vm30Utils.name(web3j, toAddr).toString();
-            if(StringUtils.isBlank(name)){
-                return;
-            }
-            BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
-            if (StringUtils.isNotBlank(symbol) && StringUtils.isNotBlank(name)) {
-                TokenInfo tokenQuery = new TokenInfo();
-                //判断合约类型
-                checkTokenType(toAddr, fromAddr, tokenQuery);
-                tokenQuery.setTokenName(name);
-                tokenQuery.setTokenSymbol(symbol);
-                tokenQuery.setDecimals(decimals);
-                tokenQuery.setAddress(toAddr);
-                tokenQuery.setCreateTime(new Date());
-                tokenQuery.setCreateTime(new Date());
-                tokenInfoDao.save(tokenQuery);
-                //增加账户与token关系数据;
-                saveOrUpdateBalance(fromAddr, toAddr);
-                updateNftAccount(fromAddr, toAddr);
-            }
+
+        }    catch (Exception e) {
+            log.error("addToken error", e);
         }
+
     }
 
     /**
@@ -270,12 +276,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             BigInteger          amount  = vm30Utils.balanceOf(web3j, contract, fromAddr);
             TokenAccountBalance balance = new TokenAccountBalance();
             balance.setAccountId(accountInfo.getId());
-            balance.setContract(contract);
             balance.setTokenId(tokens.getId());
             Example<TokenAccountBalance> exp      = Example.of(balance);
             List<TokenAccountBalance>    balances = tokenAccountBalanceDao.findAll(exp);
             if (balances.size() < 1 && amount.compareTo(BigInteger.ZERO) > 0) {
-                balance.setContract(contract);
                 balance.setBalance(amount.toString());
                 balance.setCreateTime(new Date());
                 balance.setUpdateTime(new Date());
