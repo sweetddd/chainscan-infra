@@ -121,7 +121,7 @@ public class TokenWatcher implements IWatcher {
     @Override
     public String getCron() {
         //return "0 0 * * * ?";
-        return "*/20 * * * * ?";
+        return "*/5 * * * * ?";
     }
 
     private void initService() {
