@@ -65,7 +65,7 @@ public class TokenWatcher implements IWatcher {
         if (onlyEvmPlugin()){
             txList =  transactionDao.getTxData();
         }
-
+        log.info("watcher=[TokenWatcher],txListSize = " + txList.size());
         for (IWatcherPlugin plugin : pluginList) {
             //数据加载插件
             for (Transaction transaction : txList) {
@@ -121,7 +121,7 @@ public class TokenWatcher implements IWatcher {
     @Override
     public String getCron() {
         //return "0 0 * * * ?";
-        return "*/5 * * * * ?";
+        return "*/20 * * * * ?";
     }
 
     private void initService() {
