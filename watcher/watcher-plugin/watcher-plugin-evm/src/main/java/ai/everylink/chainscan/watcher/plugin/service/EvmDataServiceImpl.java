@@ -182,6 +182,9 @@ public class EvmDataServiceImpl implements EvmDataService {
                 return;
             }
             tx.setGasUsed(receipt.getResult().getGasUsed());
+            if (!StringUtils.isEmpty(tx.getGasPrice())) {
+                tx.setGasPrice(BigInteger.valueOf(Long.parseLong(tx.getGasPrice())).multiply(tx.getGasUsed()).toString());
+            }
         } catch (Exception e) {
             log.info("[tryGetGasUsedAgain]error.txHash:{}", txHash);
         } finally {
