@@ -115,8 +115,8 @@ spec:
             value: true
           - name: "watcher.bridge.contract.address"
             value: "0xf62B76556f86503C9986F25D3DC59CC538f50f51"
-          - name: "watcher.monitor.interval.secs"
-            value: 6000000
+          - name: "watcher.monitor.cron"
+            value: "0 */1 * * * ?"
       volumes:
       - name: host-time
         hostPath:

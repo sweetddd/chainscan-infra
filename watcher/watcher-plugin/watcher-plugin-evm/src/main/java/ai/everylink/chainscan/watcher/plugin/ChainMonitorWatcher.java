@@ -30,6 +30,7 @@ import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
@@ -81,6 +82,12 @@ public class ChainMonitorWatcher implements IWatcher {
 
     @Override
     public String getCron() {
+        String cron = WatcherUtils.getChainMonitorCron();
+        logger.info("[ChainMonitorWatcher]config cron:{}", cron);
+        if (!StringUtils.isEmpty(cron)) {
+            return cron;
+        }
+
         return "0 */1 * * * ?";
     }
 
@@ -112,7 +119,7 @@ public class ChainMonitorWatcher implements IWatcher {
     }
 
     private void monitor() {
-        logger.info("[ChainMonitorWatcher]monitor end");
+        logger.info("[ChainMonitorWatcher]monitor begin");
         int web3ErrCnt = 0;
         for (int i = 0; i < 10; i++) {
             try {

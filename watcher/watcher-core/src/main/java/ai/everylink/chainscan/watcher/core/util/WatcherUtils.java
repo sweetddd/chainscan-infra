@@ -1,6 +1,7 @@
 package ai.everylink.chainscan.watcher.core.util;
 
 import ai.everylink.chainscan.watcher.core.config.EvmConfig;
+import org.quartz.CronExpression;
 import org.springframework.util.StringUtils;
 
 /**
@@ -127,20 +128,20 @@ public final class WatcherUtils {
         return val;
     }
 
-    public static Integer getWatcherMonitorIntervalSecs() {
-        return getInteger("watcher.monitor.interval.secs", 60);
-    }
-
-    private static Integer getInteger(String key, Integer defaultVal) {
-        String str = System.getenv(key);
-        if (!StringUtils.isEmpty(str)) {
-            try {
-                return Integer.parseInt(str);
-            } catch (Exception e) {
-                // ignore
+    public static String getChainMonitorCron() {
+        String cronStr = System.getenv("watcher.monitor.cron");
+        if (StringUtils.isEmpty(cronStr)) {
+            return null;
+        }
+        try {
+            if (CronExpression.isValidExpression(cronStr)) {
+                return cronStr;
             }
+        } catch (Exception e) {
+            return null;
         }
 
-        return defaultVal;
+        return null;
     }
+
 }
