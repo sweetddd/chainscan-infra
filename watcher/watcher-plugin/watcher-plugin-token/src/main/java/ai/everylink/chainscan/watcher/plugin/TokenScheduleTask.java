@@ -4,8 +4,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import java.time.LocalDateTime;
-
 /**
  * @Author apple
  * @Description
@@ -23,8 +21,6 @@ public class TokenScheduleTask {
     private void configureTasks() {
         TokenWatcher tokenWatcher = new TokenWatcher();
         tokenWatcher.scanBlock();
-
-        System.err.println("执行静态定时任务时间: " + LocalDateTime.now());
     }
 
 
