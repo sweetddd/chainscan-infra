@@ -108,7 +108,7 @@ spec:
           - name: "watcher.notify.template"
             value: RINKEBY
           - name: "watcher.scan.switch"
-            value: false
+            value: true
           - name: "watcher.process.concurrent.switch"
             value: true
           - name: "watcher.process.only.evmplugin"
