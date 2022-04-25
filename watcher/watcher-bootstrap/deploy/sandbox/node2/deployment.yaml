@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $APP_NAME-rinkeby-sandbox
+  name: $APP_NAME-rinkeby-job-sandbox
   namespace: paas
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: $APP_NAME-rinkeby-sandbox
+      app: $APP_NAME-rinkeby-job-sandbox
   template:
     metadata:
       labels:
-        app: $APP_NAME-rinkeby-sandbox
+        app: $APP_NAME-rinkeby-job-sandbox
     spec:
       containers:
-      - name: $APP_NAME-rinkeby-sandbox
+      - name: $APP_NAME-rinkeby-job-sandbox
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
@@ -112,6 +112,8 @@ spec:
           - name: "watcher.process.concurrent.switch"
             value: true
           - name: "watcher.process.only.evmplugin"
+            value: true
+          - name: "watcher.process.only.tokenWatcher"
             value: true
           - name: "watcher.bridge.contract.address"
             value: "0xf62B76556f86503C9986F25D3DC59CC538f50f51"

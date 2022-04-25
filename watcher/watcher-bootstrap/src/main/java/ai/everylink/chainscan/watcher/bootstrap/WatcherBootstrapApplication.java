@@ -18,7 +18,6 @@
 package ai.everylink.chainscan.watcher.bootstrap;
 
 import ai.everylink.chainscan.watcher.core.IWatcher;
-import ai.everylink.chainscan.watcher.plugin.EvmWatcher;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
@@ -27,7 +26,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 
@@ -87,6 +88,17 @@ public class WatcherBootstrapApplication {
     private static List<IWatcher> listWatcher() {
         // 通过JAVA SPI机制加载所有的watcher
         ServiceLoader<IWatcher> watcherList = ServiceLoader.load(IWatcher.class);
+        String tokenWatcher = System.getenv("watcher.process.only.tokenWatcher");
+        if (!StringUtils.isEmpty(tokenWatcher) && Boolean.parseBoolean(tokenWatcher)) {
+            ArrayList<IWatcher> tWatchers = new ArrayList<>();
+            for (IWatcher iWatcher : watcherList) {
+                String name = iWatcher.getClass().getName();
+                if (name.equals("ai.everylink.chainscan.watcher.token.TokenWatcher")) {
+                    tWatchers.add(iWatcher);
+                    return tWatchers;
+                }
+            }
+        }
         return watcherList == null ? Lists.newArrayList() : Lists.newArrayList(watcherList);
     }
 
