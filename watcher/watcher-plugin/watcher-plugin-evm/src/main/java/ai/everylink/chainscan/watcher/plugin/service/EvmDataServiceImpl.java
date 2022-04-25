@@ -498,7 +498,7 @@ public class EvmDataServiceImpl implements EvmDataService {
                 String sql = "INSERT INTO transaction (transaction_hash, transaction_index, block_hash, block_number, chain_id, status, fail_msg, tx_timestamp, " +
                         "from_addr, to_addr, contract_address, value, tx_fee, gas_limit, gas_used, gas_price, nonce, compress(input), tx_type, " +
                         "create_time, chain_type, token_tag) " +
-                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 preparedStatement = connection.prepareStatement(sql);
                 for (Transaction b : txList) {
                     preparedStatement.setObject(1, b.getTransactionHash());

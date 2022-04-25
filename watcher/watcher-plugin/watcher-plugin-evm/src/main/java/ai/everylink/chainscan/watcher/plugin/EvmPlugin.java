@@ -51,24 +51,13 @@ public class EvmPlugin implements IEvmWatcherPlugin {
         logger.info("EvmPlugin 处理: " + blockNumber
                                    + "; tx size=" + blockData.getBlock().getTransactions().size());
 
-        long t1 = System.currentTimeMillis();
         try {
+            long t1 = System.currentTimeMillis();
             evmDataService.saveEvmData(blockData);
             logger.info("[EvmWatcher]saveEvmData.consume={}ms", (System.currentTimeMillis() - t1));
         } catch (Exception e) {
             logger.error("Error occured when process block=" + blockNumber, e);
             return false;
-        }
-
-        // 删除原生扫块数据
-        if (blockData.getChainId() != 4) {
-            try {
-                long t2 = System.currentTimeMillis();
-              //  evmScanDataService.deleteBlockData(blockNumber.longValue());
-                logger.info("Successfully delete old data:{},consume={}ms", blockNumber, (System.currentTimeMillis() - t2));
-            } catch (Exception e) {
-                logger.error("Error occured when delete old block=" + blockNumber, e);
-            }
         }
 
         return true;
