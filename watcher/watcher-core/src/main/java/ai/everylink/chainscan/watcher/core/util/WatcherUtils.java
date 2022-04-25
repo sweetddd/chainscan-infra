@@ -1,8 +1,13 @@
 package ai.everylink.chainscan.watcher.core.util;
 
 import ai.everylink.chainscan.watcher.core.config.EvmConfig;
+import org.apache.commons.io.IOUtils;
 import org.quartz.CronExpression;
 import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Utils
@@ -144,4 +149,15 @@ public final class WatcherUtils {
         return null;
     }
 
+    public static boolean isEthereum(Integer chainId) {
+        return chainId != null && (chainId == 4 || chainId ==1);
+    }
+
+    public static InputStream str2Stream(String str) throws IOException {
+        return IOUtils.toInputStream(str, StandardCharsets.UTF_8.name());
+    }
+
+    public static String stream2Str(InputStream stream) throws IOException {
+        return IOUtils.toString(stream, StandardCharsets.UTF_8.name());
+    }
 }

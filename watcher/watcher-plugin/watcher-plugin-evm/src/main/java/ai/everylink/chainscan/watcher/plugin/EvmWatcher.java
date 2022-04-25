@@ -94,7 +94,7 @@ public class EvmWatcher implements IWatcher {
     /**
      * 扫块时并发查询区块线程池。
      */
-    private static final ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(300, 400, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(2000));
+    private static final ThreadPoolExecutor scanBlockPool = new ThreadPoolExecutor(300, 400, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(5000));
 
     /**
      * 扫块时并发查询区块下的交易线程池。
@@ -184,7 +184,12 @@ public class EvmWatcher implements IWatcher {
             return defaultList;
         }
 
-        Long dbHeight = evmDataService.getMaxBlockNum(chainId);
+        long maxBlock = 10205680;
+        Long dbHeight = getMaxTid();
+        if (dbHeight >= maxBlock) {
+            // 获取数据库保存的扫块高度
+            dbHeight = evmDataService.getMaxBlockNum(chainId);
+        }
 
         // 获取链上高度
         Long chainHeight = getNetworkBlockHeight();
@@ -217,6 +222,7 @@ public class EvmWatcher implements IWatcher {
             return defaultList;
         }
 
+        updateTid(end);
         logger.info("[rinkebyScan]end to scan. start={},end={},size={},consume={}ms", start, end, dataList.size(), (System.currentTimeMillis() - t1));
         return dataList;
     }
@@ -492,4 +498,44 @@ public class EvmWatcher implements IWatcher {
             return 0L;
         }
     }
+
+    private static long getMaxTid() {
+        Connection conn = null;
+        PreparedStatement pst = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            String sql = "select max(tid) from tid";
+            pst = conn.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getLong(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            // 6. 释放资源
+            JDBCUtils.close(pst,conn);
+        }
+
+        return 0;
+    }
+
+    private static void updateTid(long tid) {
+        Connection conn = null;
+        PreparedStatement pst = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            String sql = "insert into tid(tid) values(?)";
+            pst = conn.prepareStatement(sql);
+            pst.setLong(1, tid);
+            int rows = pst.executeUpdate();
+            logger.info("[watcher_fix]updateTid.tid={},rows={}", tid, rows);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            // 6. 释放资源
+            JDBCUtils.close(pst,conn);
+        }
+    }
+
 }

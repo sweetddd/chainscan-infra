@@ -125,72 +125,21 @@ public class EvmDataServiceImpl implements EvmDataService {
     @TargetDataSource(value = DataSourceEnum.chainscan)
     @Override
     public void saveEvmData(EvmData data) {
-        int   chainId = data.getChainId();
-        int   gasUsed = 0;
+        int chainId = data.getChainId();
+
         Block block = buildBlock(data, chainId);
         List<Transaction> txList = buildTransactionList(data, chainId);
 
-        // block gas used
-        for (Transaction transaction : txList) {
-            if (transaction.getGasUsed() != null) {
-                gasUsed += transaction.getGasUsed().intValue();
-            } else {
-                tryGetGasUsedAgain(chainId, transaction);
-                if  (transaction.getGasUsed() != null) {
-                    gasUsed += transaction.getGasUsed().intValue();
-                }
-            }
-        }
-        block.setGasUsed(new BigInteger(String.valueOf(gasUsed)));
-
-        // block reward = sum(tx's fee) * 0.2
-        BigInteger sumTxsFee = BigInteger.valueOf(0);
-        for (Transaction tx : txList) {
-            if (!org.springframework.util.StringUtils.isEmpty(tx.getTxFee())) {
-                try {
-                    sumTxsFee = sumTxsFee.add(new BigInteger(tx.getTxFee()));
-                } catch (Throwable e) {
-                    // ignore
-                }
-            }
-        }
-        if (chainId != 4) {
-            sumTxsFee = sumTxsFee.multiply(BigInteger.valueOf(20)).divide(BigInteger.valueOf(100));
-        }
-        block.setReward(sumTxsFee.toString());
+        setBlockGasUsed(block, txList);
+        setBlockReward(block, txList);
 
         List<TransactionLog> logList = buildTransactionLogList(data);
 
         insertDB(block, txList, logList);
     }
 
-    private void tryGetGasUsedAgain(int chainId, Transaction tx) {
-        if (chainId == 4 || chainId == 1) {
-            // skip ethereum
-            return;
-        }
 
-        String txHash = tx.getTransactionHash();
-        try {
-            EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(txHash).send();
-            if (receipt == null || receipt.getResult() == null) {
-                log.info("[tryGetGasUsedAgain]receipt is null.txHash:{}", txHash);
-                return;
-            }
-            if (receipt.getResult().getGasUsed() == null) {
-                log.info("[tryGetGasUsedAgain]gasUsed is null.txHash:{}", txHash);
-                return;
-            }
-            tx.setGasUsed(receipt.getResult().getGasUsed());
-            if (!StringUtils.isEmpty(tx.getGasPrice())) {
-                tx.setGasPrice(BigInteger.valueOf(Long.parseLong(tx.getGasPrice())).multiply(tx.getGasUsed()).toString());
-            }
-        } catch (Exception e) {
-            log.info("[tryGetGasUsedAgain]error.txHash:{}", txHash);
-        } finally {
-            log.info("[tryGetGasUsedAgain]txHash:{},gasUsed={}", txHash, tx.getGasUsed());
-        }
-    }
+
 
     private Block buildBlock(EvmData data, int chainId) {
         Block block = new Block();
@@ -367,6 +316,67 @@ public class EvmDataServiceImpl implements EvmDataService {
         return logList;
     }
 
+    private void setBlockGasUsed(Block block, List<Transaction> txList) {
+        int gasUsed = 0;
+        for (Transaction transaction : txList) {
+            if (transaction.getGasUsed() != null) {
+                gasUsed += transaction.getGasUsed().intValue();
+            } else {
+                tryGetGasUsedAgain(block.getChainId(), transaction);
+                if  (transaction.getGasUsed() != null) {
+                    gasUsed += transaction.getGasUsed().intValue();
+                }
+            }
+        }
+        block.setGasUsed(new BigInteger(String.valueOf(gasUsed)));
+    }
+
+    private void setBlockReward(Block block, List<Transaction> txList) {
+        // block reward = sum(tx's fee) * 0.2
+        BigInteger sumTxsFee = BigInteger.valueOf(0);
+        for (Transaction tx : txList) {
+            if (!org.springframework.util.StringUtils.isEmpty(tx.getTxFee())) {
+                try {
+                    sumTxsFee = sumTxsFee.add(new BigInteger(tx.getTxFee()));
+                } catch (Throwable e) {
+                    // ignore
+                }
+            }
+        }
+        if (!WatcherUtils.isEthereum(block.getChainId())) {
+            sumTxsFee = sumTxsFee.multiply(BigInteger.valueOf(20)).divide(BigInteger.valueOf(100));
+        }
+        block.setReward(sumTxsFee.toString());
+    }
+
+    private void tryGetGasUsedAgain(int chainId, Transaction tx) {
+        if (WatcherUtils.isEthereum(chainId)) {
+            // skip ethereum
+            return;
+        }
+
+        String txHash = tx.getTransactionHash();
+        try {
+            EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(txHash).send();
+            if (receipt == null || receipt.getResult() == null) {
+                log.info("[tryGetGasUsedAgain]receipt is null.txHash:{}", txHash);
+                return;
+            }
+            if (receipt.getResult().getGasUsed() == null) {
+                log.info("[tryGetGasUsedAgain]gasUsed is null.txHash:{}", txHash);
+                return;
+            }
+            tx.setGasUsed(receipt.getResult().getGasUsed());
+            if (!StringUtils.isEmpty(tx.getGasPrice())) {
+                tx.setGasPrice(BigInteger.valueOf(Long.parseLong(tx.getGasPrice())).multiply(tx.getGasUsed()).toString());
+            }
+        } catch (Exception e) {
+            log.info("[tryGetGasUsedAgain]error.txHash:{}", txHash);
+        } finally {
+            log.info("[tryGetGasUsedAgain]txHash:{},gasUsed={}", txHash, tx.getGasUsed());
+        }
+    }
+
     private Date convertTime(long mills) {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(mills);
@@ -418,7 +428,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         log.info("[isBlockExist]consume: {}ms", (System.currentTimeMillis() - t0));
 
         long t1 = System.currentTimeMillis();
-        if (WatcherUtils.getProcessStep() <= 200) {
+        if (!WatcherUtils.isEthereum(block.getChainId())) {
             blockDao.save(block);
         } else {
             // use origin jdbc
@@ -426,7 +436,12 @@ public class EvmDataServiceImpl implements EvmDataService {
             PreparedStatement preparedStatement = null;
             try {
                 connection = JDBCUtils.getConnection();
-                String sql = "INSERT INTO block (block_number, block_hash, chain_id, block_timestamp, parent_hash, miner, nonce, validator, burnt, tx_size, reward, difficulty, total_difficulty, block_size, gas_used, gas_limit, extra_data, create_time, status, block_fee, chain_type, finalized) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                String sql = "INSERT INTO block (block_number, block_hash, chain_id, block_timestamp, parent_hash, " +
+                        "miner, nonce, validator, burnt, tx_size, " +
+                        "reward, difficulty, total_difficulty, block_size, gas_used, " +
+                        "gas_limit, extra_data, create_time, status, block_fee, " +
+                        "chain_type, finalized) " +
+                        "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 preparedStatement = connection.prepareStatement(sql);
                 Block b = block;
                 preparedStatement.setObject(1, b.getBlockNumber());
@@ -472,7 +487,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         }
 
         long t1 = System.currentTimeMillis();
-        if (WatcherUtils.getProcessStep() <= 50) {
+        if (!WatcherUtils.isEthereum(block.getChainId())) {
             transactionDao.saveAll(txList);
         } else {
             // use origin jdbc
@@ -481,7 +496,7 @@ public class EvmDataServiceImpl implements EvmDataService {
             try {
                 connection = JDBCUtils.getConnection();
                 String sql = "INSERT INTO transaction (transaction_hash, transaction_index, block_hash, block_number, chain_id, status, fail_msg, tx_timestamp, " +
-                        "from_addr, to_addr, contract_address, value, tx_fee, gas_limit, gas_used, gas_price, nonce, input, input_method, input_params, tx_type, " +
+                        "from_addr, to_addr, contract_address, value, tx_fee, gas_limit, gas_used, gas_price, nonce, compress(input), tx_type, " +
                         "create_time, chain_type, token_tag) " +
                         " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 preparedStatement = connection.prepareStatement(sql);
@@ -503,21 +518,22 @@ public class EvmDataServiceImpl implements EvmDataService {
                     preparedStatement.setObject(15, b.getGasUsed());
                     preparedStatement.setObject(16, b.getGasPrice());
                     preparedStatement.setObject(17, b.getNonce());
-                    preparedStatement.setObject(18, b.getInput());
-                    preparedStatement.setObject(19, b.getInputMethod());
-                    preparedStatement.setObject(20, b.getInputParams());
-                    preparedStatement.setObject(21, b.getTxType());
-                    preparedStatement.setObject(22, b.getCreateTime());
-                    preparedStatement.setObject(23, b.getChainType());
-                    preparedStatement.setObject(24, b.getTokenTag());
+                    if (WatcherUtils.isEthereum(block.getChainId())) {
+                        preparedStatement.setBlob(18, WatcherUtils.str2Stream(b.getInput()));
+                    } else {
+                        preparedStatement.setObject(18, b.getInput());
+                    }
+                    preparedStatement.setObject(19, b.getTxType());
+                    preparedStatement.setObject(20, b.getCreateTime());
+                    preparedStatement.setObject(21, b.getChainType());
+                    preparedStatement.setObject(22, b.getTokenTag());
 
                     preparedStatement.addBatch();
                 }
                 preparedStatement.executeBatch();
-            } catch (SQLException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                log.error("[saveTransaction]error: " + e.getMessage(), e);
             }finally {
-                // 6. 释放资源
                 JDBCUtils.close(preparedStatement,connection);
             }
         }
@@ -529,8 +545,43 @@ public class EvmDataServiceImpl implements EvmDataService {
             return;
         }
 
-        transactionLogDao.saveAll(logList);
-        log.info("[save]block={},logs saved,size={}", block.getBlockNumber(), logList.size());
+        long t1 = System.currentTimeMillis();
+
+        if (!WatcherUtils.isEthereum(block.getChainId())) {
+            transactionLogDao.saveAll(logList);
+        } else {
+            Connection connection = null;
+            PreparedStatement preparedStatement = null;
+            try {
+                connection = JDBCUtils.getConnection();
+                String sql = "INSERT INTO transaction_log (transaction_hash, log_index, address, compress(data), type, compress(topics), create_time) VALUES (?,?,?,?,?,?,?)";
+                preparedStatement = connection.prepareStatement(sql);
+                for (TransactionLog log : logList) {
+                    preparedStatement.setObject(1, log.getTransactionHash());
+                    preparedStatement.setObject(2, log.getLogIndex());
+                    preparedStatement.setObject(3, log.getAddress());
+                    preparedStatement.setObject(5, log.getType());
+                    preparedStatement.setObject(7, log.getCreateTime());
+
+                    if (WatcherUtils.isEthereum(block.getChainId())) {
+                        preparedStatement.setBlob(4, WatcherUtils.str2Stream(log.getData()));
+                        preparedStatement.setBlob(6, WatcherUtils.str2Stream(log.getTopics()));
+                    } else {
+                        preparedStatement.setObject(4, log.getData());
+                        preparedStatement.setObject(6, log.getTopics());
+                    }
+
+                    preparedStatement.addBatch();
+                }
+                preparedStatement.executeBatch();
+            } catch (Exception e) {
+                log.error("[saveLog]error: " + e.getMessage(), e);
+            } finally {
+                JDBCUtils.close(preparedStatement, connection);
+            }
+        }
+
+        log.info("[saveLog]consume: {}ms, block={}", (System.currentTimeMillis() - t1), block.getBlockNumber());
     }
 }
 

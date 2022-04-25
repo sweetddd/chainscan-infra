@@ -4,7 +4,7 @@ metadata:
   name: $APP_NAME-rinkeby-sandbox
   namespace: paas
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: $APP_NAME-rinkeby-sandbox
