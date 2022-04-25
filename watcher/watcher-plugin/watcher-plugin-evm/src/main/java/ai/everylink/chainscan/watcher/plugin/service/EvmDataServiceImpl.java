@@ -496,9 +496,9 @@ public class EvmDataServiceImpl implements EvmDataService {
             try {
                 connection = JDBCUtils.getConnection();
                 String sql = "INSERT INTO transaction (transaction_hash, transaction_index, block_hash, block_number, chain_id, status, fail_msg, tx_timestamp, " +
-                        "from_addr, to_addr, contract_address, value, tx_fee, gas_limit, gas_used, gas_price, nonce, compress(input), tx_type, " +
+                        "from_addr, to_addr, contract_address, value, tx_fee, gas_limit, gas_used, gas_price, nonce, input, tx_type, " +
                         "create_time, chain_type, token_tag) " +
-                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,compress(?),?,?,?,?)";
                 preparedStatement = connection.prepareStatement(sql);
                 for (Transaction b : txList) {
                     preparedStatement.setObject(1, b.getTransactionHash());
@@ -554,7 +554,8 @@ public class EvmDataServiceImpl implements EvmDataService {
             PreparedStatement preparedStatement = null;
             try {
                 connection = JDBCUtils.getConnection();
-                String sql = "INSERT INTO transaction_log (transaction_hash, log_index, address, compress(data), type, compress(topics), create_time) VALUES (?,?,?,?,?,?,?)";
+                String sql = "INSERT INTO transaction_log (transaction_hash, log_index, address, data, type, topics, create_time) " +
+                        "VALUES (?,?,?,compress(?),?,compress(?),?)";
                 preparedStatement = connection.prepareStatement(sql);
                 for (TransactionLog log : logList) {
                     preparedStatement.setObject(1, log.getTransactionHash());

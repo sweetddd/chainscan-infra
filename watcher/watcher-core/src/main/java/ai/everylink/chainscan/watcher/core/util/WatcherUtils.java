@@ -154,6 +154,9 @@ public final class WatcherUtils {
     }
 
     public static InputStream str2Stream(String str) throws IOException {
+        if (str == null) {
+            str = "";
+        }
         return IOUtils.toInputStream(str, StandardCharsets.UTF_8.name());
     }
 
