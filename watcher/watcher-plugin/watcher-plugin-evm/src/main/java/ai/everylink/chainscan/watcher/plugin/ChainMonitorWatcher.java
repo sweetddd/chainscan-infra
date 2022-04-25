@@ -61,6 +61,12 @@ public class ChainMonitorWatcher implements IWatcher {
      */
     @Override
     public List<EvmData> scanBlock() {
+        String tokenWatcher = System.getenv("watcher.process.only.tokenWatcher");
+        if (!StringUtils.isEmpty(tokenWatcher) && Boolean.parseBoolean(tokenWatcher)) {
+            return null;
+        }
+
+
         init();
         monitor();
         return Lists.newArrayList();

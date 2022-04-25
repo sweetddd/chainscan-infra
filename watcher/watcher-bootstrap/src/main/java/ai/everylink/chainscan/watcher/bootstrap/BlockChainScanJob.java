@@ -49,12 +49,6 @@ public class BlockChainScanJob implements Job {
      */
     @Override
     public void execute(JobExecutionContext ctx) throws JobExecutionException {
-
-        String tokenWatcher = System.getenv("watcher.process.only.tokenWatcher");
-        if (!StringUtils.isEmpty(tokenWatcher) && Boolean.parseBoolean(tokenWatcher)) {
-            return;
-        }
-
         // 标识一次处理过程，便于排查问题
         long id = System.currentTimeMillis();
 
