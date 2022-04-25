@@ -15,9 +15,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 public class TokenScheduleTask {
 
 
-    @Scheduled(cron = "0/5 * * * * ?")
+   // @Scheduled(cron = "0/50 * * * * ?")
     //或直接指定时间间隔，例如：5秒
-    //@Scheduled(fixedRate=5000)
+    @Scheduled(fixedRate=20000)
     private void configureTasks() {
         TokenWatcher tokenWatcher = new TokenWatcher();
         tokenWatcher.scanBlock();
