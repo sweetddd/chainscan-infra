@@ -85,8 +85,9 @@ public class TokenWatcher implements IWatcher {
         }
 
         //执行txDataScan 更新标记;
-        transactionService.updateTokenTag();
-
+        if(txList.size() > 0){
+            transactionService.updateTokenTag();
+        }
         List<EvmData> blockList = Lists.newArrayList();
         return blockList;
     }
