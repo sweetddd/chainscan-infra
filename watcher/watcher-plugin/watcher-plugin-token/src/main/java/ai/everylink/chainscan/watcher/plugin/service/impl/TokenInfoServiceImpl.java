@@ -70,9 +70,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
     private VM30Utils vm30Utils;
 
     @Autowired
-    private TransactionDao transactionDao;
-
-    @Autowired
     private TransactionLogDao transactionLogDao;
 
     @Autowired
@@ -226,7 +223,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 if (StringUtils.isNotBlank(symbol) && StringUtils.isNotBlank(name)) {
                     TokenInfo tokenQuery = new TokenInfo();
                     //判断合约类型
-                    checkTokenType(toAddr, fromAddr, tokenQuery);
+                    checkTokenType(toAddr, fromAddr, tokenQuery,decimals);
                     tokenQuery.setTokenName(name);
                     tokenQuery.setTokenSymbol(symbol);
                     tokenQuery.setDecimals(decimals);
@@ -348,7 +345,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      *
      * @param contract
      */
-    private void checkTokenType(String contract, String fromAddr, TokenInfo tokenInfo) {
+    private void checkTokenType(String contract, String fromAddr, TokenInfo tokenInfo,BigInteger decimals) {
+        boolean erc20  = false;
+        boolean erc721  = false;
+
         try {
             List<Type> parames = new ArrayList<>();
             //ERC20:
@@ -415,8 +415,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             parames.add(new Address(fromAddr));
             boolean isApprovedForAll = vm30Utils.querryFunction(web3j, parames, "isApprovedForAll", fromAddr, contract);
 
-            boolean erc20  = transfer && allowance && totalSupply && balanceOf && transferFrom;
-            boolean erc721 = balanceOf && ownerOf && safeTransferFrom && transferFrom && approve && setApprovalForAll && getApproved && isApprovedForAll;
+           erc20  = transfer && allowance && totalSupply && balanceOf && transferFrom;
+           erc721 = balanceOf && ownerOf && safeTransferFrom && transferFrom && approve && setApprovalForAll && getApproved && isApprovedForAll;
 
             if (erc721) {
                 tokenInfo.setTokenType(2);
@@ -425,10 +425,16 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             } else {
                 tokenInfo.setTokenType(0);
             }
+            if(erc20 && decimals.intValue() != 0  ){
+                tokenInfo.setTokenType(1);
+            }
         } catch (Exception e) {
             log.error("识别合约类型异常:" + e.getMessage());
            // e.printStackTrace();
             tokenInfo.setTokenType(0);
+            if(erc20 && decimals.intValue() != 0  ){
+                tokenInfo.setTokenType(1);
+            }
         }
     }
 
