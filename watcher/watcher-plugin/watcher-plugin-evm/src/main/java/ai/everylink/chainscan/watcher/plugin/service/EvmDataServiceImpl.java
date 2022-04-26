@@ -248,7 +248,9 @@ public class EvmDataServiceImpl implements EvmDataService {
                 //合约地址存储
                 tx.setContractAddress(receipt.getContractAddress());
             }
-
+            if(tx.getStatus()==null){
+                tx.setStatus("0x0");
+            }
             tx.setTokenTag(0);
             tx.setChainType(WatcherUtils.getChainType());
             if (chainId != 4) {
