@@ -331,7 +331,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 nftAccount.setTokenId(tokens.getId());
                 //tokenOfOwnerByIndex
                 BigInteger tokenId  = vm30Utils.tokenOfOwnerByIndex(web3j, contract, fromAddr, i);
-                if(tokenId.intValue() == -1){
+                if(tokenId.intValue() == -1 || ( tokenId.intValue() == 0 && i >0)) {
                     tokens.setTokenType(1);
                     tokenInfoDao.updateTokenType(tokens.getId(), 1);
                     return;

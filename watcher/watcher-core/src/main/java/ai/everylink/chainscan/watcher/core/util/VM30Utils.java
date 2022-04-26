@@ -227,7 +227,7 @@ public class VM30Utils {
         } catch (Exception ex) {
           //  ex.printStackTrace();
             String message = ex.getMessage();
-            if(message.contains("invalid opcode: INVALID")){
+            if(message.contains("org.web3j.tx.exceptions.ContractCallException")){
                 return new BigInteger("-1");
             }
             //org.web3j.tx.exceptions.ContractCallException: Contract Call has been reverted by the EVM with the reason: 'invalid opcode: INVALID'.
