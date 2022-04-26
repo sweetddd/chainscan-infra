@@ -108,6 +108,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      */
     @Override
     public void tokenTxScan(Transaction transaction) {
+//        BigInteger tokenId  = vm30Utils.tokenOfOwnerByIndex(web3j, "0x9533e4b3c982383544fe9f81fac4762c6c87e298", "0xc5989f90f41c2f4df71076680a597432136bc10d", 1);
+//        Utf8String tokenURL = vm30Utils.tokenURL(web3j, "0x9533e4b3c982383544fe9f81fac4762c6c87e298", tokenId);
+
         String value    = transaction.getValue();
         String toAddr   = transaction.getToAddr();
         String fromAddr = transaction.getFromAddr();
@@ -328,6 +331,11 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 nftAccount.setTokenId(tokens.getId());
                 //tokenOfOwnerByIndex
                 BigInteger tokenId  = vm30Utils.tokenOfOwnerByIndex(web3j, contract, fromAddr, i);
+                if(tokenId.intValue() == -1){
+                    tokens.setTokenType(1);
+                    tokenInfoDao.updateTokenType(tokens.getId(), 1);
+                    return;
+                }
                 Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
                 nftAccount.setNftData(tokenURL.toString());
                 nftAccount.setNftId(tokenId.longValue());

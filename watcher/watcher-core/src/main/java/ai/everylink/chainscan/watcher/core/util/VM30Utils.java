@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.web3j.abi.FunctionEncoder;
-import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.Utf8String;
@@ -227,7 +226,12 @@ public class VM30Utils {
             tokenId = contract.tokenOfOwnerByIndex(address,index).send();
         } catch (Exception ex) {
           //  ex.printStackTrace();
-            log.debug("获取tokenId失败:" + contractAddress);
+            String message = ex.getMessage();
+            if(message.contains("invalid opcode: INVALID")){
+                return new BigInteger("-1");
+            }
+            //org.web3j.tx.exceptions.ContractCallException: Contract Call has been reverted by the EVM with the reason: 'invalid opcode: INVALID'.
+
         }
         return tokenId;
     }

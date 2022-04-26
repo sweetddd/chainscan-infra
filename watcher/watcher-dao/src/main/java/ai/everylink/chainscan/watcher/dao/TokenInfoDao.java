@@ -56,4 +56,14 @@ public interface TokenInfoDao extends JpaRepository<TokenInfo, String> {
     @Transactional
     @Query(value = "update token_info set address =(?1) where id=(?2)", nativeQuery = true)
     void updateAddress(String toString, long id);
+
+    /**
+     * 更新合约类型
+     * @param id
+     * @param i
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "update token_info set token_type =(?2) where id=(?1)", nativeQuery = true)
+    void updateTokenType(Long id, int i);
 }
