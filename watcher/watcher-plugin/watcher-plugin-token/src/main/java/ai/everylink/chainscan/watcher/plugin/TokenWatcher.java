@@ -62,7 +62,7 @@ public class TokenWatcher implements IWatcher {
         }
 
         List<Transaction> txList = new ArrayList<>();
-        if (!onlyEvmPlugin()){
+        if (onlyEvmPlugin()){
             txList =  transactionService.getTxData();
         }
         log.info("watcher=[TokenWatcher],txListSize = " + txList.size());
