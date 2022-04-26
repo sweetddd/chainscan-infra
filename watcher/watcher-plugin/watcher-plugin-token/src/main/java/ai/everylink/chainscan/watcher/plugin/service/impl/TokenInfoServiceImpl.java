@@ -337,6 +337,11 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     return;
                 }
                 Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
+                if(StringUtils.isEmpty(tokenURL.toString())){
+                    tokens.setTokenType(1);
+                    tokenInfoDao.updateTokenType(tokens.getId(), 1);
+                    return;
+                }
                 nftAccount.setNftData(tokenURL.toString());
                 nftAccount.setNftId(tokenId.longValue());
             }   catch (Exception e) {
