@@ -98,7 +98,19 @@ public class WatcherBootstrapApplication {
                     return tWatchers;
                 }
             }
+        }else {
+            ArrayList<IWatcher> tWatchers = new ArrayList<>();
+            for (IWatcher iWatcher : watcherList) {
+                String name = iWatcher.getClass().getName();
+                if (name.equals("ai.everylink.chainscan.watcher.plugin.TokenWatcher")) {
+                    tWatchers.add(iWatcher);
+                    return tWatchers;
+                }
+            }
         }
+
+
+
         return watcherList == null ? Lists.newArrayList() : Lists.newArrayList(watcherList);
     }
 
