@@ -48,6 +48,6 @@ public interface TransactionDao extends JpaRepository<Transaction, Long> {
      * 加载tx数据
      * @return
      */
-    @Query(value = "select * from transaction where token_tag=0 order by id ASC limit 100", nativeQuery = true)
-    List<Transaction> getTxData();
+    @Query(value = "select * from transaction where id >= :startId and id <= :endId ", nativeQuery = true)
+    List<Transaction> getTxData(@Param("startId")Long startId,@Param("endId") Long endId);
 }

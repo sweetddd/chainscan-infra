@@ -22,9 +22,9 @@ import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
-import ai.everylink.chainscan.watcher.dao.TransactionDao;
 import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
+import ai.everylink.chainscan.watcher.plugin.service.TransactionService;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
@@ -46,7 +46,7 @@ public class TokenWatcher implements IWatcher {
 
     private TokenInfoService tokenService;
 
-    private TransactionDao transactionDao;
+    private TransactionService transactionService;
 
     @Override
     public List<EvmData> scanBlock() {
@@ -62,8 +62,8 @@ public class TokenWatcher implements IWatcher {
         }
 
         List<Transaction> txList = new ArrayList<>();
-        if (onlyEvmPlugin()){
-            txList =  transactionDao.getTxData();
+        if (!onlyEvmPlugin()){
+            txList =  transactionService.getTxData();
         }
         log.info("watcher=[TokenWatcher],txListSize = " + txList.size());
         for (IWatcherPlugin plugin : pluginList) {
@@ -85,11 +85,8 @@ public class TokenWatcher implements IWatcher {
         }
 
         //执行txDataScan 更新标记;
-        if( !CollectionUtils.isEmpty(txList)){
-            for (ai.everylink.chainscan.watcher.entity.Transaction transaction : txList) {
-                transactionDao.updateTokenTag(transaction.getId());
-            }
-        }
+        transactionService.updateTokenTag();
+
         List<EvmData> blockList = Lists.newArrayList();
         return blockList;
     }
@@ -128,8 +125,8 @@ public class TokenWatcher implements IWatcher {
         if (tokenService == null) {
             tokenService = SpringApplicationUtils.getBean(TokenInfoService.class);
         }
-        if (transactionDao == null) {
-            transactionDao = SpringApplicationUtils.getBean(TransactionDao.class);
+        if (transactionService == null) {
+            transactionService = SpringApplicationUtils.getBean(TransactionService.class);
         }
     }
 

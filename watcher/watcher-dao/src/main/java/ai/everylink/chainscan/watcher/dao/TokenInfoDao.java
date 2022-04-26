@@ -19,7 +19,9 @@ package ai.everylink.chainscan.watcher.dao;
 
 import ai.everylink.chainscan.watcher.entity.TokenInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * CoinDao
@@ -35,5 +37,23 @@ public interface TokenInfoDao extends JpaRepository<TokenInfo, String> {
      * @return
      */
     @Query(value = "select * from token_info where  address=:contract", nativeQuery = true)
-    public TokenInfo findAllByAddress(String contract);
+    TokenInfo findAllByAddress(String contract);
+
+    /**
+     * 查询合约信息
+     * @param txTag
+     * @return
+     */
+    @Query(value = "select * from token_info where  token_name=:txTag", nativeQuery = true)
+    TokenInfo selectByTokenName(String txTag);
+
+    /**
+     * 更新token信息
+     * @param toString
+     * @param id
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "update token_info set address =(?1) where id=(?2)", nativeQuery = true)
+    void updateAddress(String toString, long id);
 }
