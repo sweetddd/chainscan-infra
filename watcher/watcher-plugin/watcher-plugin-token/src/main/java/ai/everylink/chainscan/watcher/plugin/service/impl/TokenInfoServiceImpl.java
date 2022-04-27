@@ -114,12 +114,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         String value    = transaction.getValue();
         String toAddr   = transaction.getToAddr();
         String fromAddr = transaction.getFromAddr();
-        if(StringUtils.isNotBlank(fromAddr)){
-            addAccountInfo(fromAddr); //增加用户信息;
-        }
         //交易value为0则为 合约方法调用;
-        if (value.equals("0") && StringUtils.isNotBlank(toAddr)) {
+        if (value.equals("0") && StringUtils.isNotBlank(toAddr) && StringUtils.isNotBlank(fromAddr)) {
             addToken(toAddr, fromAddr); //增加合约信息;
+            addAccountInfo(fromAddr); //增加用户信息;
         }
         //转账事件
         transactionLogDao.findByTxHash(transaction.getTransactionHash()).forEach(transactionLog -> {
@@ -262,9 +260,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 return;
             }
             //查询账户信息; 如果没有数据就新增
-            AccountInfo accountInfo = accountInfoDao.findByAddress(fromAddr);
-            if (accountInfo == null) {
-                new AccountInfo();
+            AccountInfo query = accountInfoDao.findByAddress(fromAddr);
+            if (query == null) {
+                AccountInfo accountInfo = new AccountInfo();
                 accountInfo.setAddress(fromAddr);
                 accountInfo.setCreateTime(new Date());
                 accountInfo.setUpdateTime(new Date());
@@ -275,7 +273,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             //查询账户余额
             BigInteger          amount  = vm30Utils.balanceOf(web3j, contract, fromAddr);
             TokenAccountBalance balance = new TokenAccountBalance();
-            balance.setAccountId(accountInfo.getId());
+            balance.setAccountId(query.getId());
             balance.setTokenId(tokens.getId());
             Example<TokenAccountBalance> exp      = Example.of(balance);
             List<TokenAccountBalance>    balances = tokenAccountBalanceDao.findAll(exp);
