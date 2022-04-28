@@ -23,6 +23,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
+
 /**
  * CoinDao
  *
@@ -54,8 +56,8 @@ public interface TokenInfoDao extends JpaRepository<TokenInfo, String> {
      */
     @Modifying
     @Transactional
-    @Query(value = "update token_info set address =(?1) where id=(?2)", nativeQuery = true)
-    void updateAddress(String toString, long id);
+    @Query(value = "update token_info set address =(?1),decimals =(?2)  where id=(?3)", nativeQuery = true)
+    void updateAddress(String toString, BigInteger count , long id);
 
     /**
      * 更新合约类型

@@ -13,13 +13,16 @@ public interface TransactionService {
 
     /**
      * 更新标记;
-     * @param id
+     * @param jobName
+     * @param size
      */
-    void updateTokenTag();
+    void updateTokenTag(String jobName, int size);
 
     /**
      * 加载交易数据
+     * @param jobName
+     * @param jobIndex
      * @return
      */
-    List<Transaction> getTxData();
+    List<Transaction> getTxData(String jobName,String jobIndex);
 }

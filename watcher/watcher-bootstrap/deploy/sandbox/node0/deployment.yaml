@@ -153,5 +153,9 @@ spec:
                     values:
                       - $APP_NAME-dtx-sandbox
                       - $APP_NAME-rinkeby-sandbox
-                      - $APP_NAME-rinkeby-job-sandbox
+                      - $APP_NAME-rinkeby-job-1-sandbox
+                      - $APP_NAME-rinkeby-job-2-sandbox
+                      - $APP_NAME-rinkeby-job-3-sandbox
+                      - $APP_NAME-rinkeby-job-4-sandbox
+                      - $APP_NAME-rinkeby-job-5-sandbox
               topologyKey: "kubernetes.io/hostname"

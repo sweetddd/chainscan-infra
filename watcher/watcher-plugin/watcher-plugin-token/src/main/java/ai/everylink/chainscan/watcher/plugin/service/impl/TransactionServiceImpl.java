@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -29,27 +31,37 @@ public class TransactionServiceImpl implements TransactionService {
 
 
     @Override
-    public void updateTokenTag() {
-        TokenInfo   queryInfo = tokenInfoDao.selectByTokenName("txTag");
-        String      address     = queryInfo.getAddress();
+    public void updateTokenTag(String jobName, int size) {
+        TokenInfo  queryInfo = tokenInfoDao.selectByTokenName(jobName);
+        String      address  = queryInfo.getAddress();
+        BigInteger  decimals = queryInfo.getDecimals();
+        BigInteger  count = decimals.add(new BigInteger(size + ""));
         long        stratId    = Long.parseLong(address);
-        tokenInfoDao.updateAddress((stratId+100L) + "" ,queryInfo.getId());
+        tokenInfoDao.updateAddress((stratId+100L) + "" ,count,queryInfo.getId());
     }
 
     @Override
-    public List<Transaction> getTxData() {
-        TokenInfo   queryInfo = tokenInfoDao.selectByTokenName("txTag");
+    public List<Transaction> getTxData(String jobName,String jobIndex) {
+        long  endIndex = Long.parseLong(jobIndex);
+        TokenInfo   queryInfo = tokenInfoDao.selectByTokenName(jobName);
         if(queryInfo == null){
             TokenInfo tokenInfo = new TokenInfo();
-            tokenInfo.setTokenName("txTag");
-            tokenInfo.setAddress(1L+"");
+            tokenInfo.setTokenName(jobName);
+            tokenInfo.setTokenSymbol(jobName);
+            endIndex = endIndex - 27856750L;
+            tokenInfo.setAddress(endIndex+"");
             tokenInfo.setTokenType(0);
+            tokenInfo.setDecimals(BigInteger.ZERO);
             tokenInfo.setCreateTime(new Date());
             tokenInfoDao.save(tokenInfo);
             return transactionDao.getTxData(1L,100L);
         }
         String      address     = queryInfo.getAddress();
         long        stratId    = Long.parseLong(address);
+        if(stratId >= endIndex){
+            log.info(jobName + "加载数据任务完成!");
+            return new ArrayList<>();
+        }
         long        endId    = stratId + 100;
         return transactionDao.getTxData(stratId,endId);
     }

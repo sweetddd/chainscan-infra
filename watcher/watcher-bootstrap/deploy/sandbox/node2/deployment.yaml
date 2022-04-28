@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $APP_NAME-rinkeby-job-sandbox
+  name: $APP_NAME-rinkeby-job-1-sandbox
   namespace: paas
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: $APP_NAME-rinkeby-job-sandbox
+      app: $APP_NAME-rinkeby-job-1-sandbox
   template:
     metadata:
       labels:
-        app: $APP_NAME-rinkeby-job-sandbox
+        app: $APP_NAME-rinkeby-job-1-sandbox
     spec:
       containers:
-      - name: $APP_NAME-rinkeby-job-sandbox
+      - name: $APP_NAME-rinkeby-job-1-sandbox
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
@@ -116,6 +116,10 @@ spec:
             value: true
           - name: "watcher.process.only.tokenWatcher"
             value: true
+          - name: "watcher.process.only.tokenWatcher.jobName"
+            value: rinkeby-job-1
+          - name: "watcher.process.only.tokenWatcher.jobIndex"
+            value: 37363351
           - name: "watcher.bridge.contract.address"
             value: "0xf62B76556f86503C9986F25D3DC59CC538f50f51"
           - name: "watcher.monitor.cron"
@@ -138,5 +142,9 @@ spec:
                     values:
                       - $APP_NAME-dtx-sandbox
                       - $APP_NAME-rinkeby-sandbox
-                      - $APP_NAME-rinkeby-job-sandbox
+                      - $APP_NAME-rinkeby-job-1-sandbox
+                      - $APP_NAME-rinkeby-job-2-sandbox
+                      - $APP_NAME-rinkeby-job-3-sandbox
+                      - $APP_NAME-rinkeby-job-4-sandbox
+                      - $APP_NAME-rinkeby-job-5-sandbox
               topologyKey: "kubernetes.io/hostname"

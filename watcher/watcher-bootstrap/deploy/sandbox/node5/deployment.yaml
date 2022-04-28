@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $APP_NAME-rinkeby-sandbox
+  name: $APP_NAME-rinkeby-job-4-sandbox
   namespace: paas
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: $APP_NAME-rinkeby-sandbox
+      app: $APP_NAME-rinkeby-job-4-sandbox
   template:
     metadata:
       labels:
-        app: $APP_NAME-rinkeby-sandbox
+        app: $APP_NAME-rinkeby-job-4-sandbox
     spec:
       containers:
-      - name: $APP_NAME-rinkeby-sandbox
+      - name: $APP_NAME-rinkeby-job-4-sandbox
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
@@ -94,6 +94,7 @@ spec:
                 name: network-config
                 key: ether.rpc.api
           - name: "watcher.vmChainUrl"
+#            value: https://eth-rinkeby.alchemyapi.io/v2/Wh0cFuopX8Z3xC_hMpE9vgQVwDbOrFS2
             value: http://ethereum-client-sandbox.chain-sandbox.svc.cluster.local:8545
           - name: "watcher.chain.scanStep"
             value: 200
@@ -113,6 +114,12 @@ spec:
             value: true
           - name: "watcher.process.only.evmplugin"
             value: true
+          - name: "watcher.process.only.tokenWatcher"
+            value: true
+          - name: "watcher.process.only.tokenWatcher.jobName"
+            value: rinkeby-job-4
+          - name: "watcher.process.only.tokenWatcher.jobIndex"
+            value: 120933601
           - name: "watcher.bridge.contract.address"
             value: "0xf62B76556f86503C9986F25D3DC59CC538f50f51"
           - name: "watcher.monitor.cron"
