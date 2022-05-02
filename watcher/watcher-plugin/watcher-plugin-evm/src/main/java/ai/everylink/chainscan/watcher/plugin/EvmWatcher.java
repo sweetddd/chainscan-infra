@@ -120,7 +120,7 @@ public class EvmWatcher implements IWatcher {
 
         init();
 
-        if (chainId == 4) {
+        if (WatcherUtils.isEthereum(chainId)) {
             logger.info("Rinkeby scan optimize");
             return rinkebyScanSpecial();
         }
@@ -189,12 +189,7 @@ public class EvmWatcher implements IWatcher {
             return defaultList;
         }
 
-        long maxBlock = 10205680;
-        Long dbHeight = getMaxTid();
-        if (dbHeight >= maxBlock) {
-            // 获取数据库保存的扫块高度
-            dbHeight = evmDataService.getMaxBlockNum(chainId);
-        }
+        Long dbHeight = evmDataService.getMaxBlockNum(chainId);
 
         // 获取链上高度
         Long chainHeight = getNetworkBlockHeight();
@@ -227,7 +222,6 @@ public class EvmWatcher implements IWatcher {
             return defaultList;
         }
 
-        updateTid(end);
         logger.info("[rinkebyScan]end to scan. start={},end={},size={},consume={}ms", start, end, dataList.size(), (System.currentTimeMillis() - t1));
         return dataList;
     }
@@ -355,23 +349,13 @@ public class EvmWatcher implements IWatcher {
                 }
 
                 // 并发查询交易列表
-                if (chainId != 4
-                        || ( chainId == 4 && data.getBlock().getNumber().longValue() > 10000000L)) {
-                    if (!CollectionUtils.isEmpty(data.getBlock().getTransactions())) {
-                        CountDownLatch txLatch = new CountDownLatch(data.getBlock().getTransactions().size());
-                        for (EthBlock.TransactionResult transactionResult : data.getBlock().getTransactions()) {
-                            Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
-                            scanTxPool.submit(new ReplayTransactionThread(txLatch, data, tx.getHash()));
-                        }
-                        txLatch.await(3, TimeUnit.MINUTES);
-
-                        // 校验
-                        if (data.getBlock().getTransactions().size() != data.getTxList().size()) {
-                            logger.warn("[EvmWatcher]Scan tx size {} mismatch expect size {}. blockNum={}",
-                                    data.getTxList().size(), data.getBlock().getTransactions().size(), blockNum);
-//                        return;
-                        }
+                if (!CollectionUtils.isEmpty(data.getBlock().getTransactions())) {
+                    CountDownLatch txLatch = new CountDownLatch(data.getBlock().getTransactions().size());
+                    for (EthBlock.TransactionResult transactionResult : data.getBlock().getTransactions()) {
+                        Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
+                        scanTxPool.submit(new ReplayTransactionThread(txLatch, data, tx.getHash()));
                     }
+                    txLatch.await(3, TimeUnit.MINUTES);
                 }
 
                 list.add(data);
@@ -438,8 +422,6 @@ public class EvmWatcher implements IWatcher {
 
         // 获取Logs
         if (!CollectionUtils.isEmpty(receipt.getResult().getLogs())) {
-            logger.info("[EvmWatcher]Found logs.block={},tx={},count={}",
-                    blockNumber, txHash, receipt.getResult().getLogs().size());
             data.getTransactionLogMap().put(txHash, receipt.getResult().getLogs());
         }
     }
@@ -501,45 +483,6 @@ public class EvmWatcher implements IWatcher {
         } catch (Throwable e) {
             logger.error("Error occured when request web3j.ethBlockNumber.", e);
             return 0L;
-        }
-    }
-
-    private static long getMaxTid() {
-        Connection conn = null;
-        PreparedStatement pst = null;
-        try {
-            conn = JDBCUtils.getConnection();
-            String sql = "select max(tid) from tid";
-            pst = conn.prepareStatement(sql);
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                return rs.getLong(1);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally {
-            // 6. 释放资源
-            JDBCUtils.close(pst,conn);
-        }
-
-        return 0;
-    }
-
-    private static void updateTid(long tid) {
-        Connection conn = null;
-        PreparedStatement pst = null;
-        try {
-            conn = JDBCUtils.getConnection();
-            String sql = "insert into tid(tid) values(?)";
-            pst = conn.prepareStatement(sql);
-            pst.setLong(1, tid);
-            int rows = pst.executeUpdate();
-            logger.info("[watcher_fix]updateTid.tid={},rows={}", tid, rows);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally {
-            // 6. 释放资源
-            JDBCUtils.close(pst,conn);
         }
     }
 

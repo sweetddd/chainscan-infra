@@ -203,13 +203,6 @@ public class EvmDataServiceImpl implements EvmDataService {
             tx.setCreateTime(new Date());
 
             TransactionReceipt receipt = data.getTxList().get(item.getHash());
-            if (chainId != 4) {
-                if (receipt == null) {
-                    log.info("[buildTransactionList]get receipt isNull. tx:{}", item.getHash());
-                } else {
-                    log.info("[buildTransactionList]get receipt. tx:{},gasUsed:{}", item.getHash(), receipt.getGasUsed());
-                }
-            }
             if (receipt != null) {
                 // status
                 if (receipt.getStatus() != null &&
@@ -373,7 +366,7 @@ public class EvmDataServiceImpl implements EvmDataService {
                 tx.setGasPrice(BigInteger.valueOf(Long.parseLong(tx.getGasPrice())).multiply(tx.getGasUsed()).toString());
             }
         } catch (Exception e) {
-            log.info("[tryGetGasUsedAgain]error.txHash:{}", txHash);
+            log.error("[tryGetGasUsedAgain]error.txHash:{}", txHash);
         } finally {
             log.info("[tryGetGasUsedAgain]txHash:{},gasUsed={}", txHash, tx.getGasUsed());
         }
@@ -422,12 +415,10 @@ public class EvmDataServiceImpl implements EvmDataService {
     }
 
     private void insertBlock(Block block) {
-        long t0 = System.currentTimeMillis();
         if (isBlockExist(block.getBlockNumber(), block.getChainId())) {
             log.info("[save]block exist.");
             return;
         }
-        log.info("[isBlockExist]consume: {}ms", (System.currentTimeMillis() - t0));
 
         long t1 = System.currentTimeMillis();
         if (!WatcherUtils.isEthereum(block.getChainId())) {
