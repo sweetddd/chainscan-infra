@@ -256,7 +256,7 @@ public class EvmWatcher implements IWatcher {
         }
         logger.info("[EvmWatcher]begin to scan.dbHeight={},chainHeight={},start={},end={}", dbHeight, chainHeight, start, end);
 
-        // 并发扫块
+        // 并发扫块.当start=end时，则退化为串行扫块
         List<EvmData> dataList = currentReplayBlock(start, end);
 
         // 校验数据
