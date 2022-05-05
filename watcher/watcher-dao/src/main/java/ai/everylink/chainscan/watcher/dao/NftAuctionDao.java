@@ -17,7 +17,7 @@
 
 package ai.everylink.chainscan.watcher.dao;
 
-import ai.everylink.chainscan.watcher.entity.NftAccount;
+import ai.everylink.chainscan.watcher.entity.NftAuction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -27,26 +27,17 @@ import org.springframework.transaction.annotation.Transactional;
  * NftAccountDao
  *
  * @author brett
- * @since 2021-12-14
+ * @since 2022-05-05
  */
-public interface NftAccountDao extends JpaRepository<NftAccount, String> {
+public interface NftAuctionDao extends JpaRepository<NftAuction, String> {
 
     /**
-     * 删除账户在合约上的NFT信息
-     * @param accountId
+     * 拍卖成交
+     * @param nftContractAddress
      * @param tokenId
      */
-    @Query(value = "delete from nft_account   where  account_id=(?1) and token_id=(?2)", nativeQuery = true)
+    @Query(value = "update nft_auction set state=2,update_time= NOW()  where nft_contract_address=:nftContractAddress and nft_id =:tokenId ", nativeQuery = true)
     @Modifying
     @Transactional
-    void deleteNftAccount(Long accountId, Long tokenId);
-
-    /**
-     * 查询账户在合约上的NFT信息
-     * @param nftId
-     * @param tokenId
-     * @return
-     */
-    @Query(value = "select * from nft_account where nft_id=:nftId and token_id =:tokenId ", nativeQuery = true)
-    NftAccount selectByTokenIdContract(long nftId, Long tokenId);
+    void finish(String nftContractAddress, Long tokenId);
 }
