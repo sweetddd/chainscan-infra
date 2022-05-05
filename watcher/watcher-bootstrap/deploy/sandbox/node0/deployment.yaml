@@ -114,9 +114,9 @@ spec:
                 name: network-config
                 key: dtx.rpc.api
           - name: "watcher.chain.scanStep"
-            value: 100
+            value: 1
           - name: "watcher.chain.processStep"
-            value: 200
+            value: 10
           - name: "watcher.chain.chainId"
             value: 97
           - name: "watcher.chain.batchInsertSize"

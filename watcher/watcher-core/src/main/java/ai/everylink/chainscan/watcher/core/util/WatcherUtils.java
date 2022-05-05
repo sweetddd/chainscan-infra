@@ -150,7 +150,7 @@ public final class WatcherUtils {
     }
 
     public static boolean isEthereum(Integer chainId) {
-        return chainId != null && (chainId == 4 || chainId ==1);
+        return chainId != null && (chainId == 4 || chainId == 1);
     }
 
     public static InputStream str2Stream(String str) throws IOException {

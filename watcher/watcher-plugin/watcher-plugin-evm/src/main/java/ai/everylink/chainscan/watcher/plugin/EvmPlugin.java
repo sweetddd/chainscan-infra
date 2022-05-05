@@ -26,8 +26,6 @@ import ai.everylink.chainscan.watcher.plugin.service.EvmScanDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigInteger;
-
 /**
  * ERC20 chain data plugin
  *
@@ -44,19 +42,15 @@ public class EvmPlugin implements IEvmWatcherPlugin {
 
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
-        EvmData blockData = (EvmData) block;
         initService();
 
-        BigInteger blockNumber = blockData.getBlock().getNumber();
-        logger.info("EvmPlugin 处理: " + blockNumber
-                                   + "; tx size=" + blockData.getBlock().getTransactions().size());
-
+        EvmData blockData = (EvmData) block;
         try {
             long t1 = System.currentTimeMillis();
             evmDataService.saveEvmData(blockData);
             logger.info("[EvmWatcher]saveEvmData.consume={}ms", (System.currentTimeMillis() - t1));
         } catch (Exception e) {
-            logger.error("Error occured when process block=" + blockNumber, e);
+            logger.error("[EvmWatcher]Process block error.block=" + blockData.getBlock().getNumber(), e);
             return false;
         }
 
