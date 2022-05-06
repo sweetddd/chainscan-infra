@@ -129,16 +129,16 @@ public class ChainMonitorWatcher implements IWatcher {
         int web3ErrCnt = 0;
         for (int i = 0; i < 10; i++) {
             try {
-                web3j.ethBlockNumber().send();
                 Thread.sleep(1000);
+                web3j.ethBlockNumber().send();
             } catch (Throwable e) {
                 web3ErrCnt ++;
-                if (web3ErrCnt > 1) {
+                if (web3ErrCnt > 5) {
                     break;
                 }
             }
         }
-        if (web3ErrCnt > 1) {
+        if (web3ErrCnt > 5) {
             SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警", "VM链连接出错: " + WatcherUtils.getVmChainUrl());
             return;
         }
