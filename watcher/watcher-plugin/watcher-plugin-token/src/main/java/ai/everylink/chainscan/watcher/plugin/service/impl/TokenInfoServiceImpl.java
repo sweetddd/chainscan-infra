@@ -478,6 +478,21 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             } else {
                 tx.setTxType(1);
             }
+            //创建合约交易
+            if(item.getInput().length() > 10){
+                String function = item.getInput().substring(0, 10);
+                if(function.equals("0x60806040") && ((EthBlock.TransactionObject) result).getCreates() != null){
+                    //设置to地址为合约地址
+                    tx.setToAddr(((EthBlock.TransactionObject) result).getCreates());
+                }
+                if(function.equals("0x60e06040") && ((EthBlock.TransactionObject) result).getCreates() != null){
+                    //设置to地址为合约地址
+                    tx.setToAddr(((EthBlock.TransactionObject) result).getCreates());
+                }
+            }
+            //合约地址存储
+            tx.setContractAddress(((EthBlock.TransactionObject) result).getCreates());
+
             tx.setCreateTime(new Date());
             inputParams(tx);
             tx.setTokenTag(0);
