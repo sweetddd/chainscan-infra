@@ -134,7 +134,7 @@ spec:
           - name: "watcher.bridge.contract.address"
             value: "0xb382f247ef75878cac13c8a8b63816249b43f4b9"
           - name: "watcher.nft.auction.address"
-            value: "0xb382f247ef75878cac13c8a8b63816249b43f4b9"
+            value: "0x9b38f6fa3943c24f4998d73d178fb1e2899a1365"
           - name: "watcher.monitor.cron"
             value: "0 */1 * * * ?"
       volumes:
