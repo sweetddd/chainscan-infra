@@ -107,6 +107,7 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
     @Override
     public void nftAuctionScan(EvmData blockData) {
         String            nftAuctionContracts = environment.getProperty("watcher.nft.auction.address");
+       // String            nftAuctionContracts = "0x9b38f6fa3943c24f4998d73d178fb1e2899a1365";
         int               chainId             = blockData.getChainId();
         List<Transaction> txList              = buildTransactionList(blockData, chainId);
         // 事件监听 解析;
@@ -177,6 +178,7 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         nftAuction.setCreateTime(new Date().toInstant());
         nftAuction.setAccountAddress(transaction.getFromAddr());
         nftAuction.setNftContractAddress(nftContractAddress);
+        nftAuction.setDeleted(false);
         nftAuctionDao.save(nftAuction);
     }
 
