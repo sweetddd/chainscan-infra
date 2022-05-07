@@ -151,6 +151,18 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             if (value.equals("0") && StringUtils.isNotBlank(toAddr)) {
                 addToken(toAddr, fromAddr); //增加合约信息;
             }
+
+            String method = transaction.getInputMethod();
+            if (method.contains("mint(") ){
+                String input = transaction.getInput();
+                List<String> params2List = DecodUtils.getParams2List(input);
+                String accountAdd = "0x" + params2List.get(1).substring(params2List.get(1).length() - 40);
+                addAccountInfo(accountAdd); //增加用户信息;
+                saveOrUpdateBalance(accountAdd, toAddr);
+                updateNftAccount(accountAdd, toAddr);
+            }
+
+
             //账户信息余额更新;
 //            if (method != null && method.length() > 40) {
 //                if (method.contains("mint(") || method.contains("transfer(") || method.contains("transferFrom(")
