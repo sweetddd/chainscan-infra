@@ -160,6 +160,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 addAccountInfo(accountAdd); //增加用户信息;
                 saveOrUpdateBalance(accountAdd, toAddr);
                 updateNftAccount(accountAdd, toAddr);
+                return;
             }
 
 
