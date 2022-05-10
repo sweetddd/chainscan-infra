@@ -122,13 +122,14 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
                     List<String> params = DecodUtils.getParams2List(input);
                     String       method = params.get(0);
                     //监控NFT 拍卖创建交易
-                    if (params.size() > 2 && method.contains("0xf583bac7")) {
+                    if (params.size() > 2 && method.contains("0x8fa4a10f")) {
                         createNewNftAuction(transaction, params);
                         //监控NFT 拍卖成交交易
                     } else if (params.size() > 2 && method.contains("0x848e5c77")) {
                         finishNftAuction(transaction, params);
                         //监控NFT 拍卖取消交易
-                    } else if (params.size() > 2 && method.contains("0x848e5c77")) {
+                    }
+                    else if (params.size() > 2 && method.contains("0x848e5c77")) {
                         cancelNftAuction(transaction, params);
                     }
                 }
