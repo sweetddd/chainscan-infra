@@ -171,9 +171,9 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         nftAuction.setAuctionEnd(time + auctionBidPeriod);
         Long bidIncreasePercentage = Long.parseLong(params.get(7), 16);
         nftAuction.setBidIncreasePercentage(bidIncreasePercentage);
-        Long feePercentages = Long.parseLong(params.get(13), 16);
+        Long feePercentages = Long.parseLong(params.get(14), 16);
         nftAuction.setFeePercentages(feePercentages);
-        String feeRecipients = "0x" + params.get(11).substring(params.get(3).length() - 40, params.get(3).length());
+        String feeRecipients = "0x" + params.get(12).substring(params.get(3).length() - 40, params.get(3).length());
         nftAuction.setFeeRecipients(feeRecipients);
         nftAuction.setState(NFTAuctionConstant.STATE_CREAT);
         nftAuction.setCreateTime(new Date().toInstant());
