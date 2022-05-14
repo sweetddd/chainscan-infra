@@ -122,13 +122,14 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
                     List<String> params = DecodUtils.getParams2List(input);
                     String       method = params.get(0);
                     //监控NFT 拍卖创建交易
-                    if (params.size() > 2 && method.contains("0xf583bac7")) {
+                    if (params.size() > 2 && method.contains("0x8fa4a10f")) {
                         createNewNftAuction(transaction, params);
                         //监控NFT 拍卖成交交易
                     } else if (params.size() > 2 && method.contains("0x848e5c77")) {
                         finishNftAuction(transaction, params);
                         //监控NFT 拍卖取消交易
-                    } else if (params.size() > 2 && method.contains("0x848e5c77")) {
+                    }
+                    else if (params.size() > 2 && method.contains("0x848e5c77")) {
                         cancelNftAuction(transaction, params);
                     }
                 }
@@ -170,9 +171,9 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         nftAuction.setAuctionEnd(time + auctionBidPeriod);
         Long bidIncreasePercentage = Long.parseLong(params.get(7), 16);
         nftAuction.setBidIncreasePercentage(bidIncreasePercentage);
-        Long feePercentages = Long.parseLong(params.get(13), 16);
+        Long feePercentages = Long.parseLong(params.get(14), 16);
         nftAuction.setFeePercentages(feePercentages);
-        String feeRecipients = "0x" + params.get(11).substring(params.get(3).length() - 40, params.get(3).length());
+        String feeRecipients = "0x" + params.get(12).substring(params.get(3).length() - 40, params.get(3).length());
         nftAuction.setFeeRecipients(feeRecipients);
         nftAuction.setState(NFTAuctionConstant.STATE_CREAT);
         nftAuction.setCreateTime(new Date().toInstant());
