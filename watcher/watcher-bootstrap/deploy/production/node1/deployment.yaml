@@ -97,7 +97,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: ether.rpc.api
+                key: rinkeby.local
           - name: "watcher.chain.scanStep"
             value: 200
           - name: "watcher.chain.chainId"

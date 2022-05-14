@@ -94,7 +94,10 @@ spec:
                 name: network-config
                 key: ether.rpc.api
           - name: "watcher.vmChainUrl"
-            value: http://ethereum-client-sandbox.chain-sandbox.svc.cluster.local:8545
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: rinkeby.local
           - name: "watcher.chain.scanStep"
             value: 50
           - name: "watcher.chain.chainId"
