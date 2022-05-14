@@ -23,8 +23,6 @@ import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.*;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
-import ai.everylink.chainscan.watcher.plugin.service.EvmScanDataService;
-import ai.everylink.chainscan.watcher.plugin.util.Utils;
 import com.google.common.collect.Lists;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
@@ -40,10 +38,6 @@ import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.http.HttpService;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -69,11 +63,6 @@ public class EvmWatcher implements IWatcher {
     private int step;
 
     /**
-     * 每次查询的limit
-     */
-    private int processStep;
-
-    /**
      * 当前扫块的链的id
      */
     private static int chainId;
@@ -81,15 +70,6 @@ public class EvmWatcher implements IWatcher {
     private static Web3j web3j;
 
     private EvmDataService evmDataService;
-
-    private EvmScanDataService evmScanDataService;
-
-    /**
-     * 任务线程池。
-     * 一个线程用来扫块，落库。
-     * 另外一个线程用来查库，组装EvmData对象并交付plugin处理
-     */
-    private static final ExecutorService taskPool = new ThreadPoolExecutor(2, 2, 6, TimeUnit.HOURS, new ArrayBlockingQueue<>(1000));
 
     /**
      * 扫块时并发查询区块线程池。
@@ -101,15 +81,9 @@ public class EvmWatcher implements IWatcher {
      */
     private static final ThreadPoolExecutor scanTxPool = new ThreadPoolExecutor(250, 250, 2, TimeUnit.HOURS, new ArrayBlockingQueue<>(500000));
 
-    /**
-     * 一次插入数据库记录数
-     */
-    private static int BATCH_INSERT_MAX_SIZE = 30;
 
     /**
      * 入口方法
-     *
-     * @return
      */
     @Override
     public List<EvmData> scanBlock() {
@@ -120,24 +94,54 @@ public class EvmWatcher implements IWatcher {
 
         init();
 
-        if (WatcherUtils.isEthereum(chainId)) {
-            logger.info("Rinkeby scan optimize");
-            return rinkebyScanSpecial();
+        // scan block begin
+        List<EvmData> defaultList = Lists.newArrayList();
+        if (WatcherUtils.isScanStop()) {
+            logger.info("[WatcherScan]scan stopped.");
+            return defaultList;
         }
 
-        List<EvmData> dataList = new CopyOnWriteArrayList<EvmData>();
+        Long dbHeight = evmDataService.getMaxBlockNum(chainId);
 
-        CountDownLatch latch = new CountDownLatch(2);
-        taskPool.submit(new Utils.ScanChainThread(latch, this));
-        taskPool.submit(new Utils.ListBlockThread(latch, this, dataList));
-
-        try {
-            latch.await(3, TimeUnit.MINUTES);
-        } catch (Exception e) {
-            logger.error("[EvmWatcher]scanBlock error", e);
+        // 获取链上高度
+        Long chainHeight = getNetworkBlockHeight();
+        if (dbHeight.equals(chainHeight)) {
+            logger.info("[WatcherScan]dbHeight catch the chain height.");
+            return defaultList;
         }
 
+        if (dbHeight > chainHeight) {
+            logger.info("[WatcherScan]DB块高超过链上块高，maybe the chain was reset.");
+            return defaultList;
+        }
+
+        // 计算扫块区间
+        long start = dbHeight + 1;
+        long end = chainHeight;
+        if (chainHeight - start >= step) {
+            end = start + step - 1;
+        }
+        logger.info("[WatcherScan]begin to scan.dbHeight={},chainHeight={},start={},end={}", dbHeight, chainHeight, start, end);
+
+        long t1 = System.currentTimeMillis();
+
+        // 并发扫块
+        List<EvmData> dataList = currentReplayBlock(start, end);
+
+        // 校验数据
+        if (CollectionUtils.isEmpty(dataList)) {
+            logger.error("[WatcherScan]data is empty.expected: {} blocks", (end - start + 1));
+            return defaultList;
+        }
+
+        if (dataList.size() != (end - start + 1)) {
+            logger.error("[WatcherScan]Scan block size {} mismatch expect size {}", dataList.size(), (end - start + 1));
+            return defaultList;
+        }
+
+        logger.info("[WatcherScan]end to scan. start={},end={},size={},consume={}ms", start, end, dataList.size(), (System.currentTimeMillis() - t1));
         return dataList;
+        // scan block end
     }
 
 
@@ -172,129 +176,6 @@ public class EvmWatcher implements IWatcher {
     @Override
     public String getCron() {
         return "*/5 * * * * ?";
-    }
-
-    public List<EvmData> listBlock() {
-        Long dbHeight = evmDataService.getMaxBlockNum(chainId);
-        List<EvmData> list = evmScanDataService.queryBlockList(dbHeight, processStep);
-        logger.info("[EvmWatcher]listBlock.dbHeight={},processStep={},list={}", dbHeight, processStep, list.size());
-        return list;
-    }
-
-    // 不存block_data表，扫完后直接传给plugin
-    private List<EvmData> rinkebyScanSpecial() {
-        List<EvmData> defaultList = Lists.newArrayList();
-        if (WatcherUtils.isScanStop()) {
-            logger.info("[rinkebyScan]scan stopped.");
-            return defaultList;
-        }
-
-        Long dbHeight = evmDataService.getMaxBlockNum(chainId);
-
-        // 获取链上高度
-        Long chainHeight = getNetworkBlockHeight();
-        if (dbHeight.equals(chainHeight)) {
-            logger.info("[rinkebyScan]dbHeight catch the chain height.");
-            return defaultList;
-        }
-
-        if (dbHeight > chainHeight) {
-            logger.info("[rinkebyScan]DB块高超过链上块高，maybe the chain was reset.");
-            return defaultList;
-        }
-
-        // 计算扫块区间
-        long start = dbHeight + 1;
-        long end = chainHeight;
-        if (chainHeight - start >= step) {
-            end = start + step - 1;
-        }
-        logger.info("[rinkebyScan]begin to scan.dbHeight={},chainHeight={},start={},end={}", dbHeight, chainHeight, start, end);
-
-        long t1 = System.currentTimeMillis();
-
-        // 并发扫块
-        List<EvmData> dataList = currentReplayBlock(start, end);
-
-        // 校验数据
-        if (CollectionUtils.isEmpty(dataList)) {
-            logger.error("[rinkebyScan]data is empty.expected: {} blocks", (end - start + 1));
-            return defaultList;
-        }
-
-        logger.info("[rinkebyScan]end to scan. start={},end={},size={},consume={}ms", start, end, dataList.size(), (System.currentTimeMillis() - t1));
-        return dataList;
-    }
-
-    // 扫块，存入block_data表
-    public void scanChain() {
-        if (WatcherUtils.isScanStop()) {
-            logger.info("[EvmWatcher]scan stopped.");
-            return;
-        }
-
-        // 获取数据库保存的扫块高度
-        Long dbHeight = evmScanDataService.queryMaxBlockNumber();
-
-        // 获取链上高度
-        Long chainHeight = getNetworkBlockHeight();
-        if (dbHeight.equals(chainHeight)) {
-            logger.info("[EvmWatcher]dbHeight catch the chain height.");
-            return;
-        }
-
-        if (dbHeight > chainHeight) {
-            logger.info("[EvmWatcher]DB块高超过链上块高，maybe the chain was reset.");
-            return;
-        }
-
-        // 计算扫块区间
-        long start = dbHeight + 1;
-        long end = chainHeight;
-        if (chainHeight - start >= step) {
-            end = start + step - 1;
-        }
-        logger.info("[EvmWatcher]begin to scan.dbHeight={},chainHeight={},start={},end={}", dbHeight, chainHeight, start, end);
-
-        // 并发扫块.当start=end时，则退化为串行扫块
-        List<EvmData> dataList = currentReplayBlock(start, end);
-
-        // 校验数据
-        if (CollectionUtils.isEmpty(dataList)) {
-            logger.error("[EvmWatcher]data is empty.expected: {} blocks", (end - start + 1));
-            return;
-        }
-
-        if (dataList.size() != (end - start + 1)) {
-            logger.error("[EvmWatcher]Scan block size {} mismatch expect size {}", dataList.size(), (end - start + 1));
-            return;
-        }
-
-        // 落库
-        try {
-            long t1 = System.currentTimeMillis();
-            if (dataList.size() <= BATCH_INSERT_MAX_SIZE) {
-                evmScanDataService.insert(dataList);
-            } else {
-                // 分批插入，防止爆仓
-                int cnt = dataList.size() / BATCH_INSERT_MAX_SIZE;
-                if (dataList.size() % BATCH_INSERT_MAX_SIZE != 0) {
-                    cnt = cnt+1;
-                }
-
-                for (int i = 0; i < cnt; i++) {
-                    int startIdx = i * BATCH_INSERT_MAX_SIZE;
-                    int endIdx = startIdx + BATCH_INSERT_MAX_SIZE;
-                    if (endIdx > dataList.size()) {
-                        endIdx = dataList.size();
-                    }
-                    evmScanDataService.insert(dataList.subList(startIdx, endIdx));
-                }
-            }
-            logger.info("[EvmWatcher]insert scanned blocks.consume={}ms", (System.currentTimeMillis() - t1));
-        } catch (Exception e) {
-            logger.error("[EvmWatcher]insert db failed.", e);
-        }
     }
 
     private List<EvmData> currentReplayBlock(long start, long end) {
@@ -440,11 +321,9 @@ public class EvmWatcher implements IWatcher {
         initService();
         initWeb3j();
         step = WatcherUtils.getScanStep();
-        processStep = WatcherUtils.getProcessStep();
         chainId = WatcherUtils.getChainId();
-        BATCH_INSERT_MAX_SIZE = WatcherUtils.getBatchInsertSize();
-        logger.info("[EvmWatcher]config info. step={},processStep={},chainId={},batchInsertSize={},chainType={}",
-                    step, processStep, chainId, BATCH_INSERT_MAX_SIZE, WatcherUtils.getChainType());
+        logger.info("[EvmWatcher]config info. step={},chainId={},chainType={}",
+                    step, chainId, WatcherUtils.getChainType());
     }
 
     private void initService() {
@@ -453,10 +332,6 @@ public class EvmWatcher implements IWatcher {
         }
         if (vmChainUtil == null) {
             vmChainUtil = SpringApplicationUtils.getBean(VmChainUtil.class);
-        }
-
-        if (evmScanDataService == null) {
-            evmScanDataService = SpringApplicationUtils.getBean(EvmScanDataService.class);
         }
     }
 
