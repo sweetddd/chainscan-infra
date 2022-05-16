@@ -22,7 +22,6 @@ import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
-import ai.everylink.chainscan.watcher.plugin.service.EvmScanDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +36,6 @@ public class EvmPlugin implements IEvmWatcherPlugin {
     private final Logger logger = LoggerFactory.getLogger(EvmPlugin.class);
 
     private EvmDataService evmDataService;
-
-    private EvmScanDataService evmScanDataService;
 
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
@@ -60,10 +57,6 @@ public class EvmPlugin implements IEvmWatcherPlugin {
     private void initService() {
         if (evmDataService == null) {
             evmDataService = SpringApplicationUtils.getBean(EvmDataService.class);
-        }
-
-        if (evmScanDataService == null) {
-            evmScanDataService = SpringApplicationUtils.getBean(EvmScanDataService.class);
         }
     }
 }

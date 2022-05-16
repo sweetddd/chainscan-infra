@@ -115,12 +115,8 @@ spec:
                 key: dtx.rpc.api
           - name: "watcher.chain.scanStep"
             value: 1
-          - name: "watcher.chain.processStep"
-            value: 10
           - name: "watcher.chain.chainId"
             value: 97
-          - name: "watcher.chain.batchInsertSize"
-            value: 30
           - name: "watcher.chain.chainType"
             value: EVM_PoS
           - name: "watcher.notify.template"
