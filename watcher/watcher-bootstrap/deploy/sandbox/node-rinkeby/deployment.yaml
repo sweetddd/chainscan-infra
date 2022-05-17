@@ -111,7 +111,7 @@ spec:
           - name: "watcher.process.concurrent.switch"
             value: false
           - name: "watcher.process.only.evmplugin"
-            value: true
+            value: false
           - name: "watcher.bridge.contract.address"
             value: "0xf62B76556f86503C9986F25D3DC59CC538f50f51"
           - name: "watcher.monitor.cron"
