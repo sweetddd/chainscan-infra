@@ -203,6 +203,8 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
                     String nftContractAddress ="0x" +  substring.substring(substring.length() - 40);
                     Long tokenId = Long.parseLong(data.substring(66, 130), 16) ;
                     nftAuctionDao.finish(nftContractAddress, tokenId);
+                    boolean result = updateNftAccount(transaction.getFromAddr(), nftContractAddress);
+                  //  System.out.println(result);
                 }
 
             }
