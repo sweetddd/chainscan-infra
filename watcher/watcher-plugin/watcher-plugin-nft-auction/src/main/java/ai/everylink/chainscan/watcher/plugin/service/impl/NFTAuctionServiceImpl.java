@@ -153,12 +153,8 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         NftAccount  nftAccount = nftAccountDao.selectByTokenIdContract(tokenId.longValue(), nftContract.getId());
         if(nftAccount != null){
             nftAuction.setNftData(nftAccount.getNftData());
-        }else {
-            boolean result = updateNftAccount(transaction.getFromAddr(), nftContractAddress);
-//            if(result){
-//                createNewNftAuction(transaction, params);
-//            }
         }
+        boolean result = updateNftAccount(transaction.getFromAddr(), nftContractAddress);
         String erc20Token = "0x" + params.get(3).substring(params.get(3).length() - 40);
         nftAuction.setPayToken(erc20Token);
         Long minPrice = Long.parseLong(params.get(4), 16);
