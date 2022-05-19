@@ -20,6 +20,9 @@ public class NftAuction {
     @Column(name = "nft_contract_name", length = 80)
     private String nftContractName;
 
+    @Column(name = "nft_name", length = 80)
+    private String nftName;
+
     @Column(name = "nft_contract_address", length = 80)
     private String nftContractAddress;
 
@@ -57,6 +60,16 @@ public class NftAuction {
     @Column(name = "fee_percentages")
     private Long feePercentages;
 
+    @Column(name = "nft_highest_bid")
+    private Long nftHighestBid;
+
+    @Column(name = "nft_highest_bidder", length = 80)
+    private String nftHighestBidder;
+
+    @Lob
+    @Column(name = "nft_bid_history")
+    private String nftBidHistory;
+
     @Column(name = "state")
     private Integer state;
 
@@ -69,4 +82,24 @@ public class NftAuction {
     @Column(name = "update_time", nullable = false)
     private Instant updateTime;
 
+    @Column(name = "nft_description", length = 256)
+    private String nftDescription;
+
+    @Column(name = "nft_external_link", length = 256)
+    private String nftExternalLink;
+
+    @Column(name = "nft_attributes", length = 256)
+    private String nftAttributes;
+
+    @Column(name = "nft_levels", length = 256)
+    private String nftLevels;
+
+    @Column(name = "nft_stats", length = 80)
+    private String nftStats;
+
+    @Column(name = "nft_unlockable_content", length = 256)
+    private String nftUnlockableContent;
+
+    @Column(name = "nft_explicit", length = 256)
+    private Boolean nftExplicit;
 }

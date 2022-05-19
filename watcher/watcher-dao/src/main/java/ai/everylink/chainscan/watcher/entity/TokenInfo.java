@@ -5,7 +5,6 @@ import lombok.Data;
 import javax.persistence.*;
 import java.math.BigInteger;
 import java.util.Date;
-import java.time.Instant;
 
 @Table(name = "token_info")
 @Entity
@@ -33,4 +32,8 @@ public class TokenInfo {
 
     @Column(name = "create_time", nullable = false)
     private Date createTime;
+
+    @Column(name = "create_account_id", nullable = false)
+    private Long createAccountId;
+
 }
