@@ -116,7 +116,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         String fromAddr = transaction.getFromAddr();
         //交易value为0则为 合约方法调用;
         if (value.equals("0") && StringUtils.isNotBlank(toAddr) && StringUtils.isNotBlank(fromAddr)) {
-            addToken(toAddr, fromAddr); //增加合约信息;
+            addToken(transaction); //增加合约信息;
             addAccountInfo(fromAddr); //增加用户信息;
         }
         //转账事件
@@ -127,7 +127,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             if (topics.size() > 0) {
                 String topic = topics.get(0).toString();
                 if (topic.equals(TRANSFER_TOPIC)) {
-                    addToken(toAddr, fromAddr);
+                    addToken(transaction);
                     saveOrUpdateBalance(fromAddr, toAddr);
                     updateNftAccount(fromAddr, toAddr);
                 }
@@ -149,7 +149,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             }
             //交易value为0则为 合约方法调用;
             if (value.equals("0") && StringUtils.isNotBlank(toAddr)) {
-                addToken(toAddr, fromAddr); //增加合约信息;
+                addToken(transaction); //增加合约信息;
             }
 
             String method = transaction.getInputMethod();
@@ -181,7 +181,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     if (log.getTopics().size() > 0) {
                         String topic = log.getTopics().get(0);
                         if (topic.equals(TRANSFER_TOPIC)) {
-                            addToken(toAddr, fromAddr);
+                            addToken(transaction);
                             saveOrUpdateBalance(fromAddr, toAddr);
                             updateNftAccount(fromAddr, toAddr);
                         }
@@ -219,9 +219,11 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * 2
      * 触发是否 增加token信息;
      *
-     * @param toAddr
+     * @param transaction
      */
-    private void addToken(String toAddr, String fromAddr) {
+    private void addToken(Transaction transaction) {
+        String toAddr   = transaction.getToAddr();
+        String fromAddr = transaction.getFromAddr();
         try {
             TokenInfo  tokenInfo = tokenInfoDao.findAllByAddress(toAddr);
             if( tokenInfo == null ){
@@ -238,6 +240,28 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     TokenInfo tokenQuery = new TokenInfo();
                     //判断合约类型
                     checkTokenType(toAddr, fromAddr, tokenQuery,decimals);
+
+                    //增加部署合约者;
+                    String input = transaction.getInput();
+                    List<String> params2List = DecodUtils.getParams2List(input);
+                    if(params2List.size()>1 && params2List.get(0).equals("0x60806040")){
+                        AccountInfo byAddress   = accountInfoDao.findByAddress(fromAddr);
+                        if (byAddress == null) {
+                            String result = web3j.ethGetCode(fromAddr, DefaultBlockParameterName.LATEST).send().getResult();
+                            if (result.equals("0x")) {
+                                //添加账户信息
+                                AccountInfo accountInfo = new AccountInfo();
+                                accountInfo.setAddress(fromAddr);
+                                accountInfo.setCreateTime(new Date());
+                                accountInfo.setUpdateTime(new Date());
+                                accountInfo.setDeleted(false);
+                                accountInfoDao.save(accountInfo);
+                                tokenQuery.setCreateAccountId(accountInfo.getId());
+                            }
+                        }else {
+                            tokenQuery.setCreateAccountId(byAddress.getId());
+                        }
+                    }
                     tokenQuery.setTokenName(name);
                     tokenQuery.setTokenSymbol(symbol);
                     tokenQuery.setDecimals(decimals);
