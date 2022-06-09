@@ -64,6 +64,7 @@ import java.util.*;
 public class NFTAuctionServiceImpl implements NFTAuctionService {
 
     private static final String NFTAUCTION_FINISH_TOPIC ="0x8df77c988c9550e96e43a66277f716818a74ed2188cdacb49d790623e6f22571";
+    private static final String NFTAUCTION_CANCEL_TOPIC ="0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
     private Web3j web3j;
 
@@ -131,7 +132,7 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
                     } else if (params.size() > 2 && (method.contains("0x848e5c77")  || method.contains("0xc24d5a5c"))) {
                         finishNftAuction(transaction, params);
                         //监控NFT 拍卖取消交易
-                    }else if (params.size() > 2 && method.contains("0x848e5c77")) {
+                    }else if (params.size() > 2 && method.contains("0xebea6025")) {
                         cancelNftAuction(transaction, params);
                     }
                 }
@@ -220,12 +221,36 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         nftAuction.setAccountAddress(transaction.getFromAddr());
         nftAuction.setNftContractAddress(nftContractAddress);
         nftAuction.setDeleted(false);
+        nftAuction.setLayer("L1");
+        String  chainId = environment.getProperty("watcher.chain.chainId");
+        if(chainId != null){
+            nftAuction.setChainId(Long.parseLong(chainId));
+        }
         nftAuctionDao.save(nftAuction);
     }
 
     //监控NFT 拍卖取消交易
     private void cancelNftAuction(Transaction transaction, List<String> params) {
-
+        String status = transaction.getStatus();
+        if(status.equals("0x1")){
+            List<TransactionLog> txLog = transactionLogDao.findByTxHash(transaction.getTransactionHash());
+            for (TransactionLog transactionLog : txLog) {
+                String topicsStr = transactionLog.getTopics();
+                //topics转为数组
+                JSONArray topics = JSONArray.parseArray(topicsStr);
+                if (topics.size() > 0) {
+                    String topic = topics.get(0).toString();
+                    if (topic.equals(NFTAUCTION_CANCEL_TOPIC)) {
+                        String nftContractAddress = transactionLog.getAddress();
+                        Long tokenId = Long.parseLong(topics.get(3).toString().substring(2, 66), 16) ;
+                        nftAuctionDao.cancel(nftContractAddress, tokenId);
+                        boolean result = updateNftAccount(transaction.getFromAddr(), nftContractAddress);
+                        log.info("卖家测试NFT拍卖 nftContractAddress:" + nftContractAddress + "tokenid =" + tokenId);
+                    }
+                }
+            }
+            //["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0x0000000000000000000000004e1e1f8b4fdf2e452942026fa8cc36cc6a651a81","0x00000000000000000000000010b77a65becc87657f7497e99ffc6e25f50b1979","0x0000000000000000000000000000000000000000000000000000000000000001"]
+        }
     }
 
     //监控NFT 拍卖成交

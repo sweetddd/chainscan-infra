@@ -70,6 +70,7 @@ public class NftAuction {
     @Column(name = "nft_bid_history")
     private String nftBidHistory;
 
+    //1拍卖中,2 成交, 3 撤销
     @Column(name = "state")
     private Integer state;
 
@@ -102,4 +103,11 @@ public class NftAuction {
 
     @Column(name = "nft_explicit", length = 256)
     private Boolean nftExplicit;
+
+    @Column(name = "chain_id")
+    private Long chainId;
+
+    @Column(name = "layer", length = 80)
+    private String layer = "L1";
+
 }
