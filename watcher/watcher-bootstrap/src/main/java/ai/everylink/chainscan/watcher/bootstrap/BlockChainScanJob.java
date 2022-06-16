@@ -49,79 +49,82 @@ public class BlockChainScanJob implements Job {
      */
     @Override
     public void execute(JobExecutionContext ctx) throws JobExecutionException {
-        // 标识一次处理过程，便于排查问题
-        long id = System.currentTimeMillis();
-
         watcher = (IWatcher) ctx.getMergedJobDataMap().get("watcher");
-        log.info("[{}]Execute watcher start.watcher=[{}],nextFireTime=[{}]]",
-                id,
-                watcher.getClass().getSimpleName(),
-                DateUtil.format_yyyy_MM_dd_HH_mm_ss(ctx.getTrigger().getNextFireTime()));
+
+        long totalStart = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
+        String watcherId = watcher.getClass().getSimpleName();
+        log.info("[{}]Execute start. nextFireTime=[{}]]", watcherId, DateUtil.format_yyyy_MM_dd_HH_mm_ss(ctx.getTrigger().getNextFireTime()));
 
         try {
             // 1.扫块
+            log.info("[{}]Execute scan blocks start", watcherId);
             List<Object> blockList = watcher.scanBlock();
             if (CollectionUtils.isEmpty(blockList)) {
-                log.info("[{}]Scan blocks not found.watcher=[{}]", id, watcher.getClass().getSimpleName());
+                log.info("[{}]Execute scan blocks not found.", watcherId);
                 return;
             }
-            log.info("[{}]Scan blocks end.watcher=[{}],size={}", id, watcher.getClass().getSimpleName(), blockList.size());
+            log.info("[{}]Execute scan blocks end,size={},consume={}ms", watcherId, blockList.size(), (System.currentTimeMillis() - start));
 
             // 2.获取plugin列表
             List<IWatcherPlugin> pluginList = watcher.getOrderedPluginList();
             if (CollectionUtils.isEmpty(pluginList)) {
-                log.error("["+id+"]No plugins found for watcher [{}]", watcher.getClass().getSimpleName());
                 return;
             }
 
             // 3.处理块信息
+            start = System.currentTimeMillis();
+            log.info("[{}]Execute plugin process start.", watcherId);
             for (IWatcherPlugin plugin : pluginList) {
                 if (onlyEvmPlugin() && plugin.getClass() != EvmPlugin.class) {
                     log.info("Not EvmPlugin");
                     continue;
                 }
+
+                String pluginId = plugin.getClass().getSimpleName();
                 long t1 = System.currentTimeMillis();
+                log.info("[{}]Execute plugin '{}' start.", watcherId, pluginId);
                 if (!WatcherUtils.isProcessConcurrent()) {
                     for (Object block : blockList) {
                         try {
                             boolean result = plugin.processBlock(block);
-                            log.info("[{}]Processed block.watcher=[{}],plugin=[{}],result={}",
-                                    id, watcher.getClass().getSimpleName(), plugin.getClass().getSimpleName(), result);
 
                             // block需要按顺序处理，一个处理失败，后续不能再继续
                             if (!result) {
                                 break;
                             }
                         } catch (Throwable e) {
-                            log.error(String.format("[%s]Process block error. watcher=[%s],plugin=[%s]",
-                                    id+"", watcher.getClass().getSimpleName(), plugin.getClass().getSimpleName()), e);
+                            log.error("["+watcher+"]Execute plugin '"+pluginId+"' error.", e);
                         }
                     }
                 } else {
                     // 并发处理区块
-                    log.info("Concurrent process block start. total {} blocks", blockList.size());
+                    log.info("[{}]Execute plugin '{}' concurrent start.", watcherId, pluginId);
                     CountDownLatch latch = new CountDownLatch(blockList.size());
                     for (Object block : blockList) {
                         blockProcessPool.submit(new BlockProcessThread(latch, watcher, plugin, block));
                     }
                     latch.await(3, TimeUnit.MINUTES);
-                    log.info("Concurrent process block end. {} blocks processed", blockList.size());
-                }
+                    log.info("[{}]Execute plugin '{}' concurrent end. total {} blocks", watcherId, pluginId, blockList.size());
+                } // end if
 
-                log.info("Plugin process blocks end. consume={}ms,blockSize={},plugin={}",
-                        (System.currentTimeMillis() - t1), blockList.size(), plugin.getClass().getSimpleName());
+                log.info("[{}]Execute plugin '{}' end. consume={}ms", watcherId, pluginId, (System.currentTimeMillis() - t1));
+            } // end for
 
-            }
+            log.info("[{}]Execute plugin process end. total {} plugins, total consume={}ms", watcherId, pluginList.size(), (System.currentTimeMillis() - start));
         } catch (Throwable e) {
-            log.error("["+id+"]Execute watcher error.watcher=["+watcher.getClass().getSimpleName()+"]", e);
+            log.error("["+watcherId+"]Execute watcher error.", e);
         }
 
-        //最后确认区块数据更新;
+        start = System.currentTimeMillis();
+        log.info("[{}]Execute finalize start.", watcherId);
         try {
             watcher.finalizedBlockStatus();
         } catch (Throwable e) {
-            log.error("["+id+"]Execute watcher error.watcher=["+watcher.getClass().getSimpleName()+"]", e);
+            log.error("["+watcherId+"]Execute finalize error", e);
         }
+        log.info("[{}]Execute finalize end. consume={}ms", watcherId, (System.currentTimeMillis() - start));
+        log.info("[{}]Execute end. consume={}ms", watcherId, (System.currentTimeMillis() - totalStart));
 
     }
 

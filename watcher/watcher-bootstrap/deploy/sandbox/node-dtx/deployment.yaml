@@ -133,6 +133,8 @@ spec:
             value: "0x4e1e1f8b4fdf2e452942026fa8cc36cc6a651a81"
           - name: "watcher.monitor.cron"
             value: "0 */1 * * * ?"
+          - name: "watcher.monitor.threshold"
+            value: "5"
       volumes:
       - name: host-time
         hostPath:

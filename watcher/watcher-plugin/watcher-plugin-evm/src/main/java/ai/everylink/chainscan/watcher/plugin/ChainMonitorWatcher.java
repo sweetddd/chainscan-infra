@@ -139,6 +139,7 @@ public class ChainMonitorWatcher implements IWatcher {
             }
         }
         if (web3ErrCnt > 5) {
+            logger.info("[ChainMonitorWatcher]network error.");
             SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警", "VM链连接出错: " + WatcherUtils.getVmChainUrl());
             return;
         }
@@ -151,7 +152,7 @@ public class ChainMonitorWatcher implements IWatcher {
             }
 
             long diff = System.currentTimeMillis() - lastBlockCreateTime.getTime();
-            if (diff < 60 * 1000) {
+            if (diff < WatcherUtils.getChainMonitorThreshold() * 60 * 1000) {
                 return;
             }
 
