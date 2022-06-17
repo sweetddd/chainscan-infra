@@ -122,6 +122,20 @@ public final class WatcherUtils {
         return null;
     }
 
+    public static Integer getChainMonitorThreshold() {
+        String str = System.getenv("watcher.monitor.threshold");
+        if (!StringUtils.isEmpty(str)) {
+            try {
+                return Integer.parseInt(str);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+
+        // default 1 minute
+        return 1;
+    }
+
     public static boolean isEthereum(Integer chainId) {
         return chainId != null && (chainId == 4 || chainId == 1);
     }
