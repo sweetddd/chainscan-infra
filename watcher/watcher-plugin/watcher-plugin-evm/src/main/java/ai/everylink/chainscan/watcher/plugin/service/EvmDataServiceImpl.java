@@ -481,7 +481,7 @@ public class EvmDataServiceImpl implements EvmDataService {
 
         long t1 = System.currentTimeMillis();
         if (!WatcherUtils.isEthereum(block.getChainId())) {
-            transactionDao.saveAll(txList);
+          //  transactionDao.saveAll(txList);
         } else {
             // use origin jdbc
             Connection connection = null;

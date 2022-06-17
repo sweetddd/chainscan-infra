@@ -41,6 +41,7 @@ import org.springframework.util.CollectionUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.EthGetCode;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
@@ -181,7 +182,11 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
     public void updateConfirmBlock(EvmData blockData) {
         BigInteger                     chainId     = new BigInteger(blockData.getChainId() + "");
         BigInteger                     confirmBlock = blockData.getBlock().getNumber();
+        long    startTime     = System.currentTimeMillis();
         List<WalletTransactionHistory> txHistorys  = wTxHistoryDao.findConfirmBlock();
+        log.info("TxHistory-findConfirmBlock-consum:" + (System.currentTimeMillis() - startTime));
+
+        long    startTime2     = System.currentTimeMillis();
         for (WalletTransactionHistory txHistory : txHistorys) {
             try {
                 //Integer fromChainId = txHistory.getFromChainId();
@@ -233,6 +238,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 //log.info("update txlog error");
             }
         }
+        log.info("TxHistory-findConfirmBlock-for-consum:" + (System.currentTimeMillis() - startTime2));
     }
 
 
@@ -318,18 +324,21 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
     public static void main(String[] args) {
         try {
             OkHttpClient       httpClient  = OkHttpUtil.buildOkHttpClient();
-            HttpService        httpService = new HttpService("http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf", httpClient, false);
+            HttpService        httpService = new HttpService("http://dna-chain-test-node-4-sandbox.chain-sandbox.svc.cluster.local:9934/v1/72f3a83ea86b41b191264bd16cbac2bf", httpClient, false);
             Web3j              web3j       = Web3j.build(httpService);
+            EthGetCode         send        = web3j.ethGetCode("0x0000000000000000000000000000000000000806", DefaultBlockParameterName.LATEST).send();
+            //EthGetCode         send        = web3j.ethGetCode("0xB382F247eF75878CAC13C8a8b63816249B43f4B9", DefaultBlockParameterName.LATEST).send();
+            System.out.println(send.getCode());
 //            EthBlockNumber     blockNumber = web3j.ethBlockNumber().send();
-            TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0xc69cb77ede3ae7fa1875a7362a38573ef9855a3a411fa60ea597ab8e1cef0787").send().getResult();
-            System.out.println(receipt);
-//            org.web3j.protocol.core.methods.response.Transaction tx = web3j.ethGetTransactionByHash("0xc69d3c5031b0ce180ea7975720b376a7ef449388d36cd9d6c37a1590165a2731").send().getResult();
-//            System.out.println(tx);
-
-            String result = web3j.ethGetCode("0x6Da573EEc80f63c98b88cED15D32CA270787FB5a", DefaultBlockParameterName.LATEST).send().getResult();
-            System.out.println(result.length());
-
-            BigInteger transactionCount = web3j.ethGetTransactionCount("0x6Da573EEc80f63c98b88cED15D32CA270787FB5a", DefaultBlockParameterName.LATEST).send().getTransactionCount();
+//            TransactionReceipt receipt     = web3j.ethGetTransactionReceipt("0xc69cb77ede3ae7fa1875a7362a38573ef9855a3a411fa60ea597ab8e1cef0787").send().getResult();
+//            System.out.println(receipt);
+////            org.web3j.protocol.core.methods.response.Transaction tx = web3j.ethGetTransactionByHash("0xc69d3c5031b0ce180ea7975720b376a7ef449388d36cd9d6c37a1590165a2731").send().getResult();
+////            System.out.println(tx);
+//
+//            String result = web3j.ethGetCode("0x6Da573EEc80f63c98b88cED15D32CA270787FB5a", DefaultBlockParameterName.LATEST).send().getResult();
+//            System.out.println(result.length());
+//
+//            BigInteger transactionCount = web3j.ethGetTransactionCount("0x6Da573EEc80f63c98b88cED15D32CA270787FB5a", DefaultBlockParameterName.LATEST).send().getTransactionCount();
 
         } catch (IOException e) {
             e.printStackTrace();

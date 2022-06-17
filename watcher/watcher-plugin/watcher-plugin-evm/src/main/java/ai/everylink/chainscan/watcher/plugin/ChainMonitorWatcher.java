@@ -65,11 +65,11 @@ public class ChainMonitorWatcher implements IWatcher {
         if (!StringUtils.isEmpty(tokenWatcher) && Boolean.parseBoolean(tokenWatcher)) {
             return null;
         }
+        return null;
 
-
-        init();
-        monitor();
-        return Lists.newArrayList();
+//        init();
+//        monitor();
+//        return Lists.newArrayList();
     }
 
 

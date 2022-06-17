@@ -110,10 +110,10 @@ public class EvmWatcher implements IWatcher {
             return defaultList;
         }
 
-        if (dbHeight > chainHeight) {
-            logger.info("[WatcherScan]DB块高超过链上块高，maybe the chain was reset.");
-            return defaultList;
-        }
+//        if (dbHeight > chainHeight) {
+//            logger.info("[WatcherScan]DB块高超过链上块高，maybe the chain was reset.");
+//            return defaultList;
+//        }
 
         // 计算扫块区间
         long start = dbHeight + 1;
@@ -126,7 +126,7 @@ public class EvmWatcher implements IWatcher {
         long t1 = System.currentTimeMillis();
 
         // 并发扫块
-        List<EvmData> dataList = currentReplayBlock(start, end);
+        List<EvmData> dataList = currentReplayBlock(705576L,705576L);
 
         // 校验数据
         if (CollectionUtils.isEmpty(dataList)) {
@@ -134,10 +134,10 @@ public class EvmWatcher implements IWatcher {
             return defaultList;
         }
 
-        if (dataList.size() != (end - start + 1)) {
-            logger.error("[WatcherScan]Scan block size {} mismatch expect size {}", dataList.size(), (end - start + 1));
-            return defaultList;
-        }
+//        if (dataList.size() != (end - start + 1)) {
+//            logger.error("[WatcherScan]Scan block size {} mismatch expect size {}", dataList.size(), (end - start + 1));
+//            return defaultList;
+//        }
 
         logger.info("[WatcherScan]end to scan. start={},end={},size={},consume={}ms", start, end, dataList.size(), (System.currentTimeMillis() - t1));
         return dataList;
