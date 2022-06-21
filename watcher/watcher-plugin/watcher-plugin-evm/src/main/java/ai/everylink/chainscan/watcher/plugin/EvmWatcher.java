@@ -293,17 +293,19 @@ public class EvmWatcher implements IWatcher {
         long blockNumber = data.getBlock().getNumber().longValue();
 
         // 获取receipt
-        EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(txHash).send();
-        if (receipt.getResult() == null) {
-            logger.warn("[EvmWatcher]tx receipt not found. blockNum={}, tx={}", blockNumber, txHash);
-            return ;
-        }
-
-        data.getTxList().put(txHash, receipt.getResult());
-
-        // 获取Logs
-        if (!CollectionUtils.isEmpty(receipt.getResult().getLogs())) {
-            data.getTransactionLogMap().put(txHash, receipt.getResult().getLogs());
+        try {
+            EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(txHash).send();
+            if (receipt.getResult() == null) {
+                logger.warn("[EvmWatcher]tx receipt not found. blockNum={}, tx={}", blockNumber, txHash);
+                return ;
+            }
+            data.getTxList().put(txHash, receipt.getResult());
+            // 获取Logs
+            if (!CollectionUtils.isEmpty(receipt.getResult().getLogs())) {
+                data.getTransactionLogMap().put(txHash, receipt.getResult().getLogs());
+            }
+        } catch (Exception e) {
+            logger.error("初始化web3j异常", e);
         }
     }
 
