@@ -89,10 +89,11 @@ spec:
                 name: network-config
                 key: dtx.rpc.api
           - name: "watcher.rinkebyUrl"
-            valueFrom:
-              configMapKeyRef:
-                name: network-config
-                key: ether.rpc.api
+            value: "https://eth-rinkeby.alchemyapi.io/v2/Wh0cFuopX8Z3xC_hMpE9vgQVwDbOrFS2"
+#            valueFrom:
+#              configMapKeyRef:
+#                name: network-config
+#                key: ether.rpc.api
           - name: "watcher.vmChainUrl"
             value: "https://eth-rinkeby.alchemyapi.io/v2/Wh0cFuopX8Z3xC_hMpE9vgQVwDbOrFS2"
 #            valueFrom:
