@@ -47,7 +47,7 @@ spec:
           - name: TZ
             value: UTC
           - name: "evm.chain.rinkebyUrl"
-            value: "http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
+            value: "https://eth-rinkeby.alchemyapi.io/v2/Wh0cFuopX8Z3xC_hMpE9vgQVwDbOrFS2"
           - name: "nacos.config.server-addr"
             valueFrom:
               configMapKeyRef:

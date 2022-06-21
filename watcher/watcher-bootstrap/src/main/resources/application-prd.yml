@@ -49,6 +49,7 @@ evm:
 watcher:
   L2Url: http://api.powx.io/l2-server-api/api/v0.2/
   rinkebyUrl: http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
+  #rinkebyUrl: https://eth-rinkeby.alchemyapi.io/v2/Wh0cFuopX8Z3xC_hMpE9vgQVwDbOrFS2
   vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
   bridge:
     contract:
