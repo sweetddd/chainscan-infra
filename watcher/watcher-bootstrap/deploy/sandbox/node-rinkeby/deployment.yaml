@@ -94,10 +94,11 @@ spec:
                 name: network-config
                 key: ether.rpc.api
           - name: "watcher.vmChainUrl"
-            valueFrom:
-              configMapKeyRef:
-                name: network-config
-                key: rinkeby.local
+            value: "https://eth-rinkeby.alchemyapi.io/v2/Wh0cFuopX8Z3xC_hMpE9vgQVwDbOrFS2"
+#            valueFrom:
+#              configMapKeyRef:
+#                name: network-config
+#                key: rinkeby.local
           - name: "watcher.chain.scanStep"
             value: 50
           - name: "watcher.chain.chainId"
