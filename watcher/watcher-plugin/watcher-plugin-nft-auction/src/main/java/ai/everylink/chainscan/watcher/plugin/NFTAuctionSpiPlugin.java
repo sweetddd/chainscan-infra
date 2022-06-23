@@ -39,8 +39,6 @@ public class NFTAuctionSpiPlugin implements IEvmWatcherPlugin {
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
         initService();
 
-        long    start     = System.currentTimeMillis();
-        log.info("NFTAuction-start:" + start);
         Transaction transaction = null;
         try {
             transaction =   (Transaction) block;
@@ -53,7 +51,6 @@ public class NFTAuctionSpiPlugin implements IEvmWatcherPlugin {
             EvmData blockData = (EvmData) block;
             nftAuctionService.nftAuctionScan(blockData);
         }
-        log.info("NFTAuction-end:" + System.currentTimeMillis());
         return true;
     }
 
