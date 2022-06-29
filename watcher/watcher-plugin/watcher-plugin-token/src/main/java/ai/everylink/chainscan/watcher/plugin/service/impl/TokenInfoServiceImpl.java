@@ -379,6 +379,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 }
                 nftAccount.setNftData(tokenURL.toString());
                 nftAccount.setNftId(tokenId.longValue());
+                nftAccount.setCreateTime(new Date().toInstant());
+                nftAccount.setUpdateTime(new Date().toInstant());
             }   catch (Exception e) {
                 log.info("updateNftAccount.");
             }
