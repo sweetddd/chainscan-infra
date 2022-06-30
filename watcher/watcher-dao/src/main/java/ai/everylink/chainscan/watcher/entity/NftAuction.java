@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.Date;
 
 @Table(name = "nft_auction")
 @Entity
@@ -78,10 +79,10 @@ public class NftAuction {
     private Boolean deleted;
 
     @Column(name = "create_time", nullable = false)
-    private Instant createTime;
+    private Instant createTime  = new Date().toInstant();
 
     @Column(name = "update_time", nullable = false)
-    private Instant updateTime;
+    private Instant updateTime = new Date().toInstant();
 
     @Column(name = "nft_description", length = 256)
     private String nftDescription;
