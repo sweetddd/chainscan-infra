@@ -47,15 +47,11 @@ public class TokenSpiPlugin implements IEvmWatcherPlugin {
            // log.error("block is not a transaction", e);
         }
         if (transaction != null) {
-            log.info("TokenSpiPlugin-start:" + start);
             tokenInfoService.tokenTxScan(transaction);
-            log.info("TokenSpiPlugin-end:" + System.currentTimeMillis());
             return true;
         }else {
             EvmData blockData = (EvmData) block;
-            log.info("TokenSpiPlugin-start:" + start);
             tokenInfoService.tokenScan(blockData);
-            log.info("TokenSpiPlugin-end:" + System.currentTimeMillis());
             return true;
         }
 }
