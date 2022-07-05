@@ -280,6 +280,14 @@ public class EvmWatcher implements IWatcher {
         EthBlock block = web3j.ethGetBlockByNumber(
                 new DefaultBlockParameterNumber(blockNumber), true).send();
         if (block == null || block.getBlock() == null) {
+            for (int i = 0; i <= 10; i++) {
+                logger.info("[EvmWatcher] Retry scan block: {}", blockNumber);
+                block = web3j.ethGetBlockByNumber(
+                        new DefaultBlockParameterNumber(blockNumber), true).send();
+                if (block != null && block.getBlock() != null) {
+                    break;
+                }
+            }
             logger.error("[EvmWatcher]Block is null. block={}", blockNumber);
             return null;
         }
