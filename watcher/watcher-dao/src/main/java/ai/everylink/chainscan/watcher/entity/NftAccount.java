@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.Date;
 
 @Table(name = "nft_account")
 @Entity
@@ -34,8 +35,8 @@ public class NftAccount {
     private Long tokenId;
 
     @Column(name = "create_time", nullable = false)
-    private Instant createTime;
+    private Instant createTime =  new Date().toInstant();
 
     @Column(name = "update_time", nullable = false)
-    private Instant updateTime;
+    private Instant updateTime =  new Date().toInstant();
 }
