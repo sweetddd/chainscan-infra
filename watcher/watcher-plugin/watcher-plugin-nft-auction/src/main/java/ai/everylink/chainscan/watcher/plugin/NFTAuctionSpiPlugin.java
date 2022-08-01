@@ -41,7 +41,7 @@ public class NFTAuctionSpiPlugin implements IEvmWatcherPlugin {
 
         Transaction transaction = null;
         try {
-            transaction =   (Transaction) block;
+            transaction = (Transaction) block;
         }   catch (Exception e) {
             // log.error("block is not a transaction", e);
         }
