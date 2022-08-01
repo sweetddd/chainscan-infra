@@ -101,7 +101,7 @@ spec:
 #                name: network-config
 #                key: rinkeby.local
           - name: "watcher.chain.scanStep"
-            value: 10
+            value: 5
           - name: "watcher.chain.chainId"
             value: 4
           - name: "watcher.chain.chainType"
