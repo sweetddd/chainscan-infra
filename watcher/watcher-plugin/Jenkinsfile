@@ -12,7 +12,7 @@ pipeline {
     }
     stage('Deploy Snapshot') {
       steps {
-        dir("watcher-plugin") {
+        dir("watcher/watcher-plugin") {
           container('maven-jdk11') {
             sh 'mvn -DskipTests -Drat.skip=true clean deploy:deploy-file -DgroupId=ai.everylink.chainscan -DartifactId=watcher-plugin -Dversion=1.0.0-SNAPSHOT -Dpackaging=pom -Dfile=pom.xml -Durl=http://192.168.2.20:30081/repository/maven-snapshots/ -DrepositoryId=maven-snapshots'
           }
