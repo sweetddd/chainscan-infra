@@ -313,7 +313,7 @@ public class EvmWatcher implements IWatcher {
                 data.getTransactionLogMap().put(txHash, receipt.getResult().getLogs());
             }
         } catch (Exception e) {
-            logger.error("初始化web3j异常", e);
+            logger.error("获取 Transaction Receipt 异常：", e);
         }
     }
 
