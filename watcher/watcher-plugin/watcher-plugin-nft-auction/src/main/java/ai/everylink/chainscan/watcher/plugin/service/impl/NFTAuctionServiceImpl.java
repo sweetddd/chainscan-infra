@@ -117,6 +117,9 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         // 事件监听 解析;
         for (Transaction transaction : txList) {
             String toAddr = transaction.getToAddr();
+            if (StringUtils.isBlank(transaction.getStatus())) {
+                continue;
+            }
             int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
 
             if (StringUtils.isNotBlank(toAddr) && nftAuctionContracts != null && nftAuctionContracts.equals(toAddr) && txSatte == 1) {
