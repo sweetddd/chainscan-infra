@@ -154,7 +154,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             }
 
             String method = transaction.getInputMethod();
-            if (StringUtils.isNotEmpty(method) && method.contains("mint(") ){
+            if (StringUtils.isNotBlank(method) && method.contains("mint(") ){
                 String input = transaction.getInput();
                 List<String> params2List = DecodUtils.getParams2List(input);
                 String accountAdd = "0x" + params2List.get(1).substring(params2List.get(1).length() - 40);
