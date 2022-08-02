@@ -19,9 +19,9 @@ class DividendRecordService extends Service {
 
         //ividendRecord.time = newTime;
         const addTxSql = 'INSERT INTO dividend_record (' +
-            'mining_details, earnings,  volume,  transactions,  mining_earnings,   time, create_time,burnt,dao_id' +
-            ') VALUES(?,?,?,?,?,?,?,?,?)';
-        const addTxSql_Params = [dividendRecord.mining_details,dividendRecord.earnings ,dividendRecord.volume   ,dividendRecord.transactions   ,dividendRecord.mining_earnings, dividendRecord.time, new Date(),dividendRecord.burnt,dividendRecord.dao_id];
+            'mining_details, earnings,  volume,  transactions,  mining_earnings,   time, create_time,burnt' +
+            ') VALUES(?,?,?,?,?,?,?,?)';
+        const addTxSql_Params = [dividendRecord.mining_details,dividendRecord.earnings ,dividendRecord.volume   ,dividendRecord.transactions   ,dividendRecord.mining_earnings, dividendRecord.time, new Date(),dividendRecord.burnt];
         await this.app.mysql.query(addTxSql, addTxSql_Params, function(err, result) {
             if (err) {
                 console.log('[INSERT SUBSCABTX ERROR] - ', err.message);

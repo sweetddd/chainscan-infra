@@ -59,12 +59,17 @@ class TransactionsService extends Service {
    * @return
    */
   async addTransactionsDetail(block, tx) {
-
+    // let exitTransaction =  await this.getTransactionByHash(tx.transaction_hash);
+    // if(exitTransaction[0]) {
+    //   return;
+    // }else{
+    //
+    // }
 
     const addTxSql =
       "INSERT INTO transaction (" +
-      "transaction_hash,block_hash,block_number,tx_timestamp,from_address,to_address,from_symbol,to_symbol,from_fee,to_fee,from_amount,to_amount,chain_type,chain_id,dao_id" +
-      ") VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+      "transaction_hash,block_hash,block_number,tx_timestamp,from_address,to_address,from_symbol,to_symbol,from_fee,to_fee,from_amount,to_amount,chain_type,chain_id" +
+      ") VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     let time = tx.transaction_time.toString();
     if (time.length == 10) {
       time = time + "000";
@@ -87,8 +92,7 @@ class TransactionsService extends Service {
       tx.amount_0,
       tx.amount_1,
       "CPoS",
-        tx.chain_id,
-        tx.dao_id
+        tx.chain_id
     ];
     try {
       await this.app.mysql.query(
