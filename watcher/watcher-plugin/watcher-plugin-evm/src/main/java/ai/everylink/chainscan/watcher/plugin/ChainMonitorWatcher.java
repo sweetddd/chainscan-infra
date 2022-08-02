@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.methods.response.EthBlockNumber;
 import org.web3j.protocol.http.HttpService;
 
 import java.util.*;
@@ -127,8 +128,9 @@ public class ChainMonitorWatcher implements IWatcher {
         int web3ErrCnt = 0;
         for (int i = 0; i < 10; i++) {
             try {
-                Thread.sleep(1000);
-                web3j.ethBlockNumber().send();
+                Thread.sleep(1250);
+                EthBlockNumber blockNumber = web3j.ethBlockNumber().send();
+                System.out.println("#######: " + blockNumber.getBlockNumber());
             } catch (Throwable e) {
                 web3ErrCnt ++;
                 if (web3ErrCnt > 5) {
@@ -153,9 +155,9 @@ public class ChainMonitorWatcher implements IWatcher {
             if (diff < WatcherUtils.getChainMonitorThreshold() * 60 * 1000) {
                 return;
             }
-
-            SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警",
-                    "VM链长时间未出块，请关注！最后出块于(\"" + diff / 1000 / 60 + "\")分钟前");
+            String chainName = chainId == 4 || chainId == 230 ? "Rinkeby": "DTX";
+            SlackUtils.sendSlackNotify("C02SQNUGEAU", chainName + "链告警",
+                    chainName + "链长时间未出块，请关注！最后出块于(\"" + diff / 1000 / 60 + "\")分钟前");
         } catch (Exception e) {
             logger.error("[MonitorThread]error:" + e.getMessage(), e);
         }

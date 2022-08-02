@@ -197,16 +197,16 @@ public class VM30Utils {
      */
     @SneakyThrows
     public BigInteger balanceOf(Web3j web3j, String contractAddress, String address) {
-        VM30       contract = getContranct(web3j, contractAddress);
-        BigInteger balance  = new BigInteger("0");
+        BigInteger balance = BigInteger.ZERO;
         try {
+            VM30 contract = getContranct(web3j, contractAddress);
             balance = contract.balanceOf(address).send();
         } catch (Exception ex) {
             String message = ex.getMessage();
             if(!message.equals("Contract Call has been reverted by the EVM with the reason: 'VM Exception while processing transaction: revert'.")){
                 ex.printStackTrace();
             }
-            log.debug("获取balanceOf失败:" + contractAddress);
+            log.warn("获取balanceOf失败:" + contractAddress);
         }
         return balance;
     }
