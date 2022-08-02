@@ -17,8 +17,8 @@ class BlockService extends Service {
    * 获取最大区块号
    * @returns
    */
-  async getMaxBlockNumber() {
-    const res = await this.app.mysql.query(`select max(block_number) from ${TABLE} where chain_type = 'CPoS'`);
+  async getMaxBlockNumber(dao_id) {
+    const res = await this.app.mysql.query(`select max(block_number) from ${TABLE} where chain_type = 'CPoS' and dao_id = `+dao_id);
     return res[0]['max(block_number)'];
   }
   /**
@@ -76,6 +76,7 @@ class BlockService extends Service {
         let earnings = await this.sumFees(start_height,end_height);
         let transactions = await this.sumCount(start_height,end_height);
         let dividendRecord = {
+          "dao_id":block.dao_id,
           "mining_details":mining_details,
           "earnings":earnings[0]['sum(block_fee)'],
           "volume":0,
@@ -89,9 +90,9 @@ class BlockService extends Service {
 
       }
       const addTxSql = 'INSERT INTO block (' +
-          'block_number, block_hash,  block_timestamp,  tx_size,  difficulty,  create_time, block_fee, chain_type,reward' +
-          ') VALUES(?,?,?,?,?,?,?,?,?)';
-      const addTxSql_Params = [block.block_height,block.block_hash,block.create_time,block.transaction_count,block.difficulty,new Date(),block.blocked_fee,'CPoS',block.rewards];
+          'block_number, block_hash,  block_timestamp,  tx_size,  difficulty,  create_time, block_fee, chain_type,reward,dao_id' +
+          ') VALUES(?,?,?,?,?,?,?,?,?,?)';
+      const addTxSql_Params = [block.block_height,block.block_hash,block.create_time,block.transaction_count,block.difficulty,new Date(),block.blocked_fee,'CPoS',block.rewards,block.dao_id];
       await this.app.mysql.query(addTxSql, addTxSql_Params, function(err, result) {
         if (err) {
           console.log('[INSERT SUBSCABTX ERROR] - ', err.message);

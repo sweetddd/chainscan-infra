@@ -45,15 +45,17 @@ module.exports = {
 
 let next_schedule = true;
 
-async function scanBlock(ctx,api){
+async function scanBlock(ctx,api,dao_id){
 
-    let maxBlockNumber = await ctx.service.blocks.getMaxBlockNumber();
+    let maxBlockNumber = await ctx.service.blocks.getMaxBlockNumber(dao_id);
     if(!maxBlockNumber){
         maxBlockNumber=0;
     }
     maxBlockNumber++;
 
-    await baseBlock(ctx,api,maxBlockNumber);
+    //cpos block
+    await baseBlock(ctx,api,maxBlockNumber,dao_id);
+
     // if(next_schedule){
     //     await baseBlock(ctx,api,maxBlockNumber+1);
     // }
@@ -61,10 +63,10 @@ async function scanBlock(ctx,api){
 
 }
 
-async function baseBlock(ctx,api,maxBlockNumber){
+async function baseBlock(ctx,api,maxBlockNumber,dao_id){
     console.log(maxBlockNumber)
     next_schedule = false;
-    let newBlock =  await api.query.cposContribution.cPoSBlocks(maxBlockNumber);
+    let newBlock =  await api.query.cposContribution.cPoSBlocks(dao_id,maxBlockNumber);
 
     if(!newBlock.toString()){
         console.log("no mobi data")
@@ -72,7 +74,7 @@ async function baseBlock(ctx,api,maxBlockNumber){
     }else{
 
         try {
-            let newBlockJson = await blockFromData(api,newBlock.toString());
+            let newBlockJson = await blockFromData(api,newBlock.toString(),dao_id);
             let blockTime = newBlockJson.create_time.toString();
 
 
@@ -114,7 +116,7 @@ async function baseBlock(ctx,api,maxBlockNumber){
 }
 
 
-async function blockFromData(api,data){
+async function blockFromData(api,data,dao_id){
     data = data.substring(2,data.length);
 
     let version = parseInt(data.substring(0,2),16);
@@ -133,6 +135,7 @@ async function blockFromData(api,data){
 
 
     let block = {
+        dao_id: dao_id,
         version : version,
         block_height : block_height,
         difficulty : difficulty,
@@ -156,16 +159,16 @@ async function getTransactions(api,blockNumber,transactionIndex,create_time){
         let txs_data = await api.query.cposContribution.blockTransactions(blockNumber,j);
 
         txs_data =  txs_data.toString().substring(2);
-        if (txs_data.length % 75 != 0){
+        if (txs_data.length % 76 != 0){
             console.log("Error : Transaction list data is not public data "+txs_data);
         }
 
 
-        let transaction_count = txs_data.length/150;
+        let transaction_count = txs_data.length/152;
 
         for(var i = 0; i <= transaction_count; i++){
 
-            let tx_data = txs_data.substring(i*150,i*150+150);
+            let tx_data = txs_data.substring(i*152,i*152+152);
             if(tx_data.length > 0){
                 let tx = transactionFromData(tx_data,blockNumber,i,create_time);
                 tx_list.push(tx);
@@ -182,24 +185,71 @@ async function getTransactions(api,blockNumber,transactionIndex,create_time){
 
 function transactionFromData(data,block_height,index,create_time){
 
-    let application_id = parseInt(data.substring(2,4),16);  //
-
-    let chain_id = parseInt(data.substring(4,6),16);  //
 
 
-    let token_0 =parseInt(data.substring(6,14),16); //16
-    let token_1 =parseInt(data.substring(14,22),16); //16
+    let dao_id_start = 1;
+    let dao_id_end  = dao_id_start + 2 ;
 
 
-    let buyer_address = data.substring(22,62);  //
-    let seller_address = data.substring(62,102);  //
+    let node_id_start = 2;
+    let node_id_end  = node_id_start + 2 ;
 
 
-    let fee_0_number =unpack(parseInt(data.substring(102,112),16)); //16
-    let fee_1_number =unpack(parseInt(data.substring(112,122),16)); //16
-    let fee_token =parseInt(data.substring(122,130),16); //16
-    let amount_0 = unpack(parseInt(data.substring(130,140),16));  //
-    let amount_1 = unpack(parseInt(data.substring(140,150),16));  //
+
+    let chain_id_start = node_id_end;
+    let chain_id_end  = chain_id_start + 3 ;
+
+
+
+
+    let token_0_start = chain_id_end;
+    let token_0_end  = token_0_start + 8 ;
+
+    let token_1_start = token_0_end;
+    let token_1_end  = token_1_start + 8 ;
+
+    let buyer_address_start = token_1_end ;
+    let buyer_address_end  = buyer_address_start + 40 ;
+
+    let seller_address_start = buyer_address_end ;
+    let seller_address_end  = seller_address_start + 40 ;
+
+    let fee_0_start = seller_address_end ;
+    let fee_0_end  = fee_0_start + 10 ;
+
+    let fee_1_start = fee_0_end ;
+    let fee_1_end  = fee_1_start + 10 ;
+
+    let fee_token_start = fee_1_end;
+    let fee_token_end = fee_token_start+4;
+
+    let amount_0_start = fee_token_end ;
+    let amount_0_end  = amount_0_start + 5 ;
+
+    let amount_1_start = amount_0_end ;
+    let amount_1_end  = amount_1_start + 5 ;
+
+
+
+    let dao_id = parseInt(data.substring(dao_id_start,dao_id_end),16);  //
+    let node_id  = parseInt(data.substring(node_id_start,dao_id_end),16);  //
+
+    let chain_id = parseInt(data.substring(chain_id_start,chain_id_end),16);  //
+
+
+    let token_0 =parseInt(data.substring(token_0_start,token_0_end),16); //16
+    let token_1 =parseInt(data.substring(token_1_start,token_1_end),16); //16
+
+
+    let buyer_address = data.substring(buyer_address_start,buyer_address_end);  //
+    let seller_address = data.substring(seller_address_start,seller_address_end);  //
+
+
+    let fee_0_number =unpack(parseInt(data.substring(fee_0_start,fee_0_end),16)); //16
+    let fee_1_number =unpack(parseInt(data.substring(fee_1_start,fee_1_end),16)); //16
+    let fee_token =parseInt(data.substring(fee_token_start,fee_token_end),16); //16
+    let amount_0 = unpack(parseInt(data.substring(amount_0_start,amount_0_end),16));  //
+    let amount_1 = unpack(parseInt(data.substring(amount_1_start,amount_1_end),16));  //
     var obj=crypto.createHash('sha256');
     obj.update(new Date()+""+block_height +""+index);
     var str=obj.digest('hex');//hex是十六进制
@@ -222,6 +272,8 @@ function transactionFromData(data,block_height,index,create_time){
     console.log("token_0_symbol = "+token_0_symbol+",token_1_symbol = "+token_1_symbol+"");
 
     let tx = {
+        dao_id : dao_id,
+        node_id : node_id,
         token_0:token_0_symbol,
         token_1:token_1_symbol,
         buyer_address:"0x"+buyer_address,
@@ -323,7 +375,8 @@ async function vmchainWatcher(ctx) {
     
 
 // numberToHex(0x1234, 32); // => 0x00001234
-    await scanBlock(ctx,api);
+    await scanBlock(ctx,api,0);
+    await scanBlock(ctx,api,1);
 
 }
 
