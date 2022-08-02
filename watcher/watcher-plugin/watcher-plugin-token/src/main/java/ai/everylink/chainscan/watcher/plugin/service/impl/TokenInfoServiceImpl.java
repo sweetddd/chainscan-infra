@@ -177,7 +177,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 //                }
 //            }
             // 转账事件监听;
-            if(data.getTransactionLogMap().size() > 0){
+            if(null != data.getTransactionLogMap() && data.getTransactionLogMap().size() > 0){
                 List<Log> logs = data.getTransactionLogMap().get(transaction.getTransactionHash());
                 if(!CollectionUtils.isEmpty(logs)){
                     logs.forEach(log -> {

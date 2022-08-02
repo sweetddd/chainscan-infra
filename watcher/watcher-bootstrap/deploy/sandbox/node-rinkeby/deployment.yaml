@@ -89,13 +89,13 @@ spec:
                 name: network-config
                 key: dtx.rpc.api
           - name: "watcher.rinkebyUrl"
-            value: "https://eth-rinkeby.alchemyapi.io/v2/Wh0cFuopX8Z3xC_hMpE9vgQVwDbOrFS2"
+            value: "http://ethereum-client-sandbox.chain-sandbox.svc.cluster.local:8545"
 #            valueFrom:
 #              configMapKeyRef:
 #                name: network-config
 #                key: ether.rpc.api
           - name: "watcher.vmChainUrl"
-            value: "https://eth-rinkeby.alchemyapi.io/v2/Wh0cFuopX8Z3xC_hMpE9vgQVwDbOrFS2"
+            value: "http://ethereum-client-sandbox.chain-sandbox.svc.cluster.local:8545"
 #            valueFrom:
 #              configMapKeyRef:
 #                name: network-config
