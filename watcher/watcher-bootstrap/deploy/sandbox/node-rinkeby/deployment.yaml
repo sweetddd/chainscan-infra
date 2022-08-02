@@ -47,7 +47,7 @@ spec:
           - name: TZ
             value: UTC
           - name: "evm.chain.rinkebyUrl"
-            value: "https://eth-rinkeby.alchemyapi.io/v2/Wh0cFuopX8Z3xC_hMpE9vgQVwDbOrFS2"
+            value: "http://ethereum-client-sandbox.chain-sandbox.svc.cluster.local:8545"
           - name: "nacos.config.server-addr"
             valueFrom:
               configMapKeyRef:

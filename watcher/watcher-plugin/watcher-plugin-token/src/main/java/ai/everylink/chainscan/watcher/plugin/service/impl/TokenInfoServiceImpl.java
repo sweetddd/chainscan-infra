@@ -42,6 +42,7 @@ import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
@@ -177,16 +178,20 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 //            }
             // 转账事件监听;
             if(data.getTransactionLogMap().size() > 0){
-                data.getTransactionLogMap().get(transaction.getTransactionHash()).forEach(log -> {
-                    if (log.getTopics().size() > 0) {
-                        String topic = log.getTopics().get(0);
-                        if (topic.equals(TRANSFER_TOPIC)) {
-                            addToken(transaction);
-                            saveOrUpdateBalance(fromAddr, toAddr);
-                            updateNftAccount(fromAddr, toAddr);
+                List<Log> logs = data.getTransactionLogMap().get(transaction.getTransactionHash());
+                if(!CollectionUtils.isEmpty(logs)){
+                    logs.forEach(log -> {
+                        if (log.getTopics().size() > 0) {
+                            String topic = log.getTopics().get(0);
+                            if (topic.equals(TRANSFER_TOPIC)) {
+                                addToken(transaction);
+                                saveOrUpdateBalance(fromAddr, toAddr);
+                                updateNftAccount(fromAddr, toAddr);
+                            }
                         }
-                    }
-                } );
+                    } );
+                }
+
             }
         }
     }
