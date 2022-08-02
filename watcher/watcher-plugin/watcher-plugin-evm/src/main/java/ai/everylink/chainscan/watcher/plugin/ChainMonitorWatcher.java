@@ -130,7 +130,6 @@ public class ChainMonitorWatcher implements IWatcher {
             try {
                 Thread.sleep(1250);
                 EthBlockNumber blockNumber = web3j.ethBlockNumber().send();
-                System.out.println("#######: " + blockNumber.getBlockNumber());
             } catch (Throwable e) {
                 web3ErrCnt ++;
                 if (web3ErrCnt > 5) {

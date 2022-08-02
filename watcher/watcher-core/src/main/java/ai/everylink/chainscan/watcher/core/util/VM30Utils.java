@@ -35,12 +35,22 @@ public class VM30Utils {
     @SneakyThrows
     public VM30 getContranct(Web3j web3j, String contractAddress) {
         EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
-        BigInteger  gasPrice    = ethGasPrice.getGasPrice().multiply(new BigInteger("105")).divide(new BigInteger("100"));
+        BigInteger gasPrice = ethGasPrice.getGasPrice().multiply(new BigInteger("105")).divide(new BigInteger("100"));
         //调用合约
         credentials = Credentials.create(contractAddress);
         ContractGasProvider gasProvider = new StaticGasProvider(gasPrice, gasLimit);
-        VM30                contract    = VM30.load(contractAddress, web3j, credentials, gasProvider);
+        VM30 contract  = VM30.load(contractAddress, web3j, credentials, gasProvider);
         return contract;
+    }
+
+
+    @SneakyThrows
+    public VM30 createContract(Web3j web3j, String contractAddress, String secret) {
+        Credentials credentials = Credentials.create(secret);
+        EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
+        BigInteger gasPrice = ethGasPrice.getGasPrice();
+        ContractGasProvider gasProvider = new StaticGasProvider(gasPrice, gasLimit);
+        return VM30.load(contractAddress, web3j, credentials, gasProvider);
     }
 
     @SneakyThrows
@@ -200,6 +210,22 @@ public class VM30Utils {
         BigInteger balance = BigInteger.ZERO;
         try {
             VM30 contract = getContranct(web3j, contractAddress);
+            balance = contract.balanceOf(address).send();
+        } catch (Exception ex) {
+            String message = ex.getMessage();
+            if(!message.equals("Contract Call has been reverted by the EVM with the reason: 'VM Exception while processing transaction: revert'.")){
+                ex.printStackTrace();
+            }
+            log.warn("获取balanceOf失败:" + contractAddress);
+        }
+        return balance;
+    }
+
+    @SneakyThrows
+    public BigInteger balanceOf(Web3j web3j, String contractAddress, String address, String secret) {
+        BigInteger balance = BigInteger.ZERO;
+        try {
+            VM30 contract = createContract(web3j, contractAddress, secret);
             balance = contract.balanceOf(address).send();
         } catch (Exception ex) {
             String message = ex.getMessage();
