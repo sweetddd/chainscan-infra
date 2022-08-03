@@ -409,6 +409,7 @@ public class EvmDataServiceImpl implements EvmDataService {
 
 
     private void insertDB(Block block, List<Transaction> txList, List<TransactionLog> logList) {
+        log.info("Sync block to db, tx size:[{}], log size [{}].", txList.size(), logList.size());
         insertBlock(block);
         insertTxList(block, txList);
         insertTxLog(block, logList);
@@ -537,7 +538,6 @@ public class EvmDataServiceImpl implements EvmDataService {
         if (CollectionUtils.isEmpty(logList)) {
             return;
         }
-
         long t1 = System.currentTimeMillis();
 
         if (!WatcherUtils.isEthereum(block.getChainId())) {
