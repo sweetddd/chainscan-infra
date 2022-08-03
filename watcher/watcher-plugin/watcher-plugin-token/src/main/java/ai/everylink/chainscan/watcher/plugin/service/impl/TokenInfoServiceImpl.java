@@ -230,7 +230,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     return;
                 }
                 BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
-//                if (StringUtils.isNotBlank(symbol) && StringUtils.isNotBlank(name)) {
+                if (StringUtils.isNotBlank(symbol) && StringUtils.isNotBlank(name)) {
                     TokenInfo tokenQuery = new TokenInfo();
                     //判断合约类型
                     checkTokenType(toAddr, fromAddr, tokenQuery,decimals);
@@ -263,10 +263,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     tokenQuery.setCreateTime(new Date());
                     tokenQuery.setCreateTime(new Date());
                     tokenInfoDao.save(tokenQuery);
-//                    //增加账户与token关系数据;
-//                    saveOrUpdateBalance(fromAddr, toAddr);
-//                    updateNftAccount(fromAddr, toAddr);
-//                }
+                    //增加账户与token关系数据;
+                    saveOrUpdateBalance(fromAddr, toAddr);
+                    updateNftAccount(fromAddr, toAddr);
+                }
             }
 
         }    catch (Exception e) {
