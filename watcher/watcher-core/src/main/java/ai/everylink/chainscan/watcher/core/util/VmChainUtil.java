@@ -146,6 +146,14 @@ public class VmChainUtil {
         return eraIndex;
     }
 
+    public static BigInteger hexadecimal2Decimal (String hexadecimal){
+        if (StringUtils.isBlank(hexadecimal)) {
+            return null;
+        }
+        String sub = hexadecimal.substring(2);
+        return new BigInteger(sub, 16);
+    }
+
 
     /**
      * 请求rpc接口

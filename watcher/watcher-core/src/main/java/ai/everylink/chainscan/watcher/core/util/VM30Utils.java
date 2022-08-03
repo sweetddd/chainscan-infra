@@ -30,17 +30,14 @@ public class VM30Utils {
 
     private final BigInteger gasLimit = BigInteger.valueOf(9000000);
 
-    private Credentials credentials;
-
     @SneakyThrows
-    public VM30 getContranct(Web3j web3j, String contractAddress) {
+    public VM30 getContract(Web3j web3j, String contractAddress) {
         EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
         BigInteger gasPrice = ethGasPrice.getGasPrice().multiply(new BigInteger("105")).divide(new BigInteger("100"));
         //调用合约
-        credentials = Credentials.create(contractAddress);
+        Credentials credentials = Credentials.create(contractAddress);
         ContractGasProvider gasProvider = new StaticGasProvider(gasPrice, gasLimit);
-        VM30 contract  = VM30.load(contractAddress, web3j, credentials, gasProvider);
-        return contract;
+        return VM30.load(contractAddress, web3j, credentials, gasProvider);
     }
 
 
@@ -55,7 +52,7 @@ public class VM30Utils {
 
     @SneakyThrows
     public BigInteger totalSupply(Web3j web3j, String contractAddress) {
-        VM30       contract    = getContranct(web3j, contractAddress);
+        VM30       contract    = getContract(web3j, contractAddress);
         BigInteger totalSupply = new BigInteger("0");
         try {
             totalSupply = contract.totalSupply().send();
@@ -68,7 +65,7 @@ public class VM30Utils {
 
     @SneakyThrows
     public BigInteger totalLockAmount(Web3j web3j, String contractAddress) {
-        VM30       contract    = getContranct(web3j, contractAddress);
+        VM30       contract    = getContract(web3j, contractAddress);
         BigInteger totalSupply = new BigInteger("0");
         try {
             totalSupply = contract.totalLockAmount().send();
@@ -81,7 +78,7 @@ public class VM30Utils {
 
     @SneakyThrows
     public BigInteger burnt(Web3j web3j, String contractAddress) {
-        VM30       contract    = getContranct(web3j, contractAddress);
+        VM30       contract    = getContract(web3j, contractAddress);
         BigInteger totalSupply = new BigInteger("0");
         try {
             totalSupply = contract.burnt().send();
@@ -101,7 +98,7 @@ public class VM30Utils {
      */
     @SneakyThrows
     public Utf8String symbol(Web3j web3j, String contractAddress) {
-        VM30       contract = getContranct(web3j, contractAddress);
+        VM30       contract = getContract(web3j, contractAddress);
         Utf8String symbol   = new Utf8String("");
         try {
             symbol = contract.symbol().send();
@@ -127,7 +124,7 @@ public class VM30Utils {
      */
     @SneakyThrows
     public Utf8String tokenURL(Web3j web3j, String contractAddress,BigInteger tokenId) {
-        VM30       contract = getContranct(web3j, contractAddress);
+        VM30       contract = getContract(web3j, contractAddress);
         Utf8String tokenURL   = new Utf8String("");
         try {
             tokenURL = contract.tokenURL(tokenId).send();
@@ -153,7 +150,7 @@ public class VM30Utils {
      */
     @SneakyThrows
     public Utf8String name(Web3j web3j, String contractAddress) {
-        VM30       contract = getContranct(web3j, contractAddress);
+        VM30       contract = getContract(web3j, contractAddress);
         Utf8String name     = new Utf8String("");
         try {
             name = contract.name().send();
@@ -179,7 +176,7 @@ public class VM30Utils {
      */
     @SneakyThrows
     public BigInteger decimals(Web3j web3j, String contractAddress) {
-        VM30       contract = getContranct(web3j, contractAddress);
+        VM30       contract = getContract(web3j, contractAddress);
         Uint8      decimal  = new Uint8(0);
         BigInteger decimals = new BigInteger("0");
         try {
@@ -207,18 +204,19 @@ public class VM30Utils {
      */
     @SneakyThrows
     public BigInteger balanceOf(Web3j web3j, String contractAddress, String address) {
-        BigInteger balance = BigInteger.ZERO;
+        BigInteger result = BigInteger.ZERO;
         try {
-            VM30 contract = getContranct(web3j, contractAddress);
-            balance = contract.balanceOf(address).send();
+            VM30 contract = getContract(web3j, contractAddress);
+            result = contract.balanceOf(address).send();
+            log.info("Address [{}] sync balance from contract [{}] success, balance [{}]", address, contractAddress, result);
         } catch (Exception ex) {
             String message = ex.getMessage();
             if(!message.equals("Contract Call has been reverted by the EVM with the reason: 'VM Exception while processing transaction: revert'.")){
                 ex.printStackTrace();
             }
-            log.warn("获取balanceOf失败:" + contractAddress);
+            log.error("Address [{}] sync balance from contract [{}] error: [{}]", address, contractAddress, ex.getMessage());
         }
-        return balance;
+        return result;
     }
 
     @SneakyThrows
@@ -246,7 +244,7 @@ public class VM30Utils {
      */
     @SneakyThrows
     public BigInteger tokenOfOwnerByIndex(Web3j web3j, String contractAddress, String address,int index) {
-        VM30       contract = getContranct(web3j, contractAddress);
+        VM30       contract = getContract(web3j, contractAddress);
         BigInteger tokenId  = new BigInteger("0");
         try {
             tokenId = contract.tokenOfOwnerByIndex(address,index).send();
@@ -270,7 +268,7 @@ public class VM30Utils {
      */
     @SneakyThrows
     public String tokenURI(Web3j web3j, String contractAddress, BigInteger tokenId) {
-        VM30       contract = getContranct(web3j, contractAddress);
+        VM30       contract = getContract(web3j, contractAddress);
         String tokenURI  = "";
         try {
             tokenURI= contract.tokenURL(tokenId).send().toString();
@@ -293,7 +291,7 @@ public class VM30Utils {
      */
     @SneakyThrows
     public TransactionReceipt transfer(Web3j web3j, String contractAddress, String to, BigInteger value) {
-        VM30       contract = getContranct(web3j, contractAddress);
+        VM30       contract = getContract(web3j, contractAddress);
         TransactionReceipt transactionReceipt = new TransactionReceipt();
         try {
             transactionReceipt = contract.transfer(to, value).send();
@@ -341,7 +339,7 @@ public class VM30Utils {
 
 
     public BigInteger distributionReserve(Web3j web3j, String contractAddress) {
-        VM30       contract = getContranct(web3j, contractAddress);
+        VM30       contract = getContract(web3j, contractAddress);
         BigInteger distributionReserve  = new BigInteger("0");
         try {
             distributionReserve = contract.distributionReserve().send();
