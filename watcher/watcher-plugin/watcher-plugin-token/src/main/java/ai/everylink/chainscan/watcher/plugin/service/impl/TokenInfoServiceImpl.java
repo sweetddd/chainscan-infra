@@ -116,10 +116,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         String toAddr   = transaction.getToAddr();
         String fromAddr = transaction.getFromAddr();
         //交易value为0则为 合约方法调用;
-        if (value.equals("0") && StringUtils.isNotBlank(toAddr) && StringUtils.isNotBlank(fromAddr)) {
-            addToken(transaction); //增加合约信息;
-            addAccountInfo(fromAddr); //增加用户信息;
-        }
+//        if (value.equals("0") && StringUtils.isNotBlank(toAddr) && StringUtils.isNotBlank(fromAddr)) {
+//            addToken(transaction); //增加合约信息;
+//            addAccountInfo(fromAddr); //增加用户信息;
+//        }
         //转账事件
         transactionLogDao.findByTxHash(transaction.getTransactionHash()).forEach(transactionLog -> {
             String topicsStr = transactionLog.getTopics();
@@ -148,34 +148,23 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             if(StringUtils.isNotBlank(fromAddr)){
                 addAccountInfo(fromAddr); //增加用户信息;
             }
-            //交易value为0则为 合约方法调用;
-            if (value.equals("0") && StringUtils.isNotBlank(toAddr)) {
-                addToken(transaction); //增加合约信息;
-            }
+//            //交易value为0则为 合约方法调用;
+//            if (value.equals("0") && StringUtils.isNotBlank(toAddr)) {
+//                addToken(transaction); //增加合约信息;
+//            }
 
             String method = transaction.getInputMethod();
-            if (StringUtils.isNotBlank(method) && method.contains("mint(") ){
-                String input = transaction.getInput();
-                List<String> params2List = DecodUtils.getParams2List(input);
-                String accountAdd = "0x" + params2List.get(1).substring(params2List.get(1).length() - 40);
-                addAccountInfo(accountAdd); //增加用户信息;
-                saveOrUpdateBalance(accountAdd, toAddr);
-                updateNftAccount(accountAdd, toAddr);
-                return;
-            }
-
-
-            //账户信息余额更新;
-//            if (method != null && method.length() > 40) {
-//                if (method.contains("mint(") || method.contains("transfer(") || method.contains("transferFrom(")
-//                        || method.contains("burn(") || method.contains("burnFrom(") || method.contains("deposit")
-//                        || method.contains("ithdraw") ) {
-//                    //监控此方法更新用户余额信息;
-//                    addToken(toAddr, fromAddr);
-//                    saveOrUpdateBalance(fromAddr, toAddr);
-//                    updateNftAccount(fromAddr, toAddr);
-//                }
+//            if (method.contains("mint(") ){
+//                String input = transaction.getInput();
+//                List<String> params2List = DecodUtils.getParams2List(input);
+//                String accountAdd = "0x" + params2List.get(1).substring(params2List.get(1).length() - 40);
+//                addAccountInfo(accountAdd); //增加用户信息;
+//                saveOrUpdateBalance(accountAdd, toAddr);
+//                updateNftAccount(accountAdd, toAddr);
+//                return;
 //            }
+
+
             // 转账事件监听;
             if(null != data.getTransactionLogMap() && data.getTransactionLogMap().size() > 0){
                 List<Log> logs = data.getTransactionLogMap().get(transaction.getTransactionHash());
