@@ -91,7 +91,17 @@ public class TransactionServiceImpl implements TransactionService {
             pluginProcessingList.add(entity);
         }
         BigInteger blockNumber = pluginProcessingList.get(0).getBlockNumber();
-        return transactionDao.getTxData(blockNumber.longValue(), blockNumber.add(new BigInteger("10")).longValue());
+        BigInteger blockStride = BigInteger.TEN;
+        long startIdx = blockNumber.longValue();
+        Long endIdx = blockNumber.add(blockStride).longValue();
+        List<Transaction> transactions = transactionDao.getTxData(startIdx, endIdx);
+        if (CollectionUtils.isEmpty(transactions)) {
+            updateProcessingCursor(new BigInteger(endIdx.toString()));
+        } else {
+            Long cursor = transactions.get(transactions.size() - 1).getBlockNumber();
+            updateProcessingCursor(new BigInteger(cursor.toString()));
+        }
+        return transactions;
     }
 
 

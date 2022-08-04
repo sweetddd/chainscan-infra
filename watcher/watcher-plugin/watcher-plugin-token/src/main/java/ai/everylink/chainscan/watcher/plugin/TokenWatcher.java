@@ -27,10 +27,13 @@ import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
 import ai.everylink.chainscan.watcher.plugin.service.TransactionService;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +52,8 @@ public class TokenWatcher implements IWatcher {
 
     private TransactionService transactionService;
 
+    private TransactionTemplate transactionTemplate;
+
     @Override
     public List<EvmData> scanBlock() {
         initService();
@@ -61,38 +66,36 @@ public class TokenWatcher implements IWatcher {
             return null;
         }
 
-        List<Transaction> txList = new ArrayList<>();
-        if (onlyEvmPlugin()){
-            txList = transactionService.getTxData();
-        }
-        log.info("watcher=[TokenWatcher],txListSize = " + txList.size());
-        for (IWatcherPlugin plugin : pluginList) {
-            //数据加载插件
-            long start  = System.currentTimeMillis();
-            for (Transaction transaction : txList) {
+        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(@NotNull TransactionStatus transactionStatus) {
                 try {
-                    boolean result = plugin.processBlock(transaction);
-                    log.info("[{}]Processed block.watcher=[TokenWatcher],plugin=[{}],result={}",
-                             id, plugin.getClass().getSimpleName(), result);
-                    // block需要按顺序处理，一个处理失败，后续不能再继续
-                    if (!result) {
-                        break;
+                    List<Transaction> txList = new ArrayList<>();
+                    if (onlyEvmPlugin()){
+                        txList = transactionService.getTxData();
                     }
-                } catch (Throwable e) {
-                    log.error(String.format("[%s]Process block error. watcher=[TokenWatcher],plugin=[%s]",
-                                            id+"",  plugin.getClass().getSimpleName()), e);
+                    log.info("watcher=[TokenWatcher],txListSize = " + txList.size());
+                    for (IWatcherPlugin plugin : pluginList) {
+                        //数据加载插件
+                        long start  = System.currentTimeMillis();
+                        for (Transaction transaction : txList) {
+                            boolean result = plugin.processBlock(transaction);
+                            log.info("[{}]Processed block.watcher=[TokenWatcher],plugin=[{}],result={}",
+                                    id, plugin.getClass().getSimpleName(), result);
+                            // block需要按顺序处理，一个处理失败，后续不能再继续
+                            if (!result) {
+                                break;
+                            }
+                        }
+                        log.info("Plugin [{}], processing time [{}]", plugin, System.currentTimeMillis() - start);
+                    }
+                } catch (Exception err) {
+                    err.printStackTrace();
+                    transactionStatus.setRollbackOnly();
                 }
             }
-            log.info("Plugin [{}], processing time [{}]", plugin, System.currentTimeMillis() - start);
-        }
-
-        //执行txDataScan 更新标记;
-        if(txList.size() > 0){
-            Long blockNumber = txList.get(txList.size() -1).getBlockNumber();
-            transactionService.updateProcessingCursor(new BigInteger(blockNumber.toString()));
-        }
-        List<EvmData> blockList = Lists.newArrayList();
-        return blockList;
+        });
+        return Lists.newArrayList();
     }
 
 
@@ -131,6 +134,9 @@ public class TokenWatcher implements IWatcher {
         }
         if (transactionService == null) {
             transactionService = SpringApplicationUtils.getBean(TransactionService.class);
+        }
+        if (transactionTemplate == null) {
+            transactionTemplate = SpringApplicationUtils.getBean(TransactionTemplate.class);
         }
     }
 

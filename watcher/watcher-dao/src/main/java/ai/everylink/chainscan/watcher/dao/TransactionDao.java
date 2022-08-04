@@ -49,7 +49,7 @@ public interface TransactionDao extends JpaRepository<Transaction, Long> {
      * 加载tx数据
      * @return
      */
-    @Query(value = "select * from transaction where block_number >= :startId and block_number <= :endId order by block_number", nativeQuery = true)
+    @Query(value = "select * from transaction where block_number >= :startId and block_number < :endId order by block_number", nativeQuery = true)
     List<Transaction> getTxData(@Param("startId")Long startId,@Param("endId") Long endId);
 
 
