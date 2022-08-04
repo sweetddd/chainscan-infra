@@ -134,7 +134,7 @@ public class BlockChainScanJob implements Job {
             return flag.trim().equalsIgnoreCase("true");
         }
 
-        return false;
+        return true;
     }
 
     private static final ThreadPoolExecutor blockProcessPool = new ThreadPoolExecutor(300, 400, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(20000), new RejectedExecutionHandler() {
