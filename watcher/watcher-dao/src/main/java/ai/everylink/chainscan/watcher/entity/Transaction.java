@@ -107,6 +107,9 @@ public class Transaction {
     @Column(name = "nonce")
     private String nonce;
 
+    /**
+     * input不为null, to一定是合约地址
+     */
     @Column(name = "input")
     private String input;
 

@@ -129,10 +129,13 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             if (topics.size() > 0) {
                 String topic = topics.get(0).toString();
                 if (topic.equals(TRANSFER_TOPIC)) {
+                    String topicFrom = topics.get(1).toString();
+                    String topicTo = topics.get(2).toString();
                     String hexadecimal = topics.size() > 3 ? topics.get(3).toString(): transactionLog.getData();
                     BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
                     addToken(transaction);
-                    saveOrUpdateBalance(fromAddr, toAddr, txAmt);
+                    saveOrUpdateBalance(topicFrom, toAddr, txAmt, false);
+                    saveOrUpdateBalance(topicTo, toAddr, txAmt, true);
                     updateNftAccount(fromAddr, toAddr);
                 }
             }
@@ -176,10 +179,13 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                         if (log.getTopics().size() > 0) {
                             String topic = log.getTopics().get(0);
                             if (topic.equals(TRANSFER_TOPIC)) {
+                                String topicFrom = log.getTopics().get(1);
+                                String topicTo = log.getTopics().get(2);
                                 String hexadecimal = log.getTopics().size() > 3 ? log.getTopics().get(3): log.getData();
                                 BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
                                 addToken(transaction);
-                                saveOrUpdateBalance(fromAddr, toAddr, txAmt);
+                                saveOrUpdateBalance(topicFrom, toAddr, txAmt, false);
+                                saveOrUpdateBalance(topicTo, toAddr, txAmt, true);
                                 updateNftAccount(fromAddr, toAddr);
                             }
                         }
@@ -285,9 +291,11 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      *
      * @param fromAddr
      * @param contract
+     * 0地址不操作，另外的地址还是会操作
+     *
      */
-    private void saveOrUpdateBalance(String fromAddr, String contract, BigInteger txAmount) {
-        if( !fromAddr.equals(contract) ){
+    private void saveOrUpdateBalance(String fromAddr, String contract, BigInteger txAmount, Boolean add) {
+        if(Objects.requireNonNull(VmChainUtil.hexadecimal2Decimal(fromAddr)).compareTo(BigInteger.ZERO) != 0){
             String symbol = "";
             TokenInfo token = tokenInfoDao.findAllByAddress(contract);
             if (token != null) {
@@ -314,7 +322,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             List<TokenAccountBalance> balances = tokenAccountBalanceDao.findAll(exp);
             BigInteger asset = CollectionUtils.isEmpty(balances)
                     ? BigInteger.ZERO
-                    : new BigInteger(balances.get(0).getBalance()).subtract(txAmount);
+                    : new BigInteger(balances.get(0).getBalance());
+            asset = Objects.equals(add, true) ? asset.add(txAmount): asset.subtract(txAmount);
             asset = asset.compareTo(BigInteger.ZERO) < 0 ? vm30Utils.balanceOf(web3j, contract, fromAddr): asset;
 
             if (balances.size() < 1 && asset.compareTo(BigInteger.ZERO) > 0) {
