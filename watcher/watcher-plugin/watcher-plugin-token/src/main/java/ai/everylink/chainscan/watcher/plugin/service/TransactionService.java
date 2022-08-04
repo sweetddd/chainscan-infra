@@ -2,6 +2,7 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 import ai.everylink.chainscan.watcher.entity.Transaction;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -19,10 +20,21 @@ public interface TransactionService {
     void updateTokenTag(String jobName, int size);
 
     /**
+     * 更新标记;
+     */
+    void updateProcessingCursor(BigInteger blockNumber);
+
+    /**
      * 加载交易数据
      * @param jobName
      * @param jobIndex
      * @return
      */
     List<Transaction> getTxData(String jobName,String jobIndex);
+
+    /**
+     * 加载交易数据
+     * @return
+     */
+    List<Transaction> getTxData();
 }

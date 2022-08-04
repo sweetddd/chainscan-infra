@@ -1,13 +1,16 @@
 package ai.everylink.chainscan.watcher.plugin.service.impl;
 
+import ai.everylink.chainscan.watcher.dao.PluginProcessingDao;
 import ai.everylink.chainscan.watcher.dao.TokenInfoDao;
 import ai.everylink.chainscan.watcher.dao.TransactionDao;
+import ai.everylink.chainscan.watcher.entity.PluginProcessing;
 import ai.everylink.chainscan.watcher.entity.TokenInfo;
 import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.plugin.service.TransactionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -29,6 +32,9 @@ public class TransactionServiceImpl implements TransactionService {
     @Autowired
     private TokenInfoDao tokenInfoDao;
 
+    @Autowired
+    private PluginProcessingDao pluginProcessingDao;
+
 
     @Override
     public void updateTokenTag(String jobName, int size) {
@@ -38,6 +44,13 @@ public class TransactionServiceImpl implements TransactionService {
         BigInteger  count = decimals.add(new BigInteger(size + ""));
         long        stratId    = Long.parseLong(address);
         tokenInfoDao.updateAddress((stratId+100L) + "" ,count,queryInfo.getId());
+    }
+
+    @Override
+    public void updateProcessingCursor(BigInteger blockNumber){
+        PluginProcessing pluginProcessing = pluginProcessingDao.findAll().get(0);
+        pluginProcessing.setBlockNumber(blockNumber).setUpdateTime(new Date());
+        pluginProcessingDao.save(pluginProcessing);
     }
 
     @Override
@@ -65,6 +78,23 @@ public class TransactionServiceImpl implements TransactionService {
         long        endId    = stratId + 100;
         return transactionDao.getTxData(stratId,endId);
     }
+
+    @Override
+    public List<Transaction> getTxData() {
+        List<PluginProcessing> pluginProcessingList = pluginProcessingDao.findAll();
+        if (CollectionUtils.isEmpty(pluginProcessingList)) {
+            PluginProcessing entity = new PluginProcessing();
+            entity.setBlockNumber(BigInteger.ZERO);
+            entity.setDeleted(0);
+            entity.setCreateTime(new Date());
+            entity = pluginProcessingDao.save(entity);
+            pluginProcessingList.add(entity);
+        }
+        BigInteger blockNumber = pluginProcessingList.get(0).getBlockNumber();
+        return transactionDao.getTxData(blockNumber.longValue(), blockNumber.add(new BigInteger("10")).longValue());
+    }
+
+
 }
 
 

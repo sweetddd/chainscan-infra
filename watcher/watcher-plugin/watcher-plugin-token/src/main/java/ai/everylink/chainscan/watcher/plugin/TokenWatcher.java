@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,10 +53,6 @@ public class TokenWatcher implements IWatcher {
     public List<EvmData> scanBlock() {
         initService();
         long id = System.currentTimeMillis();
-        String jobName = System.getenv("watcher.process.only.tokenWatcher.jobName");
-        String jobIndex = System.getenv("watcher.process.only.tokenWatcher.jobIndex");
-//        String jobIndex = "10000000";
-//        String jobName = "rinkeby-job-1";
         //加载现有数据执行 插件扫描;
         // 2.获取plugin列表
         List<IWatcherPlugin> pluginList = getOrderedPluginList();
@@ -65,12 +62,13 @@ public class TokenWatcher implements IWatcher {
         }
 
         List<Transaction> txList = new ArrayList<>();
-        if (onlyEvmPlugin() && !StringUtils.isEmpty(jobName) && !StringUtils.isEmpty(jobIndex)){
-            txList =  transactionService.getTxData(jobName,jobIndex);
+        if (onlyEvmPlugin()){
+            txList = transactionService.getTxData();
         }
         log.info("watcher=[TokenWatcher],txListSize = " + txList.size());
         for (IWatcherPlugin plugin : pluginList) {
             //数据加载插件
+            long start  = System.currentTimeMillis();
             for (Transaction transaction : txList) {
                 try {
                     boolean result = plugin.processBlock(transaction);
@@ -85,11 +83,13 @@ public class TokenWatcher implements IWatcher {
                                             id+"",  plugin.getClass().getSimpleName()), e);
                 }
             }
+            log.info("Plugin [{}], processing time [{}]", plugin, System.currentTimeMillis() - start);
         }
 
         //执行txDataScan 更新标记;
         if(txList.size() > 0){
-            transactionService.updateTokenTag(jobName,txList.size());
+            Long blockNumber = txList.get(txList.size() -1).getBlockNumber();
+            transactionService.updateProcessingCursor(new BigInteger(blockNumber.toString()));
         }
         List<EvmData> blockList = Lists.newArrayList();
         return blockList;

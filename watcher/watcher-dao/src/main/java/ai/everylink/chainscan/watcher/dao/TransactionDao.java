@@ -24,6 +24,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
 import java.util.List;
 
 
@@ -48,6 +49,14 @@ public interface TransactionDao extends JpaRepository<Transaction, Long> {
      * 加载tx数据
      * @return
      */
-    @Query(value = "select * from transaction where id >= :startId and id <= :endId ", nativeQuery = true)
+    @Query(value = "select * from transaction where block_number >= :startId and block_number <= :endId order by block_number", nativeQuery = true)
     List<Transaction> getTxData(@Param("startId")Long startId,@Param("endId") Long endId);
+
+
+    /**
+     * 加载tx数据
+     * @return
+     */
+    @Query(value = "select * from transaction where block_number >= :startIdx and block_number < :endIdx order by block_number", nativeQuery = true)
+    List<Transaction> getTxDataByBlockNumber(@Param("startIdx") BigInteger startIdx, @Param("endIdx")BigInteger endIdx);
 }
