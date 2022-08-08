@@ -202,6 +202,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 }
                 BigInteger number = newNumber.subtract(confirmBlock).abs();
                 txHistory.setConfirmBlock(number);
+                log.info("update confirm block ,newNumber is [{}],confirmBlock is [{}],number is [{}]",newNumber,confirmBlock,number);
                 if (number.longValue() < 13 && type.equals("Bridge") && 0 < number.longValue()) {
                     if (StringUtils.isEmpty(txHistory.getToTxHash())) {
                         txHistory.setTxState("From Chain Processing (" + number + "/12)");
