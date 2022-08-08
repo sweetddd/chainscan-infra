@@ -1,161 +1,161 @@
-#apiVersion: apps/v1
-#kind: Deployment
-#metadata:
-#  name: $APP_NAME-dtx-sandbox
-#  namespace: paas
-#spec:
-#  replicas: 1
-#  selector:
-#    matchLabels:
-#      app: $APP_NAME-dtx-sandbox
-#  template:
-#    metadata:
-#      labels:
-#        app: $APP_NAME-dtx-sandbox
-#    spec:
-#      containers:
-#      - name: $APP_NAME-dtx-sandbox
-#        image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
-#        livenessProbe:
-#          httpGet:
-#            path: /healthz
-#            port: 9196
-#            httpHeaders:
-#              - name: X-Custom-Header
-#                value: Awesome
-#          initialDelaySeconds: 60
-#          periodSeconds: 15
-#          timeoutSeconds: 15
-#          successThreshold: 1
-#          failureThreshold: 3
-#        resources:
-#          requests:
-#            cpu: 0.1
-#            memory: 0.5Gi
-#          limits:
-#            cpu: 0.5
-#            memory: 4Gi
-#        volumeMounts:
-#        - name: host-time
-#          mountPath: /etc/localtime
-#        imagePullPolicy: IfNotPresent
-#        ports:
-#        - containerPort: 9196
-#        env:
-#          - name: "spring.profiles.active"
-#            value: "test"
-#          - name: TZ
-#            value: UTC
-#          - name: "evm.chain.rinkebyUrl"
-#            value: "http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
-#          - name: "nacos.config.server-addr"
-#            valueFrom:
-#              configMapKeyRef:
-#                name: nacos-config
-#                key: nacos.config.server-addr
-#          - name: "spring.datasource.chainscan.jdbc-url"
-#            valueFrom:
-#              secretKeyRef:
-#                name: database-chainscan
-#                key: url
-#          - name: "spring.datasource.chainscan.username"
-#            valueFrom:
-#              secretKeyRef:
-#                name: database-chainscan
-#                key: username
-#          - name: "spring.datasource.chainscan.password"
-#            valueFrom:
-#              secretKeyRef:
-#                name: database-chainscan
-#                key: password
-#          - name: "spring.datasource.wallet.jdbc-url"
-#            valueFrom:
-#              secretKeyRef:
-#                name: database-wallet
-#                key: wallet-url
-#          - name: "spring.datasource.wallet.username"
-#            valueFrom:
-#              secretKeyRef:
-#                name: database-wallet
-#                key: wallet-username
-#          - name: "spring.datasource.wallet.password"
-#            valueFrom:
-#              secretKeyRef:
-#                name: database-wallet
-#                key: wallet-password
-#          - name: "watcher.rocketmq.server.addr"
-#            valueFrom:
-#              configMapKeyRef:
-#                name: rocketmq-config
-#                key: rocketmq.server.addr
-#          - name: "coin.ether.api"
-#            valueFrom:
-#              configMapKeyRef:
-#                name: network-config
-#                key: ether.rpc.api
-#          - name: "coin.dtx.api"
-#            valueFrom:
-#              configMapKeyRef:
-#                name: network-config
-#                key: dtx.rpc.api
-#          - name: "evm.vmChainUrl"
-#            valueFrom:
-#              configMapKeyRef:
-#                name: network-config
-#                key: dtx.rpc.api
-#          - name: "watcher.rinkebyUrl"
-#            valueFrom:
-#              configMapKeyRef:
-#                name: network-config
-#                key: ether.rpc.api
-#          - name: "watcher.vmChainUrl"
-#            valueFrom:
-#              configMapKeyRef:
-#                name: network-config
-#                key: dtx.rpc.api
-#          - name: "watcher.chain.scanStep"
-#            value: 100
-#          - name: "watcher.chain.chainId"
-#            value: 97
-#          - name: "watcher.chain.chainType"
-#            value: EVM_PoS
-#          - name: "watcher.notify.template"
-#            value: DTX_TEST
-#          - name: "watcher.scan.switch"
-#            value: false
-#          - name: "watcher.process.concurrent.switch"
-#            value: false
-#          - name: "watcher.process.only.evmplugin"
-#            value: false
-#          - name: "watcher.bridge.contract.address"
-#            value: "0xb382f247ef75878cac13c8a8b63816249b43f4b9"
-#          - name: "watcher.nft.auction.address"
-#            value: "0x4e1e1f8b4fdf2e452942026fa8cc36cc6a651a81"
-#          - name: "watcher.monitor.cron"
-#            value: "0 */1 * * * ?"
-#          - name: "watcher.monitor.threshold"
-#            value: "5"
-#      volumes:
-#      - name: host-time
-#        hostPath:
-#          path: /etc/localtime
-#      imagePullSecrets:
-#      - name: regcred
-#      restartPolicy: Always
-#      dnsPolicy: ClusterFirst
-#      affinity:
-#        podAntiAffinity:
-#          requiredDuringSchedulingIgnoredDuringExecution:
-#            - labelSelector:
-#                matchExpressions:
-#                  - key: app
-#                    operator: In
-#                    values:
-#                      - $APP_NAME-dtx-sandbox
-#                      - $APP_NAME-rinkeby-sandbox
-#                      - $APP_NAME-rinkeby-job-1-sandbox
-#                      - $APP_NAME-rinkeby-job-2-sandbox
-#                      - $APP_NAME-rinkeby-job-3-sandbox
-#                      - $APP_NAME-rinkeby-job-4-sandbox
-#                      - $APP_NAME-rinkeby-job-5-sandbox
-#              topologyKey: "kubernetes.io/hostname"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $APP_NAME-dtx-sandbox
+  namespace: paas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: $APP_NAME-dtx-sandbox
+  template:
+    metadata:
+      labels:
+        app: $APP_NAME-dtx-sandbox
+    spec:
+      containers:
+      - name: $APP_NAME-dtx-sandbox
+        image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9196
+            httpHeaders:
+              - name: X-Custom-Header
+                value: Awesome
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 15
+          successThreshold: 1
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 0.1
+            memory: 0.5Gi
+          limits:
+            cpu: 0.5
+            memory: 4Gi
+        volumeMounts:
+        - name: host-time
+          mountPath: /etc/localtime
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9196
+        env:
+          - name: "spring.profiles.active"
+            value: "test"
+          - name: TZ
+            value: UTC
+          - name: "evm.chain.rinkebyUrl"
+            value: "http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
+          - name: "nacos.config.server-addr"
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: nacos.config.server-addr
+          - name: "spring.datasource.chainscan.jdbc-url"
+            valueFrom:
+              secretKeyRef:
+                name: database-chainscan
+                key: url
+          - name: "spring.datasource.chainscan.username"
+            valueFrom:
+              secretKeyRef:
+                name: database-chainscan
+                key: username
+          - name: "spring.datasource.chainscan.password"
+            valueFrom:
+              secretKeyRef:
+                name: database-chainscan
+                key: password
+          - name: "spring.datasource.wallet.jdbc-url"
+            valueFrom:
+              secretKeyRef:
+                name: database-wallet
+                key: wallet-url
+          - name: "spring.datasource.wallet.username"
+            valueFrom:
+              secretKeyRef:
+                name: database-wallet
+                key: wallet-username
+          - name: "spring.datasource.wallet.password"
+            valueFrom:
+              secretKeyRef:
+                name: database-wallet
+                key: wallet-password
+          - name: "watcher.rocketmq.server.addr"
+            valueFrom:
+              configMapKeyRef:
+                name: rocketmq-config
+                key: rocketmq.server.addr
+          - name: "coin.ether.api"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: ether.rpc.api
+          - name: "coin.dtx.api"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: dtx.rpc.api
+          - name: "evm.vmChainUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: dtx.rpc.api
+          - name: "watcher.rinkebyUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: ether.rpc.api
+          - name: "watcher.vmChainUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: dtx.rpc.api
+          - name: "watcher.chain.scanStep"
+            value: 100
+          - name: "watcher.chain.chainId"
+            value: 97
+          - name: "watcher.chain.chainType"
+            value: EVM_PoS
+          - name: "watcher.notify.template"
+            value: DTX_TEST
+          - name: "watcher.scan.switch"
+            value: false
+          - name: "watcher.process.concurrent.switch"
+            value: false
+          - name: "watcher.process.only.evmplugin"
+            value: false
+          - name: "watcher.bridge.contract.address"
+            value: "0xb382f247ef75878cac13c8a8b63816249b43f4b9"
+          - name: "watcher.nft.auction.address"
+            value: "0x4e1e1f8b4fdf2e452942026fa8cc36cc6a651a81"
+          - name: "watcher.monitor.cron"
+            value: "0 */1 * * * ?"
+          - name: "watcher.monitor.threshold"
+            value: "5"
+      volumes:
+      - name: host-time
+        hostPath:
+          path: /etc/localtime
+      imagePullSecrets:
+      - name: regcred
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - $APP_NAME-dtx-sandbox
+                      - $APP_NAME-rinkeby-sandbox
+                      - $APP_NAME-rinkeby-job-1-sandbox
+                      - $APP_NAME-rinkeby-job-2-sandbox
+                      - $APP_NAME-rinkeby-job-3-sandbox
+                      - $APP_NAME-rinkeby-job-4-sandbox
+                      - $APP_NAME-rinkeby-job-5-sandbox
+              topologyKey: "kubernetes.io/hostname"
