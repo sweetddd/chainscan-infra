@@ -134,10 +134,10 @@ public class WalletTransactionHistory implements Serializable {
     @Column(name = "tx_state", nullable = false)
     private String txState;
 
-    @JSONField(name = "creat_time")
-    @JsonProperty("creat_time")
-    @Column(name = "creat_time")
-    private Timestamp creatTime;
+    @JSONField(name = "create_time")
+    @JsonProperty("create_time")
+    @Column(name = "create_time")
+    private Timestamp createTime;
 
     @JSONField(name = "update_time")
     @JsonProperty("update_time")
