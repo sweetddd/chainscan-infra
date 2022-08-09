@@ -47,7 +47,10 @@ spec:
           - name: TZ
             value: UTC
           - name: "evm.chain.rinkebyUrl"
-            value: "http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: dtx.rpc.api
           - name: "nacos.config.server-addr"
             valueFrom:
               configMapKeyRef:
@@ -116,7 +119,10 @@ spec:
           - name: "watcher.chain.scanStep"
             value: 100
           - name: "watcher.chain.chainId"
-            value: 97
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: dtx.chain-id
           - name: "watcher.chain.chainType"
             value: EVM_PoS
           - name: "watcher.notify.template"
@@ -128,9 +134,15 @@ spec:
           - name: "watcher.process.only.evmplugin"
             value: false
           - name: "watcher.bridge.contract.address"
-            value: "0x221D6d8A097497B044C9A7d930F65C995073Bb76"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: bridge-contract-address
           - name: "watcher.nft.auction.address"
-            value: "0x4e1e1f8b4fdf2e452942026fa8cc36cc6a651a81"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: nft-auction-address
           - name: "watcher.monitor.cron"
             value: "0 */1 * * * ?"
           - name: "watcher.monitor.threshold"
