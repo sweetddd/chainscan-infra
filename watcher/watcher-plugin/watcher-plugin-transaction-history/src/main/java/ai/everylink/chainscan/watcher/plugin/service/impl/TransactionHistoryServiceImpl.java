@@ -147,9 +147,9 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         for (Transaction transaction : txList) {
             String toAddr = transaction.getToAddr();
             //监听指定合约:
-            log.info("bridge transaction scan toAddr is [{}],bridgeContracts is [{}],input is [{}]",toAddr,bridgeContracts,transaction.getInput());
+            log.info("bridge transaction scan toAddr is [{}],bridgeContracts is [{}],input is [{}]",toAddr.toLowerCase(),bridgeContracts.toLowerCase(),transaction.getInput());
 
-            if (StringUtils.isNotBlank(toAddr) && bridgeContracts.equals(toAddr)) {
+            if (StringUtils.isNotBlank(toAddr) && bridgeContracts.toLowerCase().equals(toAddr.toLowerCase())) {
                 String input = transaction.getInput();
                 if (StringUtils.isNotBlank(input) && input.length() > 10) {
                     List<String> params = DecodUtils.getParams2List(input);
