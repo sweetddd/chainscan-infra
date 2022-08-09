@@ -136,7 +136,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bridge-contract-address
+                key: dtx-bridge-contract-address
       volumes:
       - name: host-time
         hostPath:
