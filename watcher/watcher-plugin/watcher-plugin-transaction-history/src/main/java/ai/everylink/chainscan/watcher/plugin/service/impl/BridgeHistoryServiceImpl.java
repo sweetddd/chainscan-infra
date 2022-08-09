@@ -86,6 +86,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
             }else if(txSatte == 0){
                 txHistory.setTxState("Failure");
             }
+            txHistory.setConfirmBlock(BigInteger.ZERO);
             wTxHistoryDao.updateTxToHistory(txHistory);
         }else {
         }

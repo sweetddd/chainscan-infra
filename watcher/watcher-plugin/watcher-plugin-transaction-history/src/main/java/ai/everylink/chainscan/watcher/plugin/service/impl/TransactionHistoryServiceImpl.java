@@ -228,12 +228,13 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     } else {
                         txHistory.setTxState("To Chain Processing (1/12)");
                     }
-                } else if (number.longValue() > 13 && type.equals("Bridge")) {
+                } else if (number.longValue() >= 13 && type.equals("Bridge")) {
                     txHistory.setConfirmBlock(new BigInteger("12"));
-                    if (chainId.equals(txHistory.getToChainId())) {
-                        txHistory.setTxState("Finalized");
-                    } else {
+                    if(txHistory.getTxState().equals("Pending")){
                         txHistory.setTxState("In Consensus Processing");
+                    }else if(txHistory.getTxState().indexOf("To Chain Processing") >= 0){
+                        txHistory.setTxState("Finalized");
+
                     }
                 } else if (number.longValue() < 13 && type.equals("Deposit") && 0 < number.longValue()) {
                     txHistory.setTxState("L1 Depositing (" + number + "/12)");
@@ -242,9 +243,6 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 } else if (number.longValue() >= 12 && type.equals("Deposit")) {
                     txHistory.setConfirmBlock(new BigInteger("12"));
                     txHistory.setTxState("Finalized");
-                } else {
-                    txHistory.setConfirmBlock(new BigInteger("12"));
-                    txHistory.setTxState("In Consensus Processing");
                 }
                 wTxHistoryDao.updateTxHistory(txHistory);
                 //}
