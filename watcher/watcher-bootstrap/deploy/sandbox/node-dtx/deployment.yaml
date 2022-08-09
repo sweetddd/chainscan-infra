@@ -128,7 +128,7 @@ spec:
           - name: "watcher.process.only.evmplugin"
             value: false
           - name: "watcher.bridge.contract.address"
-            value: "0xb382f247ef75878cac13c8a8b63816249b43f4b9"
+            value: "0x221D6d8A097497B044C9A7d930F65C995073Bb76"
           - name: "watcher.nft.auction.address"
             value: "0x4e1e1f8b4fdf2e452942026fa8cc36cc6a651a81"
           - name: "watcher.monitor.cron"

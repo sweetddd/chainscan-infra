@@ -116,7 +116,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                         method.contains("0xfe4464a7"))) {  //NFT
                     bridgeHistoryService.depositBridge(transaction);
                     //目标链接收跨链交易解析;
-                } else if (params.size() > 1 && method.contains("0x20e82d03")) {
+                } else if (params.size() > 1 && (method.contains("0x20e82d03") || params.size() > 1 && method.contains("0x9cbabcf6"))) {
                     log.info("transactionHistoryScan:method" + "0x20e82d03");
                     bridgeHistoryService.bridgeHistoryScan(transaction);
                 }
@@ -157,7 +157,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                             method.contains("0xfe4464a7"))) {  //NFT
                         bridgeHistoryService.depositBridge(transaction);
                         //目标链接收跨链交易解析;
-                    } else if (params.size() > 1 && method.contains("0x20e82d03")) {
+                    } else if (params.size() > 1  && (method.contains("0x20e82d03") || params.size() > 1 && method.contains("0x9cbabcf6"))) {
                         log.info("transactionHistoryScan:method" + "0x20e82d03");
                         bridgeHistoryService.bridgeHistoryScan(transaction);
                     }
