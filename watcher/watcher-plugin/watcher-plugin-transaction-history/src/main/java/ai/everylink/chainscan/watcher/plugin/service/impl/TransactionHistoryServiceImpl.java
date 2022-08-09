@@ -233,7 +233,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 } else if (number.longValue() >= 13 && type.equals("Bridge")) {
                     txHistory.setConfirmBlock(new BigInteger("12"));
                     if(txHistory.getTxState().equals("Pending")){
-                        txHistory.setTxState("In Consensus Processing");
+                       // txHistory.setTxState("In Consensus Processing");
                     }else if(txHistory.getTxState().indexOf("To Chain Processing") >= 0){
                         txHistory.setTxState("Finalized");
 
