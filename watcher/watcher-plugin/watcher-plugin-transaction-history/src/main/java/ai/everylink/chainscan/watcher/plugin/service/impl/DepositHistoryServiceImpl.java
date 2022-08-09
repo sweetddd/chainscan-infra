@@ -1,5 +1,7 @@
 package ai.everylink.chainscan.watcher.plugin.service.impl;
 
+import ai.everylink.chainscan.watcher.core.config.DataSourceEnum;
+import ai.everylink.chainscan.watcher.core.config.TargetDataSource;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.dao.WalletTranactionHistoryDao;
 import ai.everylink.chainscan.watcher.entity.Transaction;
@@ -26,6 +28,7 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
     private WalletTranactionHistoryDao wTxHistoryDao;
 
     @Override
+    @TargetDataSource(value = DataSourceEnum.wallet)
     public void depositERC20HistoryScan(Transaction transaction) {
         String  transactionHash = transaction.getTransactionHash();
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
@@ -49,6 +52,7 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
     }
 
     @Override
+    @TargetDataSource(value = DataSourceEnum.wallet)
     public void depositNativeTokenHistoryScan(Transaction transaction) {
         String  transactionHash = transaction.getTransactionHash();
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);

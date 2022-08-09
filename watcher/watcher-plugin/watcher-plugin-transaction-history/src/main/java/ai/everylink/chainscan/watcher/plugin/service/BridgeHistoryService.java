@@ -19,6 +19,9 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 
 import ai.everylink.chainscan.watcher.entity.Transaction;
+import ai.everylink.chainscan.watcher.entity.TransactionLog;
+
+import java.util.List;
 
 /**
  * Bridge数据统计service
@@ -37,5 +40,7 @@ public interface BridgeHistoryService {
      *bridge 信息扫描
      */
     void bridgeHistoryScan(Transaction transaction);
+
+    List<TransactionLog> txLog(String transactionHash);
 
 }

@@ -25,6 +25,7 @@ import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.dao.WalletTranactionHistoryDao;
 import ai.everylink.chainscan.watcher.entity.Transaction;
+import ai.everylink.chainscan.watcher.entity.TransactionLog;
 import ai.everylink.chainscan.watcher.entity.WalletTransactionHistory;
 import ai.everylink.chainscan.watcher.plugin.service.BridgeHistoryService;
 import ai.everylink.chainscan.watcher.plugin.service.ConvertHistoryService;
@@ -114,7 +115,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 if (params.size() > 2 && (method.contains("0xa44f5fe6") ||   //ERC20
                         method.contains("0xee1c1c7b") ||  //原生币
                         method.contains("0xfe4464a7"))) {  //NFT
-                    bridgeHistoryService.depositBridge(transaction);
+                    //bridgeHistoryService.depositBridge(transaction);
                     //目标链接收跨链交易解析;
                 } else if (params.size() > 1 && (method.contains("0x20e82d03") || params.size() > 1 && method.contains("0x9cbabcf6"))) {
                     log.info("transactionHistoryScan:method" + "0x20e82d03");
@@ -136,7 +137,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
     }
 
     @Override
-
+    @TargetDataSource(value = DataSourceEnum.wallet)
     public void transactionHistoryScan(EvmData data) {
         String            bridgeContracts = environment.getProperty("watcher.bridge.contract.address");
         int               chainId         = data.getChainId();
@@ -158,7 +159,8 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     if (params.size() > 2 && (method.contains("0xa44f5fe6") ||   //ERC20
                             method.contains("0xee1c1c7b") ||  //原生币
                             method.contains("0xfe4464a7"))) {  //NFT
-                        bridgeHistoryService.depositBridge(transaction);
+                        //List<TransactionLog> transactionLogs = bridgeHistoryService.txLog(transaction.getTransactionHash());
+                        //bridgeHistoryService.depositBridge(transaction);
                         //目标链接收跨链交易解析;
                     } else if (params.size() > 1  && (method.contains("0x20e82d03") || params.size() > 1 && method.contains("0x9cbabcf6"))) {
                         log.info("transactionHistoryScan:method" + "0x20e82d03");
@@ -235,6 +237,8 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     }else if(txHistory.getTxState().indexOf("To Chain Processing") >= 0){
                         txHistory.setTxState("Finalized");
 
+                    }else if(txHistory.getTxState().indexOf("From Chain Processing ") >=0 ){
+                        txHistory.setTxState("In Consensus Processing");
                     }
                 } else if (number.longValue() < 13 && type.equals("Deposit") && 0 < number.longValue()) {
                     txHistory.setTxState("L1 Depositing (" + number + "/12)");

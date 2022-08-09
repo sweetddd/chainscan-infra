@@ -47,7 +47,10 @@ spec:
           - name: TZ
             value: UTC
           - name: "evm.chain.rinkebyUrl"
-            value: "https://vmtestnet.chainfra.io/v1/df8371a1d8cbc835147df382bb1144a9"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: dtx.rpc.api
           - name: "nacos.config.server-addr"
             valueFrom:
               configMapKeyRef:
@@ -130,7 +133,10 @@ spec:
           - name: "watcher.monitor.threshold"
             value: "10"
           - name: "watcher.bridge.contract.address"
-            value: "0xb382f247ef75878cac13c8a8b63816249b43f4b9"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: bridge-contract-address
       volumes:
       - name: host-time
         hostPath:

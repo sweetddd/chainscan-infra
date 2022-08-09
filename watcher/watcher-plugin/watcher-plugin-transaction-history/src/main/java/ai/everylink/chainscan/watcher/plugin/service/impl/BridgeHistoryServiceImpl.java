@@ -1,5 +1,7 @@
 package ai.everylink.chainscan.watcher.plugin.service.impl;
 
+import ai.everylink.chainscan.watcher.core.config.DataSourceEnum;
+import ai.everylink.chainscan.watcher.core.config.TargetDataSource;
 import ai.everylink.chainscan.watcher.core.util.DecodUtils;
 import ai.everylink.chainscan.watcher.dao.TransactionLogDao;
 import ai.everylink.chainscan.watcher.dao.WalletTranactionHistoryDao;
@@ -33,7 +35,19 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
     private TransactionLogDao transactionLogDao;
 
 
+
+
     @Override
+    @TargetDataSource(value = DataSourceEnum.chainscan)
+    public List<TransactionLog> txLog(String transactionHash) {
+        List<TransactionLog> logs  = transactionLogDao.findByTxHash(transactionHash);
+
+        return logs;
+
+    }
+
+    @Override
+    @TargetDataSource(value = DataSourceEnum.wallet)
     public void depositBridge(Transaction transaction) {
         String transactionHash = transaction.getTransactionHash();
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
@@ -68,6 +82,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
     }
 
     @Override
+    @TargetDataSource(value = DataSourceEnum.wallet)
     public void bridgeHistoryScan(Transaction transaction) {
         String                   transactionHash = transaction.getTransactionHash();
         String                   input           = transaction.getInput();
@@ -75,6 +90,13 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         String                   chainIDStr      = params.get(1).replace("0x", "");
         Integer                  chainID         = Integer.parseInt(chainIDStr, 16);
         Integer                  depositNonce    = Integer.parseInt(params.get(2).replace("0x", ""), 16);
+
+
+        if(chainID > 256){
+            chainIDStr      = params.get(2).replace("0x", "");
+            chainID         = Integer.parseInt(chainIDStr, 16);
+            depositNonce    = Integer.parseInt(params.get(3).replace("0x", ""), 16);
+        }
         WalletTransactionHistory txHistory = wTxHistoryDao.findByChainNonce(chainID,depositNonce);
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
         if(txHistory != null){
