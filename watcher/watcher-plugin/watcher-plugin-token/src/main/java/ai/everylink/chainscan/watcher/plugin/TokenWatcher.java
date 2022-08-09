@@ -146,7 +146,7 @@ public class TokenWatcher implements IWatcher {
             return flag.trim().equalsIgnoreCase("true");
         }
 
-        return true;
+        return false;
     }
 
 }

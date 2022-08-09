@@ -142,10 +142,13 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         int               chainId         = data.getChainId();
         List<Transaction> txList          = buildTransactionList(data, chainId);
 
+        log.info("bridge transaction scan contracts is [{}],txlist is [{}]",bridgeContracts,txList.size());
         // 事件监听 解析;
         for (Transaction transaction : txList) {
             String toAddr = transaction.getToAddr();
             //监听指定合约:
+            log.info("bridge transaction scan toAddr is [{}],bridgeContracts is [{}],input is [{}]",toAddr,bridgeContracts,transaction.getInput());
+
             if (StringUtils.isNotBlank(toAddr) && bridgeContracts.equals(toAddr)) {
                 String input = transaction.getInput();
                 if (StringUtils.isNotBlank(input) && input.length() > 10) {
@@ -195,20 +198,30 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 String     type         = txHistory.getType();
                 BigInteger newNumber = BigInteger.ZERO;
                 BigInteger submitBlock   = txHistory.getSubmitBlock();
+                BigInteger txHistoryConfirmBlock = txHistory.getConfirmBlock();
+                if(null == txHistoryConfirmBlock){
+                    txHistoryConfirmBlock = BigInteger.ZERO;
+                }
+                txHistoryConfirmBlock = txHistoryConfirmBlock.add(BigInteger.ONE);
                 if(submitBlock == null || submitBlock.compareTo(BigInteger.ZERO) == 0){
                     long       block     = web3j.ethBlockNumber().send().getBlockNumber().longValue();
                     newNumber = BigInteger.valueOf(block);
                     txHistory.setSubmitBlock(newNumber);
                 }
-                BigInteger number = submitBlock.subtract(confirmBlock).abs();
-                txHistory.setConfirmBlock(number);
+                BigInteger number = txHistoryConfirmBlock;
+                txHistory.setConfirmBlock(txHistoryConfirmBlock);
                 log.info("update confirm block ,submitBlock is [{}],confirmBlock is [{}],number is [{}]",submitBlock,confirmBlock,number);
+
+
                 if (number.longValue() < 13 && type.equals("Bridge") && 0 < number.longValue()) {
-                    if (StringUtils.isEmpty(txHistory.getToTxHash())) {
-                        txHistory.setTxState("From Chain Processing (" + number + "/12)");
-                    } else {
-                        txHistory.setTxState("To Chain Processing (" + number + "/12)");
+                    if(chainId.intValue() == txHistory.getFromChainId()){
+                        if (StringUtils.isEmpty(txHistory.getToTxHash())) {
+                            txHistory.setTxState("From Chain Processing (" + number + "/12)");
+                        } else {
+                            txHistory.setTxState("To Chain Processing (" + number + "/12)");
+                        }
                     }
+
                 } else if (type.equals("Bridge") && 0 == number.longValue()) {
                     if (StringUtils.isEmpty(txHistory.getToTxHash())) {
                         txHistory.setTxState("From Chain Processing (1/12)");
