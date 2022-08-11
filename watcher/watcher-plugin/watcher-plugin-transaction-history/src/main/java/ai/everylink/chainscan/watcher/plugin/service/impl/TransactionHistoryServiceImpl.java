@@ -246,6 +246,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                         if(number.longValue() < 13){
                             txHistory.setTxState("L1 Depositing (" + number + "/12)");
                         }else{
+                            txHistory.setTxState("L1 Depositing (12/12)");
                             txHistory.setConfirmBlock(new BigInteger("12"));
                         }
                     }
