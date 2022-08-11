@@ -229,7 +229,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                                     txHistory.setTxState("From Chain Processing (" + number + "/12)");
                                 }
                             }else if(chainId.intValue() == txHistory.getToChainId()){
-                                if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 ){
+                                if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 || txHistory.getTxState().indexOf("In Consensus Processing") >= 0){
                                     txHistory.setTxState("To Chain Processing (" + number + "/12)");
                                 }
                             }

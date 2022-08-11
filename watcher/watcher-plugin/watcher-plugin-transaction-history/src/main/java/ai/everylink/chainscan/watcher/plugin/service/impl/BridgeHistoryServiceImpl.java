@@ -99,8 +99,10 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
             chainID         = Integer.parseInt(chainIDStr, 16);
             depositNonce    = Integer.parseInt(params.get(3).replace("0x", ""), 16);
         }
-        log.info("bridge chain id is [{}],depoosit nonce is {[]}",chainID,depositNonce);
         WalletTransactionHistory txHistory = wTxHistoryDao.findByChainNonce(chainID,depositNonce);
+
+        log.info("bridge chain id is [{}],depoosit nonce is {},tx hi [{}]",chainID,depositNonce,txHistory);
+
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
         if(txHistory != null){
             txHistory.setToTxState(txSatte);
