@@ -58,6 +58,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         List<WalletTransactionHistory>   txHistorys = wTxHistoryDao.findAll(exp);
        // List<Log> logs = data.getTransactionLogMap().get(transactionHash);
         List<TransactionLog> logs  = transactionLogs;
+        log.info("deposit bridge ,logs size is [{}],tx history size is [{}]",logs.size(),txHistorys.size());
 
         for (WalletTransactionHistory txHistory : txHistorys) {
             txHistory.setFromTxState(txSatte);
@@ -73,7 +74,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
                 txHistory.setFromDepositNonce(depositNonce);
             }
             if(txSatte == 1){
-                txHistory.setTxState("From Chain Processing (1/12)");
+                //txHistory.setTxState("From Chain Processing (1/12)");
             }else if(txSatte == 0){
                 txHistory.setTxState("Failure");
             }
