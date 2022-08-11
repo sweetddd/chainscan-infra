@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $APP_NAME-dtx-sandbox
+  name: $APP_NAME-rinkeby-production
   namespace: paas
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: $APP_NAME-dtx-sandbox
+      app: $APP_NAME-rinkeby-production
   template:
     metadata:
       labels:
-        app: $APP_NAME-dtx-sandbox
+        app: $APP_NAME-rinkeby-production
     spec:
       containers:
-      - name: $APP_NAME-dtx-sandbox
+      - name: $APP_NAME-rinkeby-production
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
@@ -31,7 +31,7 @@ spec:
         resources:
           requests:
             cpu: 0.1
-            memory: 0.5Gi
+            memory: 2Gi
           limits:
             cpu: 0.5
             memory: 4Gi
@@ -50,7 +50,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: dtx.rpc.api
+                key: eth.rpc.api
           - name: "nacos.config.server-addr"
             valueFrom:
               configMapKeyRef:
@@ -59,33 +59,18 @@ spec:
           - name: "spring.datasource.chainscan.jdbc-url"
             valueFrom:
               secretKeyRef:
-                name: database-chainscan
+                name: database-rinkeby
                 key: url
           - name: "spring.datasource.chainscan.username"
             valueFrom:
               secretKeyRef:
-                name: database-chainscan
+                name: database-rinkeby
                 key: username
           - name: "spring.datasource.chainscan.password"
             valueFrom:
               secretKeyRef:
-                name: database-chainscan
+                name: database-rinkeby
                 key: password
-          - name: "spring.datasource.wallet.jdbc-url"
-            valueFrom:
-              secretKeyRef:
-                name: database-wallet
-                key: wallet-url
-          - name: "spring.datasource.wallet.username"
-            valueFrom:
-              secretKeyRef:
-                name: database-wallet
-                key: wallet-username
-          - name: "spring.datasource.wallet.password"
-            valueFrom:
-              secretKeyRef:
-                name: database-wallet
-                key: wallet-password
           - name: "watcher.rocketmq.server.addr"
             valueFrom:
               configMapKeyRef:
@@ -106,52 +91,36 @@ spec:
               configMapKeyRef:
                 name: network-config
                 key: dtx.rpc.api
-          - name: "watcher.rinkebyUrl"
-            valueFrom:
-              configMapKeyRef:
-                name: network-config
-                key: ether.rpc.api
           - name: "watcher.vmChainUrl"
-            valueFrom:
-              configMapKeyRef:
-                name: network-config
-                key: dtx.rpc.api
+            value: "http://ethereum-client-sandbox.chain-sandbox.svc.cluster.local:8545"
           - name: "watcher.chain.scanStep"
-            value: 100
+            value: 1
           - name: "watcher.chain.chainId"
-            valueFrom:
-              configMapKeyRef:
-                name: watcher-config
-                key: dtx-chain-id
+            value: 4
           - name: "watcher.chain.chainType"
-            value: EVM_PoS
+            value: EVM_PoW
           - name: "watcher.notify.template"
-            value: DTX_TEST
+            value: RINKEBY
           - name: "watcher.scan.switch"
             value: false
           - name: "watcher.process.concurrent.switch"
             value: false
           - name: "watcher.process.only.evmplugin"
             value: false
-          - name: "start.block.number"
-            valueFrom:
-              configMapKeyRef:
-                name: watcher-config
-                key: dtx-start-block-number
           - name: "watcher.bridge.contract.address"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: dtx-bridge-contract-address
-          - name: "watcher.nft.auction.address"
+                key: eth-bridge-contract-address
+          - name: "watcher.monitor.cron"
+            value: "0 0 12 * * ?"
+          - name: "watcher.monitor.threshold"
+            value: "10"
+          - name: "start.block.number"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: nft-auction-address
-          - name: "watcher.monitor.cron"
-            value: "0 */1 * * * ?"
-          - name: "watcher.monitor.threshold"
-            value: "5"
+                key: eth-start-block-number
       volumes:
       - name: host-time
         hostPath:
@@ -168,11 +137,6 @@ spec:
                   - key: app
                     operator: In
                     values:
-                      - $APP_NAME-dtx-sandbox
-                      - $APP_NAME-rinkeby-sandbox
-                      - $APP_NAME-rinkeby-job-1-sandbox
-                      - $APP_NAME-rinkeby-job-2-sandbox
-                      - $APP_NAME-rinkeby-job-3-sandbox
-                      - $APP_NAME-rinkeby-job-4-sandbox
-                      - $APP_NAME-rinkeby-job-5-sandbox
+                      - $APP_NAME-dtx-production
+                      - $APP_NAME-rinkeby-production
               topologyKey: "kubernetes.io/hostname"

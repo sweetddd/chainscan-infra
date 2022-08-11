@@ -40,5 +40,16 @@ logging:
         ai.everylink.openapi.bonuspoint: info
         ai.everylink.openapi.lottery: info
         ai.everylink.openapi: info
+ai.everylink.chainscan.watcher.plugin:
+  EvmWatcher: 4,97
+  ChainMonitorWatcher: 4.97
+  NFTAuctionSpiPlugin: 97
+  TokenSpiPlugin: 97
+  TokenWatcher: 97
+  TransactionHistorySpiPlugin: 4,97
 
+
+start:
+  block:
+    number: 100000
 

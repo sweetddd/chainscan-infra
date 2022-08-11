@@ -20,14 +20,23 @@ package ai.everylink.chainscan.watcher.plugin;
 import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
+import ai.everylink.chainscan.watcher.core.config.BlockNumber;
+import ai.everylink.chainscan.watcher.core.config.EvmConfig;
+import ai.everylink.chainscan.watcher.core.config.PluginChainId;
 import ai.everylink.chainscan.watcher.core.util.*;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
 import com.google.common.collect.Lists;
+import lombok.Data;
 import okhttp3.OkHttpClient;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.web3j.protocol.Web3j;
@@ -38,10 +47,7 @@ import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.http.HttpService;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -51,9 +57,17 @@ import java.util.concurrent.*;
  * @since 2021-11-26
  */
 @Component
+@Service
+@Data
 public class EvmWatcher implements IWatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(EvmWatcher.class);
+
+    @Autowired
+    Environment environment;
+
+    @Autowired
+    private PluginChainId pluginChainId;
 
     private VmChainUtil vmChainUtil;
 
@@ -102,6 +116,9 @@ public class EvmWatcher implements IWatcher {
         }
 
         Long dbHeight = evmDataService.getMaxBlockNum(chainId);
+        Long number = SpringApplicationUtils.getBean(BlockNumber.class).getNumber();
+        number = null == number ? 0 : number;
+        dbHeight = dbHeight > number ? dbHeight : number;
 
         // 获取链上高度
         Long chainHeight = getNetworkBlockHeight();
@@ -265,7 +282,7 @@ public class EvmWatcher implements IWatcher {
                 replayTx(data, txHash);
             } catch (Exception e) {
                 logger.error("[EvmWatcher]error when process tx. blockNum="
-                                     + data.getBlock().getNumber().longValue() + ", txHash=" + txHash, e);
+                        + data.getBlock().getNumber().longValue() + ", txHash=" + txHash, e);
             } finally {
                 latch.countDown();
             }
@@ -324,8 +341,65 @@ public class EvmWatcher implements IWatcher {
      */
     private List<IEvmWatcherPlugin> findErc20WatcherPluginBySPI() {
         ServiceLoader<IEvmWatcherPlugin> list = ServiceLoader.load(IEvmWatcherPlugin.class);
-        return list == null ? Lists.newArrayList() : Lists.newArrayList(list);
+        Integer chainId = WatcherUtils.getChainId();
+
+        if(null == list){
+            return Lists.newArrayList();
+        }
+
+        ArrayList<IEvmWatcherPlugin> iEvmWatcherPlugins = Lists.newArrayList(list);
+        ArrayList<IEvmWatcherPlugin> newPlugins = new ArrayList<>();
+        for(IEvmWatcherPlugin plugin : iEvmWatcherPlugins){
+            String[] pluginChain = getPluginChain(plugin);
+            for(String id : pluginChain){
+                if(id.equals(chainId.toString())){
+                    newPlugins.add(plugin);
+                }
+            }
+        }
+        return newPlugins;
     }
+
+    private String[] getPluginChain(IEvmWatcherPlugin plugin){
+        String s = plugin.getClass().toString();
+        String s1 = s.split(" ")[1];
+        return getChainIdPlugin(s1);
+    }
+
+    private String[] getChainIdPlugin(String pluginName){
+
+        String chainIds = "";
+        switch (pluginName){
+            case "ai.everylink.chainscan.watcher.plugin.EvmWatcher" :
+                chainIds = SpringApplicationUtils.getBean(PluginChainId.class).getEvmWatcher();
+                break;
+            case "ai.everylink.chainscan.watcher.plugin.ChainMonitorWatcher" :
+                chainIds = SpringApplicationUtils.getBean(PluginChainId.class).getChainMonitorWatcher();
+                break;
+            case "ai.everylink.chainscan.watcher.plugin.NFTAuctionSpiPlugin" :
+                chainIds = SpringApplicationUtils.getBean(PluginChainId.class).getNFTAuctionSpiPlugin();
+                break;
+            case "ai.everylink.chainscan.watcher.plugin.TokenSpiPlugin" :
+                chainIds = SpringApplicationUtils.getBean(PluginChainId.class).getTokenSpiPlugin();
+                break;
+            case "ai.everylink.chainscan.watcher.plugin.TokenWatcher" :
+                chainIds = SpringApplicationUtils.getBean(PluginChainId.class).getTokenWatcher();
+                break;
+            case "ai.everylink.chainscan.watcher.plugin.TransactionHistorySpiPlugin" :
+                chainIds = SpringApplicationUtils.getBean(PluginChainId.class).getTransactionHistorySpiPlugin();
+                break;
+        }
+        if(StringUtils.isEmpty(chainIds)){
+            return new String[]{};
+        }
+
+        String[] split = chainIds.split(",");
+        return split;
+    }
+
+
+
+
 
     private void init() {
         initService();
@@ -333,7 +407,7 @@ public class EvmWatcher implements IWatcher {
         step = WatcherUtils.getScanStep();
         chainId = WatcherUtils.getChainId();
         logger.info("[EvmWatcher]config info. step={},chainId={},chainType={}",
-                    step, chainId, WatcherUtils.getChainType());
+                step, chainId, WatcherUtils.getChainType());
     }
 
     private void initService() {

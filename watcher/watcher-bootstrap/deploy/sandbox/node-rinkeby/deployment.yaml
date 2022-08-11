@@ -88,18 +88,8 @@ spec:
               configMapKeyRef:
                 name: network-config
                 key: dtx.rpc.api
-          - name: "watcher.rinkebyUrl"
-            value: "http://ethereum-client-sandbox.chain-sandbox.svc.cluster.local:8545"
-#            valueFrom:
-#              configMapKeyRef:
-#                name: network-config
-#                key: ether.rpc.api
           - name: "watcher.vmChainUrl"
             value: "http://ethereum-client-sandbox.chain-sandbox.svc.cluster.local:8545"
-#            valueFrom:
-#              configMapKeyRef:
-#                name: network-config
-#                key: rinkeby.local
           - name: "watcher.chain.scanStep"
             value: 1
           - name: "watcher.chain.chainId"
@@ -113,13 +103,18 @@ spec:
           - name: "watcher.process.concurrent.switch"
             value: false
           - name: "watcher.process.only.evmplugin"
-            value: true
+            value: false
           - name: "watcher.bridge.contract.address"
             value: "0xf62B76556f86503C9986F25D3DC59CC538f50f51"
           - name: "watcher.monitor.cron"
             value: "0 0 12 * * ?"
           - name: "watcher.monitor.threshold"
             value: "10"
+          - name: "start.block.number"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: eth-start-block-number
       volumes:
       - name: host-time
         hostPath:
