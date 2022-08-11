@@ -140,10 +140,9 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
     @Override
     @TargetDataSource(value = DataSourceEnum.wallet)
     public void transactionHistoryScan(EvmData data) {
-        String            bridgeContracts = "0x221D6d8A097497B044C9A7d930F65C995073Bb76";
+        String            bridgeContracts = environment.getProperty("watcher.bridge.contract.address");
         int               chainId         = data.getChainId();
         List<Transaction> txList          = buildTransactionList(data, chainId);
-
 
         log.info("bridge transaction scan contracts is [{}],txlist is [{}]",bridgeContracts,txList.size());
         // 事件监听 解析;
