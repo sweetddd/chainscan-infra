@@ -101,14 +101,16 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         }
         WalletTransactionHistory txHistory = wTxHistoryDao.findByChainNonce(chainID,depositNonce);
 
-        log.info("bridge chain id is [{}],depoosit nonce is {},tx hi [{}]",chainID,depositNonce,txHistory);
 
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
+        log.info("bridge chain id is [{}],depoosit nonce is {},tx hi [{}],txSatte is [{}]",chainID,depositNonce,txHistory,txSatte);
+
         if(txHistory != null){
             txHistory.setToTxState(txSatte);
             txHistory.setToTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
             txHistory.setToTxHash(transactionHash);
             if(txSatte == 1){
+                log.info("txSatte is [{}]",txSatte);
                 txHistory.setTxState("To Chain Processing (1/12)");
             }else if(txSatte == 0){
                 txHistory.setTxState("Failure");

@@ -216,7 +216,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     submitBlock = newNumber;
                     txHistory.setSubmitBlock(newNumber);
                 }
-                if(submitBlock.compareTo(confirmBlock) <= 0){
+//                if(submitBlock.compareTo(confirmBlock) <= 0){
                     BigInteger number = txHistoryConfirmBlock;
                     txHistory.setConfirmBlock(txHistoryConfirmBlock);
 
@@ -250,7 +250,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                         }
                     }
                     wTxHistoryDao.updateTxHistory(txHistory);
-                }
+//                }
 
                 //}
             } catch (Exception e) {
