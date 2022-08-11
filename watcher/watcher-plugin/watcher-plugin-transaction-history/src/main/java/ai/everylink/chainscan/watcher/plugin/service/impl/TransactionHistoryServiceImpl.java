@@ -147,6 +147,9 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         // 事件监听 解析;
         for (Transaction transaction : txList) {
             String toAddr = transaction.getToAddr();
+            if(StringUtils.isEmpty(toAddr)){
+                continue;
+            }
             //监听指定合约:
             log.info("bridge transaction scan toAddr is [{}],bridgeContracts is [{}],input is [{}]",toAddr.toLowerCase(),bridgeContracts.toLowerCase(),transaction.getInput());
 
