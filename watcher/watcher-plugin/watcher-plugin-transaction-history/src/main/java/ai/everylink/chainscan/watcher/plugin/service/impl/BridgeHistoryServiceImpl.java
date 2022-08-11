@@ -48,7 +48,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
 
     @Override
     @TargetDataSource(value = DataSourceEnum.wallet)
-    public void depositBridge(Transaction transaction) {
+    public void depositBridge(Transaction transaction,List<TransactionLog> transactionLogs) {
         String transactionHash = transaction.getTransactionHash();
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
         WalletTransactionHistory walletTxHistory = new WalletTransactionHistory();
@@ -57,7 +57,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         Example<WalletTransactionHistory> exp       = Example.of(walletTxHistory);
         List<WalletTransactionHistory>   txHistorys = wTxHistoryDao.findAll(exp);
        // List<Log> logs = data.getTransactionLogMap().get(transactionHash);
-        List<TransactionLog> logs  = transactionLogDao.findByTxHash(transactionHash);
+        List<TransactionLog> logs  = transactionLogs;
 
         for (WalletTransactionHistory txHistory : txHistorys) {
             txHistory.setFromTxState(txSatte);

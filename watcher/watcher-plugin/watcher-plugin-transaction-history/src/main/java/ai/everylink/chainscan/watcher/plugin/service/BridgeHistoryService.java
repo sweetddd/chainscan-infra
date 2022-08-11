@@ -34,7 +34,7 @@ public interface BridgeHistoryService {
     /**
      *depositBridge 信息扫描
      */
-    void depositBridge(Transaction transaction);
+    void depositBridge(Transaction transaction,List<TransactionLog> transactionLogs);
 
     /**
      *bridge 信息扫描

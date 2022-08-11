@@ -159,8 +159,8 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     if (params.size() > 2 && (method.contains("0xa44f5fe6") ||   //ERC20
                             method.contains("0xee1c1c7b") ||  //原生币
                             method.contains("0xfe4464a7"))) {  //NFT
-                        //List<TransactionLog> transactionLogs = bridgeHistoryService.txLog(transaction.getTransactionHash());
-                        //bridgeHistoryService.depositBridge(transaction);
+                        List<TransactionLog> transactionLogs = bridgeHistoryService.txLog(transaction.getTransactionHash());
+                        bridgeHistoryService.depositBridge(transaction,transactionLogs);
                         //目标链接收跨链交易解析;
                     } else if (params.size() > 1  && (method.contains("0x20e82d03") || params.size() > 1 && method.contains("0x9cbabcf6"))) {
                         log.info("transactionHistoryScan:method" + "0x20e82d03");
@@ -194,9 +194,6 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         long    startTime2     = System.currentTimeMillis();
         for (WalletTransactionHistory txHistory : txHistorys) {
             try {
-                //Integer fromChainId = txHistory.getFromChainId();
-                //if(WatcherUtils.getChainId() == fromChainId){
-                String     fromTxHash   = txHistory.getFromTxHash();
                 String     type         = txHistory.getType();
                 BigInteger newNumber = BigInteger.ZERO;
                 BigInteger submitBlock   = txHistory.getSubmitBlock();
@@ -212,41 +209,35 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 }
                 BigInteger number = txHistoryConfirmBlock;
                 txHistory.setConfirmBlock(txHistoryConfirmBlock);
-                log.info("update confirm block ,submitBlock is [{}],confirmBlock is [{}],number is [{}]",submitBlock,confirmBlock,number);
 
-
-                if (number.longValue() < 13 && type.equals("Bridge") && 0 < number.longValue()) {
-                    if(chainId.intValue() == txHistory.getFromChainId()){
-                        if (StringUtils.isEmpty(txHistory.getToTxHash())) {
-                            txHistory.setTxState("From Chain Processing (" + number + "/12)");
-                        } else {
-                            txHistory.setTxState("To Chain Processing (" + number + "/12)");
+                if (type.equals("Bridge")){
+                    //bridge
+                    if(number.longValue() < 13){
+                        if(chainId.intValue() == txHistory.getFromChainId()){
+                            if(txHistory.getTxState().equals("Pending") || txHistory.getTxState().indexOf("From Chain Processing") >= 0){
+                                //from
+                                txHistory.setTxState("From Chain Processing (" + number + "/12)");
+                            }
+                        }else if(chainId.intValue() == txHistory.getToChainId()){
+                            if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 ){
+                                txHistory.setTxState("To Chain Processing (" + number + "/12)");
+                            }
+                        }
+                    }else{
+                        txHistory.setConfirmBlock(new BigInteger("12"));
+                        if(txHistory.getTxState().indexOf("To Chain Processing") >= 0){
+                            txHistory.setTxState("Finalized");
+                        }else if(txHistory.getTxState().indexOf("From Chain Processing ") >=0 ){
+                            txHistory.setTxState("In Consensus Processing");
                         }
                     }
-
-                } else if (type.equals("Bridge") && 0 == number.longValue()) {
-                    if (StringUtils.isEmpty(txHistory.getToTxHash())) {
-                        txHistory.setTxState("From Chain Processing (1/12)");
-                    } else {
-                        txHistory.setTxState("To Chain Processing (1/12)");
+                }else if (type.equals("Deposit") && chainId.intValue() == txHistory.getFromChainId()){
+                    // deposit
+                    if(number.longValue() < 13){
+                        txHistory.setTxState("L1 Depositing (" + number + "/12)");
+                    }else{
+                        txHistory.setConfirmBlock(new BigInteger("12"));
                     }
-                } else if (number.longValue() >= 13 && type.equals("Bridge")) {
-                    txHistory.setConfirmBlock(new BigInteger("12"));
-                    if(txHistory.getTxState().equals("Pending")){
-                       // txHistory.setTxState("In Consensus Processing");
-                    }else if(txHistory.getTxState().indexOf("To Chain Processing") >= 0){
-                        txHistory.setTxState("Finalized");
-
-                    }else if(txHistory.getTxState().indexOf("From Chain Processing ") >=0 ){
-                        txHistory.setTxState("In Consensus Processing");
-                    }
-                } else if (number.longValue() < 13 && type.equals("Deposit") && 0 < number.longValue()) {
-                    txHistory.setTxState("L1 Depositing (" + number + "/12)");
-                } else if (type.equals("Deposit") && 0 == number.longValue()) {
-                    txHistory.setTxState("L1 Depositing (1/12)");
-                } else if (number.longValue() >= 12 && type.equals("Deposit")) {
-                    txHistory.setConfirmBlock(new BigInteger("12"));
-                   // txHistory.setTxState("Finalized");
                 }
                 wTxHistoryDao.updateTxHistory(txHistory);
                 //}
