@@ -64,7 +64,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         for (WalletTransactionHistory txHistory : txHistorys) {
             txHistory.setFromTxState(txSatte);
             txHistory.setFromTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
-            txHistory.setConfirmBlock(new BigInteger("0"));
+           // txHistory.setConfirmBlock(new BigInteger("0"));
             txHistory.setSubmitBlock(new BigInteger(transaction.getBlockNumber().toString()));
             if(logs!= null && logs.size() ==3 ){
                 List<String> topics1 = logs.get(2).getTopics();
