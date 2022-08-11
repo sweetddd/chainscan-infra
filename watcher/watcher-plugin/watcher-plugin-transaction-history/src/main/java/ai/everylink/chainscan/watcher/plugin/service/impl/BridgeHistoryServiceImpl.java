@@ -68,6 +68,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
             if(logs!= null && logs.size() ==3 ){
                 String topicsStr = logs.get(2).getTopics();
                 //topics转为数组
+                log.info("topicstr is [{}]",topicsStr);
                 JSONArray topics = JSONArray.parseArray(topicsStr);
                 String    topicData    = topics.get(3).toString();
                 Integer depositNonce = Integer.parseInt(topicData.replace("0x", ""), 16);
