@@ -218,7 +218,6 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 }
 //                if(submitBlock.compareTo(confirmBlock) <= 0){
                     BigInteger number = txHistoryConfirmBlock;
-                    txHistory.setConfirmBlock(txHistoryConfirmBlock);
 
                     if (type.equals("Bridge")){
                         //bridge
@@ -226,10 +225,14 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                             if(chainId.intValue() == txHistory.getFromChainId()){
                                 if(txHistory.getTxState().equals("Pending") || txHistory.getTxState().indexOf("From Chain Processing") >= 0){
                                     //from
+                                    txHistory.setConfirmBlock(txHistoryConfirmBlock);
+
                                     txHistory.setTxState("From Chain Processing (" + number + "/12)");
                                 }
                             }else if(chainId.intValue() == txHistory.getToChainId()){
                                 if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 || txHistory.getTxState().indexOf("In Consensus Processing") >= 0){
+                                    txHistory.setConfirmBlock(txHistoryConfirmBlock);
+
                                     txHistory.setTxState("To Chain Processing (" + number + "/12)");
                                 }
                             }
@@ -238,11 +241,13 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                             if(txHistory.getTxState().indexOf("To Chain Processing") >= 0){
                                 txHistory.setTxState("Finalized");
                             }else if(txHistory.getTxState().indexOf("From Chain Processing ") >=0 ){
+                                txHistory.setConfirmBlock(txHistoryConfirmBlock);
                                 txHistory.setTxState("In Consensus Processing");
                             }
                         }
                     }else if (type.equals("Deposit") && chainId.intValue() == txHistory.getFromChainId()){
                         // deposit
+                        txHistory.setConfirmBlock(txHistoryConfirmBlock);
                         if(number.longValue() < 13){
                             txHistory.setTxState("L1 Depositing (" + number + "/12)");
                         }else{
