@@ -20,6 +20,7 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.entity.TransactionLog;
+import org.web3j.protocol.core.methods.response.Log;
 
 import java.util.List;
 
@@ -34,7 +35,7 @@ public interface BridgeHistoryService {
     /**
      *depositBridge 信息扫描
      */
-    void depositBridge(Transaction transaction,List<TransactionLog> transactionLogs);
+    void depositBridge(Transaction transaction,List<Log> transactionLogs);
 
     /**
      *bridge 信息扫描

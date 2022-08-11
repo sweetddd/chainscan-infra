@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import org.web3j.protocol.core.methods.response.Log;
 
 import java.math.BigInteger;
 import java.sql.Timestamp;
@@ -48,7 +49,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
 
     @Override
     @TargetDataSource(value = DataSourceEnum.wallet)
-    public void depositBridge(Transaction transaction,List<TransactionLog> transactionLogs) {
+    public void depositBridge(Transaction transaction,List<Log> transactionLogs) {
         String transactionHash = transaction.getTransactionHash();
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
         WalletTransactionHistory walletTxHistory = new WalletTransactionHistory();
@@ -57,7 +58,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         Example<WalletTransactionHistory> exp       = Example.of(walletTxHistory);
         List<WalletTransactionHistory>   txHistorys = wTxHistoryDao.findAll(exp);
        // List<Log> logs = data.getTransactionLogMap().get(transactionHash);
-        List<TransactionLog> logs  = transactionLogs;
+        List<Log> logs  = transactionLogs;
         log.info("deposit bridge ,logs size is [{}],tx history size is [{}]",logs.size(),txHistorys.size());
 
         for (WalletTransactionHistory txHistory : txHistorys) {
@@ -66,11 +67,10 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
             txHistory.setConfirmBlock(new BigInteger("0"));
             txHistory.setSubmitBlock(new BigInteger(transaction.getBlockNumber().toString()));
             if(logs!= null && logs.size() ==3 ){
-                String topicsStr = logs.get(2).getTopics();
-                //topics转为数组
-                log.info("topicstr is [{}]",topicsStr);
-                JSONArray topics = JSONArray.parseArray(topicsStr);
-                String    topicData    = topics.get(3).toString();
+                List<String> topics1 = logs.get(2).getTopics();
+                log.info("log is [{}]",topics1);
+
+                String    topicData    = topics1.get(3);
                 Integer depositNonce = Integer.parseInt(topicData.replace("0x", ""), 16);
                 txHistory.setFromDepositNonce(depositNonce);
             }

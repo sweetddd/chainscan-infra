@@ -43,6 +43,7 @@ import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthGetCode;
+import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
@@ -139,9 +140,10 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
     @Override
     @TargetDataSource(value = DataSourceEnum.wallet)
     public void transactionHistoryScan(EvmData data) {
-        String            bridgeContracts = environment.getProperty("watcher.bridge.contract.address");
+        String            bridgeContracts = "0x221D6d8A097497B044C9A7d930F65C995073Bb76";
         int               chainId         = data.getChainId();
         List<Transaction> txList          = buildTransactionList(data, chainId);
+
 
         log.info("bridge transaction scan contracts is [{}],txlist is [{}]",bridgeContracts,txList.size());
         // 事件监听 解析;
@@ -163,7 +165,11 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                             method.contains("0xee1c1c7b") ||  //原生币
                             method.contains("0xfe4464a7"))) {  //NFT
                         List<TransactionLog> transactionLogs = bridgeHistoryService.txLog(transaction.getTransactionHash());
-                        bridgeHistoryService.depositBridge(transaction,transactionLogs);
+                        Map<String, List<Log>> transactionLogMap =
+                                data.getTransactionLogMap();
+                        List<Log> logs = transactionLogMap.get(transaction.getTransactionHash());
+
+                        bridgeHistoryService.depositBridge(transaction,logs);
                         //目标链接收跨链交易解析;
                     } else if (params.size() > 1  && (method.contains("0x20e82d03") || params.size() > 1 && method.contains("0x9cbabcf6"))) {
                         log.info("transactionHistoryScan:method" + "0x20e82d03");
