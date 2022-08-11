@@ -105,7 +105,7 @@ spec:
           - name: "watcher.process.only.evmplugin"
             value: false
           - name: "watcher.bridge.contract.address"
-            value: "0xf62B76556f86503C9986F25D3DC59CC538f50f51"
+            value: "0x707051c90909741a340eccc47f0527a8a57d5708"
           - name: "watcher.monitor.cron"
             value: "0 0 12 * * ?"
           - name: "watcher.monitor.threshold"

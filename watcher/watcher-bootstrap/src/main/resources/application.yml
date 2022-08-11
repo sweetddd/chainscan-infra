@@ -51,5 +51,5 @@ ai.everylink.chainscan.watcher.plugin:
 
 start:
   block:
-    number: 100000
+    number: 0
 

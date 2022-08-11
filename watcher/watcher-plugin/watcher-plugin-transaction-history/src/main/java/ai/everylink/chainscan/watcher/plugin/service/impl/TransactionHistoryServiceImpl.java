@@ -208,41 +208,45 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 if(submitBlock == null || submitBlock.compareTo(BigInteger.ZERO) == 0){
                     long       block     = web3j.ethBlockNumber().send().getBlockNumber().longValue();
                     newNumber = BigInteger.valueOf(block);
+                    submitBlock = newNumber;
                     txHistory.setSubmitBlock(newNumber);
                 }
-                BigInteger number = txHistoryConfirmBlock;
-                txHistory.setConfirmBlock(txHistoryConfirmBlock);
+                if(submitBlock.compareTo(confirmBlock) <= 0){
+                    BigInteger number = txHistoryConfirmBlock;
+                    txHistory.setConfirmBlock(txHistoryConfirmBlock);
 
-                if (type.equals("Bridge")){
-                    //bridge
-                    if(number.longValue() < 13){
-                        if(chainId.intValue() == txHistory.getFromChainId()){
-                            if(txHistory.getTxState().equals("Pending") || txHistory.getTxState().indexOf("From Chain Processing") >= 0){
-                                //from
-                                txHistory.setTxState("From Chain Processing (" + number + "/12)");
+                    if (type.equals("Bridge")){
+                        //bridge
+                        if(number.longValue() < 13){
+                            if(chainId.intValue() == txHistory.getFromChainId()){
+                                if(txHistory.getTxState().equals("Pending") || txHistory.getTxState().indexOf("From Chain Processing") >= 0){
+                                    //from
+                                    txHistory.setTxState("From Chain Processing (" + number + "/12)");
+                                }
+                            }else if(chainId.intValue() == txHistory.getToChainId()){
+                                if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 ){
+                                    txHistory.setTxState("To Chain Processing (" + number + "/12)");
+                                }
                             }
-                        }else if(chainId.intValue() == txHistory.getToChainId()){
-                            if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 ){
-                                txHistory.setTxState("To Chain Processing (" + number + "/12)");
+                        }else{
+                            txHistory.setConfirmBlock(new BigInteger("12"));
+                            if(txHistory.getTxState().indexOf("To Chain Processing") >= 0){
+                                txHistory.setTxState("Finalized");
+                            }else if(txHistory.getTxState().indexOf("From Chain Processing ") >=0 ){
+                                txHistory.setTxState("In Consensus Processing");
                             }
                         }
-                    }else{
-                        txHistory.setConfirmBlock(new BigInteger("12"));
-                        if(txHistory.getTxState().indexOf("To Chain Processing") >= 0){
-                            txHistory.setTxState("Finalized");
-                        }else if(txHistory.getTxState().indexOf("From Chain Processing ") >=0 ){
-                            txHistory.setTxState("In Consensus Processing");
+                    }else if (type.equals("Deposit") && chainId.intValue() == txHistory.getFromChainId()){
+                        // deposit
+                        if(number.longValue() < 13){
+                            txHistory.setTxState("L1 Depositing (" + number + "/12)");
+                        }else{
+                            txHistory.setConfirmBlock(new BigInteger("12"));
                         }
                     }
-                }else if (type.equals("Deposit") && chainId.intValue() == txHistory.getFromChainId()){
-                    // deposit
-                    if(number.longValue() < 13){
-                        txHistory.setTxState("L1 Depositing (" + number + "/12)");
-                    }else{
-                        txHistory.setConfirmBlock(new BigInteger("12"));
-                    }
+                    wTxHistoryDao.updateTxHistory(txHistory);
                 }
-                wTxHistoryDao.updateTxHistory(txHistory);
+
                 //}
             } catch (Exception e) {
                 //log.info("update txlog error");

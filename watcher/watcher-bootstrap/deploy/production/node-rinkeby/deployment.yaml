@@ -43,7 +43,7 @@ spec:
         - containerPort: 9196
         env:
           - name: "spring.profiles.active"
-            value: "test"
+            value: "prd"
           - name: TZ
             value: UTC
           - name: "evm.chain.rinkebyUrl"
