@@ -221,7 +221,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
                     if (type.equals("Bridge")){
                         //bridge
-                        if(number.longValue() < 13){
+                        if(number.longValue() <= 12){
                             if(chainId.intValue() == txHistory.getFromChainId()){
                                 if(txHistory.getTxState().equals("Pending") || txHistory.getTxState().indexOf("From Chain Processing") >= 0){
                                     //from
