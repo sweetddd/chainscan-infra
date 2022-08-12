@@ -221,10 +221,12 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
                     if (type.equals("Bridge")){
                         //bridge
-                        if(number.longValue() <= 12){
+                        if(number.longValue() < 13){
                             if(chainId.intValue() == txHistory.getFromChainId()){
                                 if(txHistory.getTxState().equals("Pending") || txHistory.getTxState().indexOf("From Chain Processing") >= 0){
                                     //from
+                                    log.info("设置状态 228 From Chain Processing ,tx is [{}]",txHistory);
+
                                     txHistory.setConfirmBlock(txHistoryConfirmBlock);
 
                                     txHistory.setTxState("From Chain Processing (" + number + "/12)");

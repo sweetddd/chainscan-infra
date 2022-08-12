@@ -111,6 +111,8 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
             txHistory.setToTxHash(transactionHash);
             if(txSatte == 1){
                 txHistory.setTxState("To Chain Processing (1/12)");
+                txHistory.setConfirmBlock(BigInteger.ZERO);
+
                 log.info("设置状态 To Chain Processing ,tx is [{}]",txHistory);
 
             }else if(txSatte == 0){
@@ -118,7 +120,6 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
                 log.info("设置状态 Failure ,tx is [{}]",txHistory);
 
             }
-            txHistory.setConfirmBlock(BigInteger.ZERO);
             wTxHistoryDao.updateTxToHistory(txHistory);
         }else {
         }
