@@ -234,7 +234,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
                                 }
                             }else if(chainId.intValue() == txHistory.getToChainId()){
-                                if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 || txHistory.getTxState().indexOf("In Consensus Processing") >= 0){
+                                if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 ){
                                     log.info("设置状态239 To Chain Processing ,tx is [{}]",txHistory);
 
                                     txHistory.setConfirmBlock(txHistoryConfirmBlock);
