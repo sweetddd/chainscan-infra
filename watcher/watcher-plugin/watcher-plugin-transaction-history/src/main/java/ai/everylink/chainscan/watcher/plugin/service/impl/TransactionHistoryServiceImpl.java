@@ -228,21 +228,27 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                                     txHistory.setConfirmBlock(txHistoryConfirmBlock);
 
                                     txHistory.setTxState("From Chain Processing (" + number + "/12)");
+                                    log.info("设置状态 From Chain Processing ,tx is [{}]",txHistory);
+
                                 }
                             }else if(chainId.intValue() == txHistory.getToChainId()){
                                 if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 || txHistory.getTxState().indexOf("In Consensus Processing") >= 0){
                                     txHistory.setConfirmBlock(txHistoryConfirmBlock);
-
                                     txHistory.setTxState("To Chain Processing (" + number + "/12)");
+                                    log.info("设置状态 To Chain Processing ,tx is [{}]",txHistory);
+
                                 }
                             }
                         }else{
                             txHistory.setConfirmBlock(new BigInteger("12"));
-                            if(txHistory.getTxState().indexOf("To Chain Processing") >= 0){
+                            if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 && chainId.intValue() == txHistory.getToChainId()){
                                 txHistory.setTxState("Finalized");
-                            }else if(txHistory.getTxState().indexOf("From Chain Processing ") >=0 ){
+                                log.info("设置状态 Finalized ,tx is [{}]",txHistory);
+
+                            }else if(txHistory.getTxState().indexOf("From Chain Processing ") >=0 && chainId.intValue() == txHistory.getFromChainId()){
                                 txHistory.setConfirmBlock(txHistoryConfirmBlock);
                                 txHistory.setTxState("In Consensus Processing");
+                                log.info("设置状态 In Consensus Processing ,tx is [{}]",txHistory);
                             }
                         }
                     }else if (type.equals("Deposit") && chainId.intValue() == txHistory.getFromChainId()){

@@ -110,10 +110,13 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
             txHistory.setToTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
             txHistory.setToTxHash(transactionHash);
             if(txSatte == 1){
-                log.info("txSatte is [{}]",txSatte);
                 txHistory.setTxState("To Chain Processing (1/12)");
+                log.info("设置状态 To Chain Processing ,tx is [{}]",txHistory);
+
             }else if(txSatte == 0){
                 txHistory.setTxState("Failure");
+                log.info("设置状态 Failure ,tx is [{}]",txHistory);
+
             }
             txHistory.setConfirmBlock(BigInteger.ZERO);
             wTxHistoryDao.updateTxToHistory(txHistory);
