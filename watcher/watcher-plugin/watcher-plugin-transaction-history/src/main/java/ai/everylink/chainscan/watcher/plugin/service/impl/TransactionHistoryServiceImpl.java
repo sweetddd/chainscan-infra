@@ -231,6 +231,8 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
                                     txHistory.setTxState("From Chain Processing (" + number + "/12)");
                                     log.info("设置状态 From Chain Processing ,tx is [{}]",txHistory);
+                                    wTxHistoryDao.updateTxHistory(txHistory);
+
 
                                 }
                             }else if(chainId.intValue() == txHistory.getToChainId()){
@@ -240,6 +242,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                                     txHistory.setConfirmBlock(txHistoryConfirmBlock);
                                     txHistory.setTxState("To Chain Processing (" + number + "/12)");
                                     log.info("设置状态 To Chain Processing ,tx is [{}]",txHistory);
+                                    wTxHistoryDao.updateTxHistory(txHistory);
 
                                 }
                             }
@@ -248,11 +251,15 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                             if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 && chainId.intValue() == txHistory.getToChainId()){
                                 txHistory.setTxState("Finalized");
                                 log.info("设置状态 Finalized ,tx is [{}]",txHistory);
+                                wTxHistoryDao.updateTxHistory(txHistory);
+
 
                             }else if(txHistory.getTxState().indexOf("From Chain Processing ") >=0 && chainId.intValue() == txHistory.getFromChainId()){
                                 txHistory.setConfirmBlock(txHistoryConfirmBlock);
                                 txHistory.setTxState("In Consensus Processing");
                                 log.info("设置状态 In Consensus Processing ,tx is [{}]",txHistory);
+                                wTxHistoryDao.updateTxHistory(txHistory);
+
                             }
                         }
                     }else if (type.equals("Deposit") && chainId.intValue() == txHistory.getFromChainId()){
@@ -260,17 +267,21 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                         txHistory.setConfirmBlock(txHistoryConfirmBlock);
                         if(number.longValue() < 13){
                             txHistory.setTxState("L1 Depositing (" + number + "/12)");
+                            wTxHistoryDao.updateTxHistory(txHistory);
+
                         }else{
-                            txHistory.setTxState("L1 Depositing (12/12)");
-                            txHistory.setConfirmBlock(new BigInteger("12"));
+                            if(!txHistory.getTxState().equals("L1 Depositing (12/12)")){
+                                txHistory.setTxState("L1 Depositing (12/12)");
+                                txHistory.setConfirmBlock(new BigInteger("12"));
+                                wTxHistoryDao.updateTxHistory(txHistory);
+                            }
                         }
                     }
-                    wTxHistoryDao.updateTxHistory(txHistory);
 //                }
 
                 //}
             } catch (Exception e) {
-                //log.info("update txlog error");
+                log.info("update txlog error [{}]",e);
             }
         }
         log.info("TxHistory-findConfirmBlock-for-consum:" + (System.currentTimeMillis() - startTime2));
