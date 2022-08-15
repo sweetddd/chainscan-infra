@@ -102,6 +102,8 @@ spec:
             value: false
           - name: "watcher.process.concurrent.switch"
             value: false
+          - name: "watcher.insert.transaction.log"
+            value: true
           - name: "watcher.process.only.evmplugin"
             value: false
           - name: "watcher.bridge.contract.address"

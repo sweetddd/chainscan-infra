@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.web3j.protocol.Web3j;
@@ -74,6 +75,9 @@ public class EvmDataServiceImpl implements EvmDataService {
 
     @Autowired
     private TransactionLogDao transactionLogDao;
+
+    @Autowired
+    Environment environment;
 
     @PostConstruct
     private void initWeb3j() {
@@ -411,8 +415,13 @@ public class EvmDataServiceImpl implements EvmDataService {
     private void insertDB(Block block, List<Transaction> txList, List<TransactionLog> logList) {
         log.info("Sync block to db, tx size:[{}], log size [{}].", txList.size(), logList.size());
         insertBlock(block);
-        insertTxList(block, txList);
-        insertTxLog(block, logList);
+        String property = environment.getProperty("watcher.insert.transaction.log");
+
+        if(StringUtils.isEmpty(property) || "true".equals(property)){
+            insertTxList(block, txList);
+            insertTxLog(block, logList);
+        }
+
     }
 
     private void insertBlock(Block block) {
@@ -425,54 +434,54 @@ public class EvmDataServiceImpl implements EvmDataService {
         if (!WatcherUtils.isEthereum(block.getChainId())) {
             blockDao.save(block);
         }
-//        else {
-//            // use origin jdbc
-//            Connection connection = null;
-//            PreparedStatement preparedStatement = null;
-//            try {
-//                connection = JDBCUtils.getConnection();
-//                String sql = "INSERT INTO block (block_number, block_hash, chain_id, block_timestamp, parent_hash, " +
-//                        "miner, nonce, validator, burnt, tx_size, " +
-//                        "reward, difficulty, total_difficulty, block_size, gas_used, " +
-//                        "gas_limit, extra_data, create_time, status, block_fee, " +
-//                        "chain_type, finalized) " +
-//                        "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-//                preparedStatement = connection.prepareStatement(sql);
-//                Block b = block;
-//                preparedStatement.setObject(1, b.getBlockNumber());
-//                preparedStatement.setObject(2, b.getBlockHash());
-//                preparedStatement.setObject(3, b.getChainId());
-//                preparedStatement.setObject(4, b.getBlockTimestamp());
-//                preparedStatement.setObject(5, b.getParentHash());
-//                preparedStatement.setObject(6, "");
-//                preparedStatement.setObject(7, b.getNonce());
-//                preparedStatement.setObject(8, b.getValidator());
-//                preparedStatement.setObject(9, b.getBurnt());
-//                preparedStatement.setObject(10, b.getTxSize());
-//                preparedStatement.setObject(11, b.getReward());
-//                preparedStatement.setObject(12, b.getDifficulty());
-//                preparedStatement.setObject(13, b.getTotalDifficulty());
-//                preparedStatement.setObject(14, b.getBlockSize());
-//                preparedStatement.setObject(15, b.getGasUsed());
-//                preparedStatement.setObject(16, b.getGasLimit());
-//                preparedStatement.setObject(17, b.getExtraData());
-//                preparedStatement.setObject(18, b.getCreateTime());
-//                preparedStatement.setObject(19, b.getStatus());
-//                preparedStatement.setObject(20, b.getBlockFee());
-//                preparedStatement.setObject(21, b.getChainType());
-//                preparedStatement.setObject(22, 0);
-//
-//                int rows = preparedStatement.executeUpdate();
-//                if (rows <= 0) {
-//                    log.info("[saveBlock]fail.rows={}", rows);
-//                }
-//            } catch (SQLException e) {
-//                e.printStackTrace();
-//            }finally {
-//                // 6. 释放资源
-//                JDBCUtils.close(preparedStatement,connection);
-//            }
-//        }
+        else {
+            // use origin jdbc
+            Connection connection = null;
+            PreparedStatement preparedStatement = null;
+            try {
+                connection = JDBCUtils.getConnection();
+                String sql = "INSERT INTO block (block_number, block_hash, chain_id, block_timestamp, parent_hash, " +
+                        "miner, nonce, validator, burnt, tx_size, " +
+                        "reward, difficulty, total_difficulty, block_size, gas_used, " +
+                        "gas_limit, extra_data, create_time, status, block_fee, " +
+                        "chain_type, finalized) " +
+                        "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                preparedStatement = connection.prepareStatement(sql);
+                Block b = block;
+                preparedStatement.setObject(1, b.getBlockNumber());
+                preparedStatement.setObject(2, b.getBlockHash());
+                preparedStatement.setObject(3, b.getChainId());
+                preparedStatement.setObject(4, b.getBlockTimestamp());
+                preparedStatement.setObject(5, b.getParentHash());
+                preparedStatement.setObject(6, "");
+                preparedStatement.setObject(7, b.getNonce());
+                preparedStatement.setObject(8, b.getValidator());
+                preparedStatement.setObject(9, b.getBurnt());
+                preparedStatement.setObject(10, b.getTxSize());
+                preparedStatement.setObject(11, b.getReward());
+                preparedStatement.setObject(12, b.getDifficulty());
+                preparedStatement.setObject(13, b.getTotalDifficulty());
+                preparedStatement.setObject(14, b.getBlockSize());
+                preparedStatement.setObject(15, b.getGasUsed());
+                preparedStatement.setObject(16, b.getGasLimit());
+                preparedStatement.setObject(17, b.getExtraData());
+                preparedStatement.setObject(18, b.getCreateTime());
+                preparedStatement.setObject(19, b.getStatus());
+                preparedStatement.setObject(20, b.getBlockFee());
+                preparedStatement.setObject(21, b.getChainType());
+                preparedStatement.setObject(22, 0);
+
+                int rows = preparedStatement.executeUpdate();
+                if (rows <= 0) {
+                    log.info("[saveBlock]fail.rows={}", rows);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }finally {
+                // 6. 释放资源
+                JDBCUtils.close(preparedStatement,connection);
+            }
+        }
         log.info("[saveBlock]consume: {}ms, block={}", (System.currentTimeMillis() - t1), block.getBlockNumber());
     }
 
