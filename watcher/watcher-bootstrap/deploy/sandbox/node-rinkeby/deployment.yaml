@@ -108,6 +108,16 @@ spec:
             value: false
           - name: "watcher.bridge.contract.address"
             value: "0x707051c90909741a340eccc47f0527a8a57d5708"
+          - name: "watcher.contract.lending.lending-config"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: eth-lending-contract-config
+          - name: "watcher.contract.lending.stable-config"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: eth-stable-contract-config
           - name: "watcher.monitor.cron"
             value: "0 0 12 * * ?"
           - name: "watcher.monitor.threshold"

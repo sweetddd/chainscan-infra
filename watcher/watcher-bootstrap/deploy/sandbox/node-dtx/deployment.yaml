@@ -148,6 +148,16 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: nft-auction-address
+          - name: "watcher.contract.lending.lending-config"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: dtx-lending-contract-config
+          - name: "watcher.contract.lending.stable-config"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: dtx-stable-contract-config
           - name: "watcher.monitor.cron"
             value: "0 */1 * * * ?"
           - name: "watcher.monitor.threshold"

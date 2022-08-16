@@ -16,4 +16,5 @@ public class PluginChainId {
     private String tokenSpiPlugin;
     private String tokenWatcher;
     private String transactionHistorySpiPlugin;
+    private String lendingHistorySpiPlugin;
 }

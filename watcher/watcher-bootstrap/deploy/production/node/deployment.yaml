@@ -86,6 +86,16 @@ spec:
               secretKeyRef:
                 name: database-wallet
                 key: wallet-password
+          - name: "watcher.contract.lending.lending-config"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: dtx-lending-contract-config
+          - name: "watcher.contract.lending.stable-config"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: dtx-stable-contract-config
           - name: "watcher.rocketmq.server.addr"
             valueFrom:
               configMapKeyRef:

@@ -388,6 +388,9 @@ public class EvmWatcher implements IWatcher {
             case "ai.everylink.chainscan.watcher.plugin.TransactionHistorySpiPlugin" :
                 chainIds = SpringApplicationUtils.getBean(PluginChainId.class).getTransactionHistorySpiPlugin();
                 break;
+            case "ai.everylink.chainscan.watcher.plugin.LendingHistorySpiPlugin" :
+                chainIds = SpringApplicationUtils.getBean(PluginChainId.class).getLendingHistorySpiPlugin();
+                break;
         }
         if(StringUtils.isEmpty(chainIds)){
             return new String[]{};

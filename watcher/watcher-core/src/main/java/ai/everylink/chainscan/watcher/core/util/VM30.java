@@ -141,6 +141,16 @@ public class VM30 extends Contract {
         return executeRemoteCallSingleValueReturn(function, Utf8String.class);
     }
 
+    public RemoteCall<String> underlying() {
+
+        Function function = new Function("underlying",
+                Arrays.<Type>asList(),
+                Arrays.<TypeReference<?>>asList(new TypeReference<Address>() {
+                }));
+
+        return executeRemoteCallSingleValueReturn(function, String.class);
+    }
+
 
     public RemoteCall<TransactionReceipt> transferFrom(String _from, String _to, BigInteger _value) {
         Function function = new Function(

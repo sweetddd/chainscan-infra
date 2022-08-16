@@ -40,12 +40,22 @@ logging:
 coin:
   chainIds: "4,97"
 evm:
-  vmChainUrl: http://vmdev.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
+  vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
 watcher:
-  L2Url: http://xapi.powx.io/l2-server-api/api/
-  #rinkebyUrl: https://eth-rinkeby.alchemyapi.io/v2/Wh0cFuopX8Z3xC_hMpE9vgQVwDbOrFS2
-  rinkebyUrl: http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
-  vmChainUrl: http://vmdev.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
+  L2Url: http://xapi.powx.io/l2-server-api/api/v0.2/
+  rinkebyUrl: https://eth-rinkeby.alchemyapi.io/v2/Wh0cFuopX8Z3xC_hMpE9vgQVwDbOrFS2
+  #rinkebyUrl: http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
+  vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
   bridge:
     contract:
-      address: "0xb382f247ef75878cac13c8a8b63816249b43f4b9"
+      address: "0x221d6d8a097497b044c9a7d930f65c995073bb76"
+
+ai.everylink.chainscan.watcher.plugin:
+  EvmWatcher: 4,97
+#  ChainMonitorWatcher: 4.97
+#  NFTAuctionSpiPlugin: 97
+#  TokenSpiPlugin: 97
+#  TokenWatcher: 97
+#  TransactionHistorySpiPlugin: 4,97
+  LendingHistorySpiPlugin: 4,97
+

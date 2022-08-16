@@ -64,6 +64,9 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
     private Web3j web3j;
 
+    public final static String COMPOUND = "Supply,Borrow,Repay,Withdraw,Burnt,Mint";
+
+
     @Autowired
     private BridgeHistoryService bridgeHistoryService;
 
@@ -194,7 +197,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
     @TargetDataSource(value = DataSourceEnum.wallet)
     public void updateConfirmBlock(EvmData blockData) {
         BigInteger                     chainId     = new BigInteger(blockData.getChainId() + "");
-        BigInteger                     confirmBlock = blockData.getBlock().getNumber();
+        BigInteger                     currentBlockNumber = blockData.getBlock().getNumber();
         long    startTime     = System.currentTimeMillis();
         List<WalletTransactionHistory> txHistorys  = wTxHistoryDao.findConfirmBlock();
         log.info("TxHistory-findConfirmBlock-consum:" + (System.currentTimeMillis() - startTime));
@@ -276,6 +279,19 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                                 wTxHistoryDao.updateTxHistory(txHistory);
                             }
                         }
+                    }else if (COMPOUND.contains(type)  && chainId.intValue() == txHistory.getFromChainId()){
+                        // lending
+                        if(submitBlock.compareTo(currentBlockNumber) <= 0){
+                            if(number.longValue() < 13){
+                                txHistory.setConfirmBlock(txHistoryConfirmBlock);
+                            }else{
+                                txHistory.setConfirmBlock(new BigInteger("12"));
+                                txHistory.setTxState("Finalized");
+                            }
+                            wTxHistoryDao.updateTxHistory(txHistory);
+                        }
+
+
                     }
 //                }
 

@@ -81,6 +81,12 @@
 
         <dependency>
             <groupId>ai.everylink.chainscan</groupId>
+            <artifactId>watcher-plugin-lending-history</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ai.everylink.chainscan</groupId>
             <artifactId>watcher-plugin-token</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>

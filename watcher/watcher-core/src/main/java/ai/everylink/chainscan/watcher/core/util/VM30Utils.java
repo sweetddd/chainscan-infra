@@ -141,6 +141,27 @@ public class VM30Utils {
         return tokenURL;
     }
 
+
+    @SneakyThrows
+    public String underlying(Web3j web3j, String contractAddress) {
+        VM30       contract = getContract(web3j, contractAddress);
+        String address   = "";
+        try {
+            address = contract.underlying().send().toString();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            String message = ex.getMessage();
+            if (message.indexOf("to expected type: Utf8String") >= 0) {
+                message = message.replace(" to expected type: Utf8String", "");
+                message = message.replace("Unable to convert response: ", "");
+                address = "";
+            } else {
+                log.debug("获取underlying失败:" + contractAddress);
+            }
+        }
+        return address;
+    }
+
     /**
      * 查询合约的name
      *
