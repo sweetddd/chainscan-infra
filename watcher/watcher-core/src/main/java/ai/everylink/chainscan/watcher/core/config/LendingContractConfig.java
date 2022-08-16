@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 
-    @Configuration
+@Configuration
 @ConfigurationProperties(prefix = "watcher.contract.lending")
 @Data
 public class LendingContractConfig {

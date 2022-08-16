@@ -130,7 +130,7 @@ public class LendingHistoryServiceImpl implements LendingHistoryService {
                                 type = LendingTopicEnum.Burnt.name();
                             }
                             saveHistory(type
-                                    ,"+"
+                                    ,"-"
                                     ,address
                                     ,txHash
                                     ,chainId
@@ -147,7 +147,7 @@ public class LendingHistoryServiceImpl implements LendingHistoryService {
                                 type = LendingTopicEnum.Mint.name();
                             }
                             saveHistory(type
-                                    ,"-"
+                                    ,"+"
                                     ,address
                                     ,txHash
                                     ,chainId
