@@ -134,9 +134,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     String hexadecimal = topics.size() > 3 ? topics.get(3).toString(): transactionLog.getData();
                     BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
                     addToken(transaction);
-                    saveOrUpdateBalance(topicFrom, toAddr, txAmt, false);
-                    saveOrUpdateBalance(topicTo, toAddr, txAmt, true);
-                    updateNftAccount(fromAddr, toAddr);
+                    saveOrUpdateBalance(topicFrom, transactionLog.getAddress(), txAmt, false);
+                    saveOrUpdateBalance(topicTo, transactionLog.getAddress(), txAmt, true);
+                    updateNftAccount(topicFrom, transactionLog.getAddress());
+                    updateNftAccount(topicTo, transactionLog.getAddress());
                 }
             }
         } );
@@ -149,7 +150,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         List<Transaction> txList  = buildTransactionList(data, chainId);
         for (Transaction transaction : txList) {
             String value = transaction.getValue();
-            String toAddr = transaction.getToAddr();
             String fromAddr = transaction.getFromAddr();
             if(StringUtils.isNotBlank(fromAddr)){
                 addAccountInfo(fromAddr); //增加用户信息;
@@ -184,9 +184,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                                 String hexadecimal = log.getTopics().size() > 3 ? log.getTopics().get(3): log.getData();
                                 BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
                                 addToken(transaction);
-                                saveOrUpdateBalance(topicFrom, toAddr, txAmt, false);
-                                saveOrUpdateBalance(topicTo, toAddr, txAmt, true);
-                                updateNftAccount(fromAddr, toAddr);
+                                saveOrUpdateBalance(topicFrom, log.getAddress(), txAmt, false);
+                                saveOrUpdateBalance(topicTo, log.getAddress(), txAmt, true);
+                                updateNftAccount(topicFrom, log.getAddress());
+                                updateNftAccount(topicTo, log.getAddress());
                             }
                         }
                     } );
