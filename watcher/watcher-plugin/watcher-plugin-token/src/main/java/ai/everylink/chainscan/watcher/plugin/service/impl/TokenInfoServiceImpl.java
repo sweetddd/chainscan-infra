@@ -130,7 +130,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 String topic = topics.get(0).toString();
                 if (topic.equals(TRANSFER_TOPIC)) {
                     String topicFrom = topics.get(1).toString();
+
+                    topicFrom = "0x"+topicFrom.substring(topicFrom.length()-40);
                     String topicTo = topics.get(2).toString();
+                    topicTo = "0x"+topicTo.substring(topicTo.length()-40);
                     String hexadecimal = topics.size() > 3 ? topics.get(3).toString(): transactionLog.getData();
                     BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
                     addToken(transaction);
@@ -180,7 +183,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                             String topic = log.getTopics().get(0);
                             if (topic.equals(TRANSFER_TOPIC)) {
                                 String topicFrom = log.getTopics().get(1);
+
+                                topicFrom = "0x"+topicFrom.substring(topicFrom.length()-40);
                                 String topicTo = log.getTopics().get(2);
+                                topicTo = "0x"+topicTo.substring(topicTo.length()-40);
                                 String hexadecimal = log.getTopics().size() > 3 ? log.getTopics().get(3): log.getData();
                                 BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
                                 addToken(transaction);
