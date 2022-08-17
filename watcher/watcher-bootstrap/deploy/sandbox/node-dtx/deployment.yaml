@@ -162,7 +162,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: eth-watcher-confirm-block
+                key: dtx-watcher-confirm-block
           - name: "watcher.monitor.cron"
             value: "0 */1 * * * ?"
           - name: "watcher.monitor.threshold"

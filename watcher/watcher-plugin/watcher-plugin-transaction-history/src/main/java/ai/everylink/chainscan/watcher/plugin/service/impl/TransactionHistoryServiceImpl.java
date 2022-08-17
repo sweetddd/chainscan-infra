@@ -270,7 +270,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     }else if (type.equals("Deposit") && chainId.intValue() == txHistory.getFromChainId()){
                         // deposit
                         txHistory.setConfirmBlock(txHistoryConfirmBlock);
-                        if(number.longValue() < 13){
+                        if(number.longValue() < maxBlock){
                             txHistory.setTxState("L1 Depositing (" + number + "/"+confirmBlock+")");
                             wTxHistoryDao.updateTxHistory(txHistory);
                         }
