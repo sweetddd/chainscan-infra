@@ -9,6 +9,7 @@ import ai.everylink.chainscan.watcher.entity.WalletTransactionHistory;
 import ai.everylink.chainscan.watcher.plugin.service.DepositHistoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -27,6 +28,10 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
     @Autowired
     private WalletTranactionHistoryDao wTxHistoryDao;
 
+
+    @Autowired
+    Environment environment;
+
     @Override
     @TargetDataSource(value = DataSourceEnum.wallet)
     public void depositERC20HistoryScan(Transaction transaction) {
@@ -41,7 +46,9 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
             txHistory.setConfirmBlock(new BigInteger("0"));
             txHistory.setSubmitBlock(new BigInteger(transaction.getBlockNumber().toString()));
             if(txSatte == 1){
-                txHistory.setTxState("L1 Depositing (1/12)");
+                Integer confirmBlock = Integer.valueOf(environment.getProperty("watcher.confirm.block"));
+
+                txHistory.setTxState("L1 Depositing (1/"+confirmBlock+")");
             }else if(txSatte == 0){
                 txHistory.setTxState("Failure");
             }
@@ -63,7 +70,9 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
             txHistory.setConfirmBlock(new BigInteger("0"));
             txHistory.setSubmitBlock(new BigInteger(transaction.getBlockNumber().toString()));
             if(txSatte == 1){
-                txHistory.setTxState("L1 Depositing (1/12)");
+                Integer confirmBlock = Integer.valueOf(environment.getProperty("watcher.confirm.block"));
+
+                txHistory.setTxState("L1 Depositing (1/"+confirmBlock+")");
             }else if(txSatte == 0){
                 txHistory.setTxState("Failure");
             }

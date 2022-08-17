@@ -221,10 +221,12 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 }
 //                if(submitBlock.compareTo(confirmBlock) <= 0){
                     BigInteger number = txHistoryConfirmBlock;
+                Integer confirmBlock = Integer.valueOf(environment.getProperty("watcher.confirm.block"));
 
-                    if (type.equals("Bridge")){
+                int maxBlock = confirmBlock + 1;
+                if (type.equals("Bridge")){
                         //bridge
-                        if(number.longValue() < 13){
+                        if(number.longValue() < maxBlock){
                             if(chainId.intValue() == txHistory.getFromChainId()){
                                 if(txHistory.getTxState().equals("Pending") || txHistory.getTxState().indexOf("From Chain Processing") >= 0){
                                     //from
@@ -232,7 +234,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
                                     txHistory.setConfirmBlock(txHistoryConfirmBlock);
 
-                                    txHistory.setTxState("From Chain Processing (" + number + "/12)");
+                                    txHistory.setTxState("From Chain Processing (" + number + "/"+confirmBlock+")");
                                     log.info("设置状态 From Chain Processing ,tx is [{}]",txHistory);
                                     wTxHistoryDao.updateTxHistory(txHistory);
 
@@ -243,14 +245,14 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                                     log.info("设置状态239 To Chain Processing ,tx is [{}]",txHistory);
 
                                     txHistory.setConfirmBlock(txHistoryConfirmBlock);
-                                    txHistory.setTxState("To Chain Processing (" + number + "/12)");
+                                    txHistory.setTxState("To Chain Processing (" + number + "/"+confirmBlock+")");
                                     log.info("设置状态 To Chain Processing ,tx is [{}]",txHistory);
                                     wTxHistoryDao.updateTxHistory(txHistory);
 
                                 }
                             }
                         }else{
-                            txHistory.setConfirmBlock(new BigInteger("12"));
+                            txHistory.setConfirmBlock(new BigInteger(confirmBlock.toString()));
                             if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 && chainId.intValue() == txHistory.getToChainId()){
                                 txHistory.setTxState("Finalized");
                                 log.info("设置状态 Finalized ,tx is [{}]",txHistory);
@@ -269,23 +271,16 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                         // deposit
                         txHistory.setConfirmBlock(txHistoryConfirmBlock);
                         if(number.longValue() < 13){
-                            txHistory.setTxState("L1 Depositing (" + number + "/12)");
+                            txHistory.setTxState("L1 Depositing (" + number + "/"+confirmBlock+")");
                             wTxHistoryDao.updateTxHistory(txHistory);
-
-                        }else{
-                            if(!txHistory.getTxState().equals("L1 Depositing (12/12)")){
-                                txHistory.setTxState("L1 Depositing (12/12)");
-                                txHistory.setConfirmBlock(new BigInteger("12"));
-                                wTxHistoryDao.updateTxHistory(txHistory);
-                            }
                         }
                     }else if (COMPOUND.contains(type)  && chainId.intValue() == txHistory.getFromChainId()){
                         // lending
                         if(submitBlock.compareTo(currentBlockNumber) <= 0){
-                            if(number.longValue() < 13){
+                            if(number.longValue() < maxBlock){
                                 txHistory.setConfirmBlock(txHistoryConfirmBlock);
                             }else{
-                                txHistory.setConfirmBlock(new BigInteger("12"));
+                                txHistory.setConfirmBlock(new BigInteger(confirmBlock.toString()));
                                 txHistory.setTxState("Finalized");
                             }
                             wTxHistoryDao.updateTxHistory(txHistory);

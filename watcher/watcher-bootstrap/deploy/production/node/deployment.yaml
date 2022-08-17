@@ -101,6 +101,11 @@ spec:
               configMapKeyRef:
                 name: rocketmq-config
                 key: rocketmq.server.addr
+          - name: "watcher.confirm.block"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: dtx-watcher-confirm-block
           - name: "coin.ether.api"
             valueFrom:
               configMapKeyRef:

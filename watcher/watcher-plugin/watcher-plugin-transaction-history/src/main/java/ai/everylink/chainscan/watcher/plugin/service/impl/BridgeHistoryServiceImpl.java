@@ -12,6 +12,7 @@ import ai.everylink.chainscan.watcher.plugin.service.BridgeHistoryService;
 import com.alibaba.fastjson.JSONArray;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.core.methods.response.Log;
@@ -34,6 +35,10 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
 
     @Autowired
     private TransactionLogDao transactionLogDao;
+
+
+    @Autowired
+    Environment environment;
 
 
 
@@ -110,7 +115,9 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
             txHistory.setToTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
             txHistory.setToTxHash(transactionHash);
             if(txSatte == 1){
-                txHistory.setTxState("To Chain Processing (1/12)");
+                Integer confirmBlock = Integer.valueOf(environment.getProperty("watcher.confirm.block"));
+
+                txHistory.setTxState("To Chain Processing (1/"+confirmBlock+")");
                 txHistory.setConfirmBlock(BigInteger.ZERO);
 
                 log.info("设置状态 To Chain Processing ,tx is [{}]",txHistory);

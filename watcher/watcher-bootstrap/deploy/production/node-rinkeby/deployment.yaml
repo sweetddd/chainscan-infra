@@ -137,6 +137,11 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: eth-lending-contract-config
+          - name: "watcher.confirm.block"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: eth-watcher-confirm-block
           - name: "watcher.contract.lending.stable-config"
             valueFrom:
               configMapKeyRef:
