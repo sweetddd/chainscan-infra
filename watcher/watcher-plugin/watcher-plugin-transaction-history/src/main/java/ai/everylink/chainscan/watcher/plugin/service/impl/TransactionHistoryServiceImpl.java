@@ -108,6 +108,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
     @TargetDataSource(value = DataSourceEnum.wallet)
     public void transactionHistoryTxScan(Transaction transaction) {
         String bridgeContracts = environment.getProperty("watcher.bridge.contract.address");
+        String l2Contract = environment.getProperty("watcher.contract.l2");
         String toAddr = transaction.getToAddr();
         //监听指定合约:
         if (StringUtils.isNotBlank(toAddr) && bridgeContracts.equals(toAddr)) {
@@ -126,6 +127,14 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     bridgeHistoryService.bridgeHistoryScan(transaction);
                 }
 
+            }
+        }
+
+        if(StringUtils.isNotBlank(toAddr) && bridgeContracts.equals(l2Contract)){
+            String input = transaction.getInput();
+            if (StringUtils.isNotBlank(input) && input.length() > 10) {
+                List<String> params = DecodUtils.getParams2List(input);
+                String method = params.get(0);
                 //Deposit depositERC20 :0x58242801d371a53f9cddac5a44a17e4ca2523fc7ba7b171a9d71e0b8fd069630
                 if (params.size() > 1 && method.contains("0xe17376b5")) {
                     log.info("transactionHistoryScan:method" + "0xe17376b5");
@@ -134,16 +143,20 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 // depositNativeToken :0x79031410a6b2e95b5cc4e954c236e45c9dab96ad22ea80b26c2611097819b001
                 if (params.size() > 1 && method.contains("0x20e2d818")) {
                     log.info("transactionHistoryScan:method" + "0x20e2d818");
-                    depositHistoryService.depositNativeTokenHistoryScan(transaction);
+                    depositHistoryService.depositERC20HistoryScan(transaction);
                 }
+
             }
+
         }
     }
 
     @Override
     @TargetDataSource(value = DataSourceEnum.wallet)
     public void transactionHistoryScan(EvmData data) {
-        String            bridgeContracts = environment.getProperty("watcher.bridge.contract.address");
+        String bridgeContracts = environment.getProperty("watcher.bridge.contract.address");
+        String l2Contract = environment.getProperty("watcher.contract.l2");
+
         int               chainId         = data.getChainId();
         List<Transaction> txList          = buildTransactionList(data, chainId);
 
@@ -177,6 +190,16 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                         log.info("transactionHistoryScan:method" + "0x20e82d03");
                         bridgeHistoryService.bridgeHistoryScan(transaction);
                     }
+                }
+            }
+
+
+            if (StringUtils.isNotBlank(toAddr) && l2Contract.toLowerCase().equals(toAddr.toLowerCase())) {
+                String input = transaction.getInput();
+                if (StringUtils.isNotBlank(input) && input.length() > 10) {
+                    List<String> params = DecodUtils.getParams2List(input);
+                    String       method = params.get(0);
+
 
                     //Deposit depositERC20 :0x58242801d371a53f9cddac5a44a17e4ca2523fc7ba7b171a9d71e0b8fd069630
                     if (params.size() > 1 && method.contains("0xe17376b5")) {
@@ -186,7 +209,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     // depositNativeToken :0x79031410a6b2e95b5cc4e954c236e45c9dab96ad22ea80b26c2611097819b001
                     if (params.size() > 1 && method.contains("0x20e2d818")) {
                         log.info("transactionHistoryScan:method" + "0x20e2d818");
-                        depositHistoryService.depositNativeTokenHistoryScan(transaction);
+                        depositHistoryService.depositERC20HistoryScan(transaction);
                     }
                 }
             }
@@ -228,7 +251,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                         //bridge
                         if(number.longValue() < maxBlock){
                             if(chainId.intValue() == txHistory.getFromChainId()){
-                                if(txHistory.getTxState().equals("Pending") || txHistory.getTxState().indexOf("From Chain Processing") >= 0){
+                                if(txHistory.getTxState().indexOf("From Chain Processing") >= 0){
                                     //from
                                     log.info("设置状态 228 From Chain Processing ,tx is [{}]",txHistory);
 
@@ -270,8 +293,9 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     }else if (type.equals("Deposit") && chainId.intValue() == txHistory.getFromChainId()){
                         // deposit
                         txHistory.setConfirmBlock(txHistoryConfirmBlock);
-                        if(number.longValue() < maxBlock){
+                        if(number.longValue() < maxBlock && txHistory.getTxState().indexOf("L1 Depositing") >= 0){
                             txHistory.setTxState("L1 Depositing (" + number + "/"+confirmBlock+")");
+                            log.info("设置状态L1 Depositing  ,tx is [{}]",txHistory);
                             wTxHistoryDao.updateTxHistory(txHistory);
                         }
                     }else if (COMPOUND.contains(type)  && chainId.intValue() == txHistory.getFromChainId()){

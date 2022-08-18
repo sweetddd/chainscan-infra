@@ -52,6 +52,7 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
             }else if(txSatte == 0){
                 txHistory.setTxState("Failure");
             }
+            log.error("扫描到deposit 二层的记录，状态是[{}]",txHistory);
             wTxHistoryDao.updateTxHistory(txHistory);
         }else {
             log.error("txhistory-plugin(depositERC20HistoryScan):There is no such data:" + transactionHash);

@@ -158,6 +158,11 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: dtx-stable-contract-config
+          - name: "watcher.contract.l2"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: dtx-l2-contract-config
           - name: "watcher.confirm.block"
             valueFrom:
               configMapKeyRef:
