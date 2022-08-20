@@ -111,6 +111,11 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: dtx-l2-contract-config
+          - name: "rocketmq.name-server"
+            valueFrom:
+              configMapKeyRef:
+                name: rocketmq-config
+                key: rocketmq.server.addr
           - name: "coin.ether.api"
             valueFrom:
               configMapKeyRef:

@@ -53,3 +53,7 @@ start:
   block:
     number: 0
 
+rocketmq:
+  name-server: rocketmq-namesrv.database.svc.cluster.local:9876
+  producer.group: watcher_provider_group
+  producer.sendMessageTimeout: 300000

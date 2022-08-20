@@ -11,13 +11,16 @@ import ai.everylink.chainscan.watcher.entity.WalletTransactionHistory;
 import ai.everylink.chainscan.watcher.plugin.service.BridgeHistoryService;
 import com.alibaba.fastjson.JSONArray;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Example;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.web3j.protocol.core.methods.response.Log;
 
+import javax.annotation.Resource;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.List;
@@ -37,6 +40,8 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
     @Autowired
     private TransactionLogDao transactionLogDao;
 
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
 
     @Autowired
     Environment environment;
@@ -118,7 +123,12 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
             txHistory.setToTxTime(new Timestamp(transaction.getTxTimestamp().getTime()));
             txHistory.setToTxHash(transactionHash);
             if(txSatte == 1){
-                Integer confirmBlock = Integer.valueOf(environment.getProperty("watcher.confirm.block"));
+                Integer confirmBlock = 0;
+
+                try {
+                    confirmBlock =  Integer.valueOf(environment.getProperty("watcher.confirm.block"));
+                }catch (Exception e){
+                }
 
                 txHistory.setTxState("To Chain Processing (1/"+confirmBlock+")");
                 txHistory.setConfirmBlock(BigInteger.ZERO);
@@ -134,6 +144,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         }else {
             //说明对方的watcher还没扫描，开启一个异步任务，   1分钟执行一次，查询
 
+            rocketMQTemplate.syncSend("bridge-proposal", MessageBuilder.withPayload(transaction).build(),1000*60,5);
         }
 
     }

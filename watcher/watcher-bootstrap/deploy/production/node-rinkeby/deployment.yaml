@@ -91,6 +91,11 @@ spec:
               configMapKeyRef:
                 name: rocketmq-config
                 key: rocketmq.server.addr
+          - name: "rocketmq.name-server"
+            valueFrom:
+              configMapKeyRef:
+                name: rocketmq-config
+                key: rocketmq.server.addr
           - name: "coin.ether.api"
             valueFrom:
               configMapKeyRef:

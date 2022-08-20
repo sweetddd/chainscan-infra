@@ -116,6 +116,11 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: eth-l2-contract-config
+          - name: "rocketmq.name-server"
+            valueFrom:
+              configMapKeyRef:
+                name: rocketmq-config
+                key: rocketmq.server.addr
           - name: "watcher.bridge.contract.address"
             value: "0x707051c90909741a340eccc47f0527a8a57d5708"
           - name: "watcher.contract.lending.lending-config"
