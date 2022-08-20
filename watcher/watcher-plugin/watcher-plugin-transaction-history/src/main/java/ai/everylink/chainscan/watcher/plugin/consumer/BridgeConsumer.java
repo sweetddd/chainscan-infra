@@ -1,5 +1,6 @@
 package ai.everylink.chainscan.watcher.plugin.consumer;
 
+import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
 import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.plugin.service.BridgeHistoryService;
 import ai.everylink.common.json.JacksonHelper;
@@ -17,14 +18,11 @@ import java.util.Date;
 import java.util.regex.Pattern;
 
 /**
- * Notification normal consumer
  *
- * @author Woody
- * @date 2021/1/20
  */
 @Slf4j
 @Component
-@RocketMQMessageListener(topic = "bridge-proposal", consumerGroup = "watcher-transaction-bridge-group",
+@RocketMQMessageListener(topic = "${bridge.proposal}", consumerGroup = "${watcher.transaction.bridge.group}",
         consumeMode = ConsumeMode.CONCURRENTLY)
 public class BridgeConsumer implements RocketMQListener<String> {
 

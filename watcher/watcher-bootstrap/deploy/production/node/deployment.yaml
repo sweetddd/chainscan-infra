@@ -145,6 +145,10 @@ spec:
             value: 100
           - name: "watcher.chain.chainId"
             value: 230
+          - name: "watcher.transaction.bridge.group"
+            value: "dtx-watcher-transaction-bridge-group"
+          - name: "bridge.proposal"
+            value: "dtx-bridge-proposal"
           - name: "watcher.chain.chainType"
             value: EVM_PoS
           - name: "watcher.notify.template"

@@ -144,7 +144,9 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
         }else {
             //说明对方的watcher还没扫描，开启一个异步任务，   1分钟执行一次，查询
 
-            rocketMQTemplate.syncSend("bridge-proposal", MessageBuilder.withPayload(transaction).build(),1000*60,5);
+            String topic = environment.getProperty("bridge.proposal");
+            log.info("发送mq,topic is [{}],transaction is [{}]",topic,transaction);
+            rocketMQTemplate.syncSend(topic, MessageBuilder.withPayload(transaction).build(),1000*60,5);
         }
 
     }

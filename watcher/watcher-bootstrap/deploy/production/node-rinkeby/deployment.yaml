@@ -132,6 +132,10 @@ spec:
             value: false
           - name: "watcher.process.only.evmplugin"
             value: false
+          - name: "watcher.transaction.bridge.group"
+            value: "eth-watcher-transaction-bridge-group"
+          - name: "bridge.proposal"
+            value: "eth-bridge-proposal"
           - name: "watcher.bridge.contract.address"
             valueFrom:
               configMapKeyRef:

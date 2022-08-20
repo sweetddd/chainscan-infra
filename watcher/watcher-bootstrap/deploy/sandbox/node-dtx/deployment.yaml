@@ -138,6 +138,10 @@ spec:
             value: false
           - name: "watcher.process.only.evmplugin"
             value: false
+          - name: "watcher.transaction.bridge.group"
+            value: "dtx-watcher-transaction-bridge-group"
+          - name: "bridge.proposal"
+            value: "dtx-bridge-proposal"
           - name: "start.block.number"
             valueFrom:
               configMapKeyRef:
