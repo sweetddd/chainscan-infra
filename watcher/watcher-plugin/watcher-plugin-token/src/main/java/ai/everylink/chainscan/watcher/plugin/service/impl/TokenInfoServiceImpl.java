@@ -136,7 +136,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     topicTo = "0x"+topicTo.substring(topicTo.length()-40);
                     String hexadecimal = topics.size() > 3 ? topics.get(3).toString(): transactionLog.getData();
                     BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
-                    addToken(transaction);
+                    addToken(transaction.getFromAddr(),transaction.getToAddr(),transaction.getInput());
+                    addToken(topicFrom,transactionLog.getAddress(),transaction.getInput());
                     saveOrUpdateBalance(topicFrom, transactionLog.getAddress(), txAmt, false);
                     saveOrUpdateBalance(topicTo, transactionLog.getAddress(), txAmt, true);
                     updateNftAccount(topicFrom, transactionLog.getAddress());
@@ -157,23 +158,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             if(StringUtils.isNotBlank(fromAddr)){
                 addAccountInfo(fromAddr); //增加用户信息;
             }
-//            //交易value为0则为 合约方法调用;
-//            if (value.equals("0") && StringUtils.isNotBlank(toAddr)) {
-//                addToken(transaction); //增加合约信息;
-//            }
-
-            String method = transaction.getInputMethod();
-//            if (method.contains("mint(") ){
-//                String input = transaction.getInput();
-//                List<String> params2List = DecodUtils.getParams2List(input);
-//                String accountAdd = "0x" + params2List.get(1).substring(params2List.get(1).length() - 40);
-//                addAccountInfo(accountAdd); //增加用户信息;
-//                saveOrUpdateBalance(accountAdd, toAddr);
-//                updateNftAccount(accountAdd, toAddr);
-//                return;
-//            }
-
-
             // 转账事件监听;
             if(null != data.getTransactionLogMap() && data.getTransactionLogMap().size() > 0){
                 List<Log> logs = data.getTransactionLogMap().get(transaction.getTransactionHash());
@@ -189,7 +173,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                                 topicTo = "0x"+topicTo.substring(topicTo.length()-40);
                                 String hexadecimal = log.getTopics().size() > 3 ? log.getTopics().get(3): log.getData();
                                 BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
-                                addToken(transaction);
+                                addToken(transaction.getFromAddr(),transaction.getToAddr(),transaction.getInput());
+                                addToken(topicFrom,log.getAddress(),transaction.getInput());
                                 saveOrUpdateBalance(topicFrom, log.getAddress(), txAmt, false);
                                 saveOrUpdateBalance(topicTo, log.getAddress(), txAmt, true);
                                 updateNftAccount(topicFrom, log.getAddress());
@@ -233,9 +218,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      *
      * @param transaction
      */
-    private void addToken(Transaction transaction) {
-        String toAddr = transaction.getToAddr();
-        String fromAddr = transaction.getFromAddr();
+    private void addToken(String fromAddress,String toAddress,String inputData) {
+        String toAddr = toAddress;
+        String fromAddr = fromAddress;
         try {
             TokenInfo  tokenInfo = tokenInfoDao.findAllByAddress(toAddr);
             if( tokenInfo == null && StringUtils.isNotBlank(toAddr)){
@@ -254,7 +239,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     checkTokenType(toAddr, fromAddr, tokenQuery,decimals);
 
                     //增加部署合约者;
-                    String input = transaction.getInput();
+                    String input = inputData;
                     List<String> params2List = DecodUtils.getParams2List(input);
                     if(params2List.size()>1 && params2List.get(0).equals("0x60806040")){
                         AccountInfo byAddress   = accountInfoDao.findByAddress(fromAddr);
