@@ -102,6 +102,7 @@ public class WatcherBootstrapApplication {
                 }
             }
         }
+        log.info("插件列表 [{}]",watcherList);
         return watcherList == null ? Lists.newArrayList() : Lists.newArrayList(watcherList);
     }
 
