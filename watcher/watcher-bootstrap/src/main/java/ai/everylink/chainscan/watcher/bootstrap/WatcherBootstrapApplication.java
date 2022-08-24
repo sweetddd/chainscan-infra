@@ -67,6 +67,7 @@ public class WatcherBootstrapApplication {
                 JobDataMap map = new JobDataMap();
                 map.put("watcher", watcher);
 
+                log.info("watcher is [{}]",watcher.getClass().getSimpleName());
                 JobDetail jobDetail = JobBuilder
                         .newJob(BlockChainScanJob.class)
                         .withIdentity(watcher.getClass().getName() + "_Job")
