@@ -58,7 +58,7 @@ ai.everylink.chainscan.watcher.plugin:
   EvmWatcher: 4,230
   ChainMonitorWatcher: 4.230
   NFTAuctionSpiPlugin: 230
-  TokenSpiPlugin: 230
-  TokenWatcher: 4,230
+  TokenSpiPlugin: 4,230
+  TokenWatcher: 230
   TransactionHistorySpiPlugin: 4,230
   LendingHistorySpiPlugin: 4,230
