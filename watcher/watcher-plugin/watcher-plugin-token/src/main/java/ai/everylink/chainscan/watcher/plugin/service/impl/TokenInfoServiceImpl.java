@@ -159,7 +159,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             String fromAddr = transaction.getFromAddr();
             String toAddr = transaction.getToAddr();
             String l2Contract = environment.getProperty("watcher.contract.l2");
-            log.info("l2 contract is {},to address is {}",l2Contract,toAddr);
             if(StringUtils.isNotBlank(toAddr) && toAddr.toLowerCase().equals(l2Contract.toLowerCase())) {
                 if(StringUtils.isNotBlank(fromAddr)){
                     addAccountInfo(fromAddr); //增加用户信息;
@@ -324,7 +323,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     ? BigInteger.ZERO
                     : new BigInteger(balances.get(0).getBalance());
             asset = Objects.equals(add, true) ? asset.add(txAmount): asset.subtract(txAmount);
-            asset = asset.compareTo(BigInteger.ZERO) < 0 ? vm30Utils.balanceOf(web3j, contract, fromAddr): asset;
+//            asset = asset.compareTo(BigInteger.ZERO) < 0 ? vm30Utils.balanceOf(web3j, contract, fromAddr): asset;
+            asset =  vm30Utils.balanceOf(web3j, contract, fromAddr);
 
             if (balances.size() < 1 && asset.compareTo(BigInteger.ZERO) > 0) {
                 balance.setBalance(asset.toString());
