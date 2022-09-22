@@ -31,6 +31,7 @@ import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -147,7 +148,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         } );
     }
 
-
+    @Autowired
+    Environment environment;
     @Override
     public void tokenScan(EvmData data) {
         int chainId = data.getChainId();
@@ -155,36 +157,43 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         for (Transaction transaction : txList) {
             String value = transaction.getValue();
             String fromAddr = transaction.getFromAddr();
-            if(StringUtils.isNotBlank(fromAddr)){
-                addAccountInfo(fromAddr); //增加用户信息;
-            }
-            // 转账事件监听;
-            if(null != data.getTransactionLogMap() && data.getTransactionLogMap().size() > 0){
-                List<Log> logs = data.getTransactionLogMap().get(transaction.getTransactionHash());
-                if(!CollectionUtils.isEmpty(logs)){
-                    logs.forEach(log -> {
-                        if (log.getTopics().size() > 0) {
-                            String topic = log.getTopics().get(0);
-                            if (topic.equals(TRANSFER_TOPIC)) {
-                                String topicFrom = log.getTopics().get(1);
-
-                                topicFrom = "0x"+topicFrom.substring(topicFrom.length()-40);
-                                String topicTo = log.getTopics().get(2);
-                                topicTo = "0x"+topicTo.substring(topicTo.length()-40);
-                                String hexadecimal = log.getTopics().size() > 3 ? log.getTopics().get(3): log.getData();
-                                BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
-                                addToken(transaction.getFromAddr(),transaction.getToAddr(),transaction.getInput());
-                                addToken(topicFrom,log.getAddress(),transaction.getInput());
-                                saveOrUpdateBalance(topicFrom, log.getAddress(), txAmt, false);
-                                saveOrUpdateBalance(topicTo, log.getAddress(), txAmt, true);
-                                updateNftAccount(topicFrom, log.getAddress());
-                                updateNftAccount(topicTo, log.getAddress());
-                            }
-                        }
-                    } );
+            String toAddr = transaction.getToAddr();
+            String l2Contract = environment.getProperty("watcher.contract.l2");
+            log.info("l2 contract is {},to address is {}",l2Contract,toAddr);
+            if(StringUtils.isNotBlank(toAddr) && toAddr.toLowerCase().equals(l2Contract.toLowerCase())) {
+                if(StringUtils.isNotBlank(fromAddr)){
+                    addAccountInfo(fromAddr); //增加用户信息;
                 }
+                // 转账事件监听;
+                if(null != data.getTransactionLogMap() && data.getTransactionLogMap().size() > 0){
+                    List<Log> logs = data.getTransactionLogMap().get(transaction.getTransactionHash());
+                    if(!CollectionUtils.isEmpty(logs)){
+                        logs.forEach(log -> {
+                            if (log.getTopics().size() > 0) {
+                                String topic = log.getTopics().get(0);
+                                if (topic.equals(TRANSFER_TOPIC)) {
+                                    String topicFrom = log.getTopics().get(1);
 
+                                    topicFrom = "0x"+topicFrom.substring(topicFrom.length()-40);
+                                    String topicTo = log.getTopics().get(2);
+                                    topicTo = "0x"+topicTo.substring(topicTo.length()-40);
+                                    String hexadecimal = log.getTopics().size() > 3 ? log.getTopics().get(3): log.getData();
+                                    BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
+                                    addToken(transaction.getFromAddr(),transaction.getToAddr(),transaction.getInput());
+                                    addToken(topicFrom,log.getAddress(),transaction.getInput());
+                                    saveOrUpdateBalance(topicFrom, log.getAddress(), txAmt, false);
+                                    saveOrUpdateBalance(topicTo, log.getAddress(), txAmt, true);
+                                    updateNftAccount(topicFrom, log.getAddress());
+                                    updateNftAccount(topicTo, log.getAddress());
+                                }
+                            }
+                        } );
+                    }
+
+                }
             }
+
+
         }
     }
 
@@ -216,7 +225,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * 2
      * 触发是否 增加token信息;
      *
-     * @param transaction
      */
     private void addToken(String fromAddress,String toAddress,String inputData) {
         String toAddr = toAddress;
