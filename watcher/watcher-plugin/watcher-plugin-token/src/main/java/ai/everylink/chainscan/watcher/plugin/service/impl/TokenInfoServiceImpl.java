@@ -323,8 +323,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     ? BigInteger.ZERO
                     : new BigInteger(balances.get(0).getBalance());
             asset = Objects.equals(add, true) ? asset.add(txAmount): asset.subtract(txAmount);
-//            asset = asset.compareTo(BigInteger.ZERO) < 0 ? vm30Utils.balanceOf(web3j, contract, fromAddr): asset;
-            asset =  vm30Utils.balanceOf(web3j, contract, fromAddr);
+            if( CollectionUtils.isEmpty(balances) || asset.compareTo(BigInteger.ZERO) < 0){
+                asset =  vm30Utils.balanceOf(web3j, contract, fromAddr);
+
+            }
 
             if (balances.size() < 1 && asset.compareTo(BigInteger.ZERO) > 0) {
                 balance.setBalance(asset.toString());
