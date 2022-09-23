@@ -55,10 +55,10 @@ watcher:
     contract:
       address: "0xb382f247ef75878cac13c8a8b63816249b43f4b9"
 ai.everylink.chainscan.watcher.plugin:
-  EvmWatcher: 4,230
-  ChainMonitorWatcher: 4.230
+  EvmWatcher: 4,230,97
+  ChainMonitorWatcher: 4.230,97
   NFTAuctionSpiPlugin: 230
   TokenSpiPlugin: 4,230
   TokenWatcher: 230
-  TransactionHistorySpiPlugin: 4,230
+  TransactionHistorySpiPlugin: 4,230,97
   LendingHistorySpiPlugin: 4,230
