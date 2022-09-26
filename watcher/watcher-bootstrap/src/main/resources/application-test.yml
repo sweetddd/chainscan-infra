@@ -41,8 +41,6 @@ logging:
         ai.everylink.openapi.bonuspoint: info
         ai.everylink.openapi.lottery: info
         ai.everylink.openapi: info
-coin:
-  chainIds: "4,97"
 evm:
   vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
 watcher:
@@ -55,10 +53,10 @@ watcher:
       address: "0x221d6d8a097497b044c9a7d930f65c995073bb76"
 
 ai.everylink.chainscan.watcher.plugin:
-  EvmWatcher: 4,97
-  ChainMonitorWatcher: 4.97
-  NFTAuctionSpiPlugin: 97
-  TokenSpiPlugin: 4,97
-  TokenWatcher: 97
-  TransactionHistorySpiPlugin: 4,97
-  LendingHistorySpiPlugin: 4,97
+  EvmWatcher: 4,186
+  ChainMonitorWatcher: 4.186
+  NFTAuctionSpiPlugin: 186
+  TokenSpiPlugin: 4,186
+  TokenWatcher: 186
+  TransactionHistorySpiPlugin: 4,186
+  LendingHistorySpiPlugin: 4,186

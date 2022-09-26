@@ -19,7 +19,7 @@ server:
 
 spring:
   profiles:
-    active: test
+    active: local
   main:
     allow-bean-definition-overriding: true
   application:
@@ -41,12 +41,12 @@ logging:
         ai.everylink.openapi.lottery: info
         ai.everylink.openapi: info
 ai.everylink.chainscan.watcher.plugin:
-  EvmWatcher: 4,97
-  ChainMonitorWatcher: 4.97
-  NFTAuctionSpiPlugin: 97
-  TokenSpiPlugin: 97
-  TokenWatcher: 97
-  TransactionHistorySpiPlugin: 4,97
+  EvmWatcher: 4,186
+  ChainMonitorWatcher: 4.186
+  NFTAuctionSpiPlugin: 186
+  TokenSpiPlugin: 186
+  TokenWatcher: 186
+  TransactionHistorySpiPlugin: 4,186
 
 
 start:
