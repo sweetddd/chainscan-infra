@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $APP_NAME-rinkeby-production
+  name: $APP_NAME-goerli-sandbox
   namespace: paas
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
-      app: $APP_NAME-rinkeby-production
+      app: $APP_NAME-goerli-sandbox
   template:
     metadata:
       labels:
-        app: $APP_NAME-rinkeby-production
+        app: $APP_NAME-goerli-sandbox
     spec:
       containers:
-      - name: $APP_NAME-rinkeby-production
+      - name: $APP_NAME-goerli-sandbox
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
@@ -34,7 +34,7 @@ spec:
             memory: 2Gi
           limits:
             cpu: 0.5
-            memory: 4Gi
+            memory: 8Gi
         volumeMounts:
         - name: host-time
           mountPath: /etc/localtime
@@ -43,14 +43,9 @@ spec:
         - containerPort: 9196
         env:
           - name: "spring.profiles.active"
-            value: "prd"
+            value: "test"
           - name: TZ
             value: UTC
-          - name: "evm.chain.rinkebyUrl"
-            valueFrom:
-              configMapKeyRef:
-                name: network-config
-                key: eth.rpc.api
           - name: "nacos.config.server-addr"
             valueFrom:
               configMapKeyRef:
@@ -59,39 +54,19 @@ spec:
           - name: "spring.datasource.chainscan.jdbc-url"
             valueFrom:
               secretKeyRef:
-                name: database-rinkeby
+                name: database-goerli
                 key: url
           - name: "spring.datasource.chainscan.username"
             valueFrom:
               secretKeyRef:
-                name: database-rinkeby
+                name: database-goerli
                 key: username
           - name: "spring.datasource.chainscan.password"
             valueFrom:
               secretKeyRef:
-                name: database-rinkeby
+                name: database-goerli
                 key: password
-          - name: "spring.datasource.wallet.jdbc-url"
-            valueFrom:
-              secretKeyRef:
-                name: database-wallet
-                key: wallet-url
-          - name: "spring.datasource.wallet.username"
-            valueFrom:
-              secretKeyRef:
-                name: database-wallet
-                key: wallet-username
-          - name: "spring.datasource.wallet.password"
-            valueFrom:
-              secretKeyRef:
-                name: database-wallet
-                key: wallet-password
           - name: "watcher.rocketmq.server.addr"
-            valueFrom:
-              configMapKeyRef:
-                name: rocketmq-config
-                key: rocketmq.server.addr
-          - name: "rocketmq.name-server"
             valueFrom:
               configMapKeyRef:
                 name: rocketmq-config
@@ -119,43 +94,45 @@ spec:
           - name: "watcher.chain.scanStep"
             value: 1
           - name: "watcher.chain.chainId"
-            value: 4
-          - name: "watcher.insert.transaction.log"
-            value: false
+            value: 5
           - name: "watcher.chain.chainType"
             value: EVM_PoW
           - name: "watcher.notify.template"
-            value: RINKEBY
+            value: Goerli
           - name: "watcher.scan.switch"
             value: false
           - name: "watcher.process.concurrent.switch"
             value: false
+          - name: "watcher.insert.transaction.log"
+            value: true
           - name: "watcher.process.only.evmplugin"
             value: false
           - name: "watcher.transaction.bridge.group"
             value: "eth-watcher-transaction-bridge-group"
           - name: "bridge.proposal"
             value: "eth-bridge-proposal"
-          - name: "watcher.bridge.contract.address"
-            valueFrom:
-              configMapKeyRef:
-                name: watcher-config
-                key: eth-bridge-contract-address
-          - name: "watcher.contract.lending.lending-config"
-            valueFrom:
-              configMapKeyRef:
-                name: watcher-config
-                key: eth-lending-contract-config
-          - name: "watcher.contract.l2"
-            valueFrom:
-              configMapKeyRef:
-                name: watcher-config
-                key: eth-l2-contract-config
           - name: "watcher.confirm.block"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
                 key: eth-watcher-confirm-block
+          - name: "watcher.contract.l2"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: eth-l2-contract-config
+          - name: "rocketmq.name-server"
+            valueFrom:
+              configMapKeyRef:
+                name: rocketmq-config
+                key: rocketmq.server.addr
+          - name: "watcher.bridge.contract.address"
+            value: "0x707051c90909741a340eccc47f0527a8a57d5708"
+          - name: "watcher.contract.lending.lending-config"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: eth-lending-contract-config
           - name: "watcher.contract.lending.stable-config"
             valueFrom:
               configMapKeyRef:
@@ -186,6 +163,6 @@ spec:
                   - key: app
                     operator: In
                     values:
-                      - $APP_NAME-dtx-production
-                      - $APP_NAME-rinkeby-production
+                      - $APP_NAME-dtx-sandbox
+                      - $APP_NAME-goerli-sandbox
               topologyKey: "kubernetes.io/hostname"

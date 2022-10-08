@@ -139,7 +139,7 @@ public class ChainMonitorWatcher implements IWatcher {
         }
         if (web3ErrCnt > 5) {
             logger.info("[ChainMonitorWatcher]network error.");
-            SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警", "VM链连接出错: " + WatcherUtils.getVmChainUrl());
+            SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警", "链连接出错: " + WatcherUtils.getVmChainUrl());
             return;
         }
 
@@ -156,7 +156,7 @@ public class ChainMonitorWatcher implements IWatcher {
             }
             String chainName = (chainId == 4) ? "Rinkeby": "DTX";
             SlackUtils.sendSlackNotify("C02SQNUGEAU", chainName + "链告警",
-                    chainName + "链长时间未出块，请关注！最后出块于(\"" + diff / 1000 / 60 + "\")分钟前");
+                    "链长时间未出块，请关注！最后出块于(\"" + diff / 1000 / 60 + "\")分钟前");
         } catch (Exception e) {
             logger.error("[MonitorThread]error:" + e.getMessage(), e);
         }

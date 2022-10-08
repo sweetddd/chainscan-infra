@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: $APP_NAME-rinkeby-sandbox
+  name: $APP_NAME-goerli-production
   namespace: paas
 spec:
   ports:
@@ -11,7 +11,7 @@ spec:
     protocol: TCP
 #    nodePort: 41296
   selector:
-    app: $APP_NAME-rinkeby-sandbox
+    app: $APP_NAME-goerli-production
   sessionAffinity: None
 #  type: NodePort
   type: ClusterIP
