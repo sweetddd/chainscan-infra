@@ -4,7 +4,7 @@ metadata:
   name: $APP_NAME-goerli-sandbox
   namespace: paas
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: $APP_NAME-goerli-sandbox
@@ -101,6 +101,8 @@ spec:
             value: Goerli
           - name: "watcher.scan.switch"
             value: false
+          - name: "watcher.chain.monitor"
+            value: true
           - name: "watcher.process.concurrent.switch"
             value: false
           - name: "watcher.insert.transaction.log"
