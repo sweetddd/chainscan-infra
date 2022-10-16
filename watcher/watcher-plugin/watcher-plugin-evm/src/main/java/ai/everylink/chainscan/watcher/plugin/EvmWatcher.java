@@ -21,7 +21,6 @@ import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.config.BlockNumber;
-import ai.everylink.chainscan.watcher.core.config.EvmConfig;
 import ai.everylink.chainscan.watcher.core.config.PluginChainId;
 import ai.everylink.chainscan.watcher.core.util.*;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
@@ -29,11 +28,9 @@ import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import okhttp3.OkHttpClient;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -182,7 +179,7 @@ public class EvmWatcher implements IWatcher {
     @Override
     public void finalizedBlockStatus() {
         //获取最新确认hash;
-        if (chainId != 4) {
+        if (WatcherUtils.dtxVerify() && WatcherUtils.isFinalizedStatus()) {
             logger.info("finalizedBlockStatus executed");
             String finalizedHash = vmChainUtil.getFinalizedHead();
             evmDataService.updateBlockByHash(finalizedHash);

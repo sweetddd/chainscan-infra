@@ -8,6 +8,7 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * Utils
@@ -59,6 +60,23 @@ public final class WatcherUtils {
         }
 
         return chainType;
+    }
+
+    public static Boolean dtxVerify() {
+        String chainIdStr = System.getenv("watcher.chain.chainId");
+        chainIdStr = StringUtils.isEmpty(chainIdStr) ? chainIdStr: chainIdStr.trim().toUpperCase();
+        String dtxChainIdStr = System.getenv("watcher.chain.dtxChainId");
+        dtxChainIdStr = StringUtils.isEmpty(dtxChainIdStr) ? dtxChainIdStr: chainIdStr.trim().toUpperCase();
+        return Objects.equals(chainIdStr, dtxChainIdStr);
+    }
+
+    public static boolean isFinalizedStatus() {
+        String flag = System.getenv("watcher.finalized.status.switch");
+        if (!StringUtils.isEmpty(flag)) {
+            return flag.trim().equalsIgnoreCase("true");
+        }
+
+        return false;
     }
 
     public static boolean isScanStop() {
