@@ -128,11 +128,6 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: dtx-chain-id
-          - name: "watcher.chain.dtxChainId"
-            valueFrom:
-              configMapKeyRef:
-                name: watcher-config
-                key: dtx-chain-id
           - name: "watcher.finalized.status.switch"
             value: true
           - name: "watcher.chain.chainType"

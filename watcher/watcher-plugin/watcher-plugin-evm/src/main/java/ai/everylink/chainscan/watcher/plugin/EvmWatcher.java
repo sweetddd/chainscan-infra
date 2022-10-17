@@ -179,7 +179,7 @@ public class EvmWatcher implements IWatcher {
     @Override
     public void finalizedBlockStatus() {
         //获取最新确认hash;
-        if (WatcherUtils.dtxVerify() && WatcherUtils.isFinalizedStatus()) {
+        if (WatcherUtils.isFinalizedStatus()) {
             logger.info("finalizedBlockStatus executed");
             String finalizedHash = vmChainUtil.getFinalizedHead();
             evmDataService.updateBlockByHash(finalizedHash);

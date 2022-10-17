@@ -145,8 +145,6 @@ spec:
             value: 100
           - name: "watcher.chain.chainId"
             value: 230
-          - name: "watcher.chain.dtxChainId"
-            value: 230
           - name: "watcher.finalized.status.switch"
             value: true
           - name: "watcher.transaction.bridge.group"

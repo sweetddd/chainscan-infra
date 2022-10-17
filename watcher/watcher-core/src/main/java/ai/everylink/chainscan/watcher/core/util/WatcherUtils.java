@@ -62,14 +62,6 @@ public final class WatcherUtils {
         return chainType;
     }
 
-    public static Boolean dtxVerify() {
-        String chainIdStr = System.getenv("watcher.chain.chainId");
-        chainIdStr = StringUtils.isEmpty(chainIdStr) ? chainIdStr: chainIdStr.trim().toUpperCase();
-        String dtxChainIdStr = System.getenv("watcher.chain.dtxChainId");
-        dtxChainIdStr = StringUtils.isEmpty(dtxChainIdStr) ? dtxChainIdStr: chainIdStr.trim().toUpperCase();
-        return Objects.equals(chainIdStr, dtxChainIdStr);
-    }
-
     public static boolean isFinalizedStatus() {
         String flag = System.getenv("watcher.finalized.status.switch");
         if (!StringUtils.isEmpty(flag)) {
