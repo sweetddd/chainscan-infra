@@ -120,12 +120,14 @@ public class EvmDataServiceImpl implements EvmDataService {
         Block block = blockDao.queryBlockByHash(finalizedHash);
         log.info("query block by hash -> {}", block);
         if (Objects.nonNull(block)) {
+            block.setStatus(1);
+            blockDao.save(block);
             long id = block.getId() - 1;
             for (;;) {
                 if (id <= 0) {
                     return;
                 }
-                Block queryBlock = blockDao.queryBlockById(id);
+                Block queryBlock = blockDao.getOne(id);
                 log.info("query block by id -> {}", queryBlock);
                 if (Objects.nonNull(queryBlock)) {
                     if (Objects.equals(queryBlock.getStatus(), 0)) {
