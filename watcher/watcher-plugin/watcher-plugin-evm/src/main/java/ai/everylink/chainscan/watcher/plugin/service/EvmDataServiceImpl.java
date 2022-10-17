@@ -120,8 +120,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         Block block = blockDao.queryBlockByHash(finalizedHash);
         log.info("query block by hash -> {}", block);
         if (Objects.nonNull(block)) {
-            block.setStatus(1);
-            blockDao.save(block);
+            blockDao.syncBlockStatus(block.getId(), 1);
             long id = block.getId() - 1;
             for (;;) {
                 if (id <= 0) {
@@ -129,13 +128,14 @@ public class EvmDataServiceImpl implements EvmDataService {
                 }
                 Block queryBlock = blockDao.getOne(id);
                 log.info("query block by id -> {}", queryBlock);
-                if (Objects.nonNull(queryBlock)) {
+                try {
                     if (Objects.equals(queryBlock.getStatus(), 0)) {
-                        queryBlock.setStatus(1);
-                        blockDao.save(queryBlock);
+                        blockDao.syncBlockStatus(queryBlock.getId(), 1);
                     } else {
                         return;
                     }
+                } catch (Exception ex) {
+                    log.error("sync block finalize status exception: {}", ex.getMessage());
                 }
                 id --;
             }

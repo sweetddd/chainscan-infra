@@ -62,8 +62,10 @@ public interface BlockDao extends JpaRepository<Block, Long> {
      * 查询 区块
      * @param id
      */
-    @Query(value = "select * from block where id = ?1", nativeQuery = true)
-    Block queryBlockById(Long id);
+    @Query(value = "update block set status = :status where id = :id", nativeQuery = true)
+    @Modifying
+    @Transactional
+    Block syncBlockStatus(Long id, Integer status);
 
 
     /**
