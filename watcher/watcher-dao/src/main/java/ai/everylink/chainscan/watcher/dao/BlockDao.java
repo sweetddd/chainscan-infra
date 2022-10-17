@@ -65,7 +65,7 @@ public interface BlockDao extends JpaRepository<Block, Long> {
     @Query(value = "update block set status = :status where id = :id", nativeQuery = true)
     @Modifying
     @Transactional
-    int syncBlockStatus(Long id, Integer status);
+    void syncBlockStatus(Long id, Integer status);
 
 
     /**
