@@ -117,7 +117,29 @@ public class EvmDataServiceImpl implements EvmDataService {
     @TargetDataSource(value = DataSourceEnum.chainscan)
     @Override
     public void updateBlockByHash(String finalizedHash) {
-        blockDao.updateBlockByHash(finalizedHash);
+        Block block = blockDao.queryBlockByHash(finalizedHash);
+        log.info("query block by hash -> {}", block);
+        if (Objects.nonNull(block)) {
+            blockDao.syncBlockStatus(block.getId(), 1);
+            long id = block.getId() - 1;
+            for (;;) {
+                if (id <= 0) {
+                    return;
+                }
+                Block queryBlock = blockDao.getOne(id);
+                try {
+                    log.info("query block by id -> {}", queryBlock);
+                    if (Objects.equals(queryBlock.getStatus(), 0)) {
+                        blockDao.syncBlockStatus(queryBlock.getId(), 1);
+                    } else {
+                        return;
+                    }
+                } catch (Exception ex) {
+                    log.error("sync block finalize status exception: {}", ex.getMessage());
+                }
+                id --;
+            }
+        }
     }
 
     private boolean isBlockExist(Long blockNum, int chainId) {

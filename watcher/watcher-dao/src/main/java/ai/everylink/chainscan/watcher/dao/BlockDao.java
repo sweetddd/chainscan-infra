@@ -52,13 +52,21 @@ public interface BlockDao extends JpaRepository<Block, Long> {
     Long getMaxBlockNum(int chainId);
 
     /**
-     * 更新 区块状态
+     * 查询 区块
      * @param finalizedHash
      */
-    @Query(value = "update  block set status = 1 where   id  < (select  max_id from  (select id as  max_id from block where block_hash = ?1) as b)", nativeQuery = true)
+    @Query(value = "select * from block where block_hash = ?1", nativeQuery = true)
+    Block queryBlockByHash(String finalizedHash);
+
+    /**
+     * 查询 区块
+     * @param id
+     */
+    @Query(value = "update block set status = :status where id = :id", nativeQuery = true)
     @Modifying
     @Transactional
-    void updateBlockByHash(String finalizedHash);
+    void syncBlockStatus(Long id, Integer status);
+
 
     /**
      * get max block num
