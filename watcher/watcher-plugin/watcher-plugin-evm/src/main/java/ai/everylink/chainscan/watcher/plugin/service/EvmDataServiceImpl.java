@@ -118,7 +118,7 @@ public class EvmDataServiceImpl implements EvmDataService {
     @Override
     public void updateBlockByHash(String finalizedHash) {
         Block block = blockDao.queryBlockByHash(finalizedHash);
-        log.info("query block by hash -> {}", block);
+        log.info("query block, hash: {}, block: {}", finalizedHash, block);
         if (Objects.nonNull(block)) {
             blockDao.syncBlockStatus(block.getId(), 1);
             long id = block.getId() - 1;
@@ -128,7 +128,7 @@ public class EvmDataServiceImpl implements EvmDataService {
                 }
                 Block queryBlock = blockDao.getOne(id);
                 try {
-                    log.info("query block by id -> {}", queryBlock);
+                    log.info("query block, id: {}, block: {}", id, queryBlock);
                     if (Objects.equals(queryBlock.getStatus(), 0)) {
                         blockDao.syncBlockStatus(queryBlock.getId(), 1);
                     } else {
