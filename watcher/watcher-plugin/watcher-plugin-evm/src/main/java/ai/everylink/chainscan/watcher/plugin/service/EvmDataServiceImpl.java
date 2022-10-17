@@ -127,8 +127,8 @@ public class EvmDataServiceImpl implements EvmDataService {
                     return;
                 }
                 Block queryBlock = blockDao.getOne(id);
-                log.info("query block by id -> {}", queryBlock);
                 try {
+                    log.info("query block by id -> {}", queryBlock);
                     if (Objects.equals(queryBlock.getStatus(), 0)) {
                         blockDao.syncBlockStatus(queryBlock.getId(), 1);
                     } else {
