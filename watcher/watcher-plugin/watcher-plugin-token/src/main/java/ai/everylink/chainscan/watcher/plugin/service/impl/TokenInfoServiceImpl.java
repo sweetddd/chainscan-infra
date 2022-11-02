@@ -159,7 +159,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             String fromAddr = transaction.getFromAddr();
             String toAddr = transaction.getToAddr();
             String l2Contract = environment.getProperty("watcher.contract.l2");
-            if(StringUtils.isNotBlank(toAddr) && toAddr.toLowerCase().equals(l2Contract.toLowerCase())) {
+//            if(StringUtils.isNotBlank(toAddr) && toAddr.toLowerCase().equals(l2Contract.toLowerCase())) {
                 if(StringUtils.isNotBlank(fromAddr)){
                     addAccountInfo(fromAddr); //增加用户信息;
                 }
@@ -190,7 +190,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     }
 
                 }
-            }
+//            }
 
 
         }
