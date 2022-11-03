@@ -3,12 +3,14 @@ package ai.everylink.chainscan.watcher.core.util;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.Utf8String;
+import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
@@ -17,12 +19,15 @@ import org.web3j.protocol.core.Response;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthGasPrice;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.ContractGasProvider;
 import org.web3j.tx.gas.StaticGasProvider;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -348,7 +353,13 @@ public class VM30Utils {
                                 DefaultBlockParameterName.LATEST)
                         .sendAsync().get();
             Response.Error error = response.getError();
-            if(error != null && StringUtils.isNotBlank(error.getMessage()) && error.getMessage().equals("VM Exception while processing transaction: revert") ){
+            if("0x".equals(response.getValue()) && null == error){
+                return false;
+            }
+            if(error != null && StringUtils.isNotBlank(error.getMessage())
+                    && (error.getMessage().equals("VM Exception while processing transaction: revert")
+                        || error.getMessage().equals("execution reverted"))
+                        ){
                 return false;
             }
         } catch (Exception e) {
@@ -356,6 +367,24 @@ public class VM30Utils {
             return false;
         }
         return true;
+    }
+
+    public static void main(String[] args) {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.connectTimeout(30 * 1000, TimeUnit.MILLISECONDS);
+        builder.writeTimeout(30 * 1000, TimeUnit.MILLISECONDS);
+        builder.readTimeout(30 * 1000, TimeUnit.MILLISECONDS);
+        OkHttpClient httpClient  = builder.build();
+        HttpService httpService = new HttpService("http://goerli.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf/", httpClient, false);
+        Web3j web3j = Web3j.build(httpService);
+
+        List<Type> parames = new ArrayList<>();
+
+        parames.add(new Uint256(0));
+        VM30Utils vm30Utils = new VM30Utils();
+        boolean tokenURI = vm30Utils.querryFunction(web3j, parames, "tokenURI1", "0xA2D479F43E2992ACC5eDbE95C2B8B6702888C1AF", "0x11c9edc2543c7adb3f38606eb57260cabe42b3f5");
+        System.out.println(tokenURI);
+
     }
 
 

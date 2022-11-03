@@ -49,4 +49,15 @@ public interface NftAccountDao extends JpaRepository<NftAccount, String> {
      */
     @Query(value = "select * from nft_account where nft_id=:nftId and token_id =:tokenId ", nativeQuery = true)
     NftAccount selectByTokenIdContract(long nftId, Long tokenId);
+
+
+    /**
+     * 删除账户在合约上的NFT信息
+     * @param accountId
+     * @param tokenId
+     */
+    @Query(value = "delete from nft_account   where  account_id=(?1) and token_id=(?2) and nft_id = (?3)", nativeQuery = true)
+    @Modifying
+    @Transactional
+    void deleteNftTokenId(Long accountId, Long tokenId,Long nftId);
 }

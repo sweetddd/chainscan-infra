@@ -63,6 +63,7 @@ import java.util.concurrent.TimeUnit;
 public class TokenInfoServiceImpl implements TokenInfoService {
 
     private static final String TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+    public static final String ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
     private Web3j web3j;
 
@@ -141,8 +142,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     addToken(topicFrom,transactionLog.getAddress(),transaction.getInput());
                     saveOrUpdateBalance(topicFrom, transactionLog.getAddress(), txAmt, false);
                     saveOrUpdateBalance(topicTo, transactionLog.getAddress(), txAmt, true);
-                    updateNftAccount(topicFrom, transactionLog.getAddress());
-                    updateNftAccount(topicTo, transactionLog.getAddress());
+                    updateNftAccount(topicFrom, transactionLog.getAddress(),txAmt,false);
+                    updateNftAccount(topicTo, transactionLog.getAddress(),txAmt,true);
                 }
             }
         } );
@@ -155,11 +156,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         int chainId = data.getChainId();
         List<Transaction> txList  = buildTransactionList(data, chainId);
         for (Transaction transaction : txList) {
-            String value = transaction.getValue();
             String fromAddr = transaction.getFromAddr();
-            String toAddr = transaction.getToAddr();
-            String l2Contract = environment.getProperty("watcher.contract.l2");
-//            if(StringUtils.isNotBlank(toAddr) && toAddr.toLowerCase().equals(l2Contract.toLowerCase())) {
                 if(StringUtils.isNotBlank(fromAddr)){
                     addAccountInfo(fromAddr); //增加用户信息;
                 }
@@ -179,11 +176,18 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                                     String hexadecimal = log.getTopics().size() > 3 ? log.getTopics().get(3): log.getData();
                                     BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
                                     addToken(transaction.getFromAddr(),transaction.getToAddr(),transaction.getInput());
-                                    addToken(topicFrom,log.getAddress(),transaction.getInput());
-                                    saveOrUpdateBalance(topicFrom, log.getAddress(), txAmt, false);
-                                    saveOrUpdateBalance(topicTo, log.getAddress(), txAmt, true);
-                                    updateNftAccount(topicFrom, log.getAddress());
-                                    updateNftAccount(topicTo, log.getAddress());
+                                    String contractAddress = log.getAddress();
+                                    TokenInfo tokenInfo = addToken(topicFrom, contractAddress, transaction.getInput());
+                                    if(null == tokenInfo || null == tokenInfo.getId()){
+                                        return;
+                                    }
+                                    if(tokenInfo.getTokenType() == 1){
+                                        saveOrUpdateBalance(topicFrom, contractAddress, txAmt, false);
+                                        saveOrUpdateBalance(topicTo, contractAddress, txAmt, true);
+                                    }else if (tokenInfo.getTokenType() == 2){
+                                        updateNftAccount(topicFrom, contractAddress,txAmt,false);
+                                        updateNftAccount(topicTo, contractAddress,txAmt,true);
+                                    }
                                 }
                             }
                         } );
@@ -225,7 +229,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * 触发是否 增加token信息;
      *
      */
-    private void addToken(String fromAddress,String toAddress,String inputData) {
+    private TokenInfo addToken(String fromAddress,String toAddress,String inputData) {
         String toAddr = toAddress;
         String fromAddr = fromAddress;
         try {
@@ -233,56 +237,52 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             if( tokenInfo == null && StringUtils.isNotBlank(toAddr)){
                 String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
                 if(StringUtils.isBlank(symbol)){
-                    return;
+                    return null;
                 }
                 String     name     = vm30Utils.name(web3j, toAddr).toString();
                 if(StringUtils.isBlank(name)){
-                    return;
+                    return null;
                 }
                 BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
-                if (StringUtils.isNotBlank(symbol) && StringUtils.isNotBlank(name)) {
-                    TokenInfo tokenQuery = new TokenInfo();
-                    //判断合约类型
-                    checkTokenType(toAddr, fromAddr, tokenQuery,decimals);
-
-                    //增加部署合约者;
-                    String input = inputData;
-                    List<String> params2List = DecodUtils.getParams2List(input);
-                    if(params2List.size()>1 && params2List.get(0).equals("0x60806040")){
-                        AccountInfo byAddress   = accountInfoDao.findByAddress(fromAddr);
-                        if (byAddress == null) {
-                            String result = web3j.ethGetCode(fromAddr, DefaultBlockParameterName.LATEST).send().getResult();
-                            if (result.equals("0x")) {
-                                //添加账户信息
-                                AccountInfo accountInfo = new AccountInfo();
-                                accountInfo.setAddress(fromAddr);
-                                accountInfo.setCreateTime(new Date());
-                                accountInfo.setUpdateTime(new Date());
-                                accountInfo.setDeleted(false);
-                                accountInfoDao.save(accountInfo);
-                                tokenQuery.setCreateAccountId(accountInfo.getId());
-                            }
-                        }else {
-                            tokenQuery.setCreateAccountId(byAddress.getId());
-                        }
-                    }
-                    tokenQuery.setTokenName(name);
-                    tokenQuery.setTokenSymbol(symbol);
-                    tokenQuery.setDecimals(decimals);
-                    tokenQuery.setAddress(toAddr);
-                    tokenQuery.setCreateTime(new Date());
-                    tokenQuery.setCreateTime(new Date());
-                    tokenInfoDao.save(tokenQuery);
-                    //增加账户与token关系数据;
-//                    saveOrUpdateBalance(fromAddr, toAddr);
-//                    updateNftAccount(fromAddr, toAddr);
+                if(null == decimals){
+                    return null;
                 }
+                TokenInfo tokenQuery = new TokenInfo();
+                //判断合约类型
+                checkTokenType(toAddr, fromAddr, tokenQuery,decimals);
+
+                //增加部署合约者;
+                String input = inputData;
+                List<String> params2List = DecodUtils.getParams2List(input);
+                if(params2List.size()>1 && params2List.get(0).equals("0x60806040")){
+                    AccountInfo byAddress   = accountInfoDao.findByAddress(fromAddr);
+                    if (byAddress == null) {
+                        AccountInfo accountInfo = new AccountInfo();
+                        accountInfo.setAddress(fromAddr);
+                        accountInfo.setCreateTime(new Date());
+                        accountInfo.setUpdateTime(new Date());
+                        accountInfo.setDeleted(false);
+                        accountInfoDao.save(accountInfo);
+                        tokenQuery.setCreateAccountId(accountInfo.getId());
+                    }else {
+                        tokenQuery.setCreateAccountId(byAddress.getId());
+                    }
+                }
+                tokenQuery.setTokenName(name);
+                tokenQuery.setTokenSymbol(symbol);
+                tokenQuery.setDecimals(decimals);
+                tokenQuery.setAddress(toAddr);
+                tokenQuery.setCreateTime(new Date());
+                tokenQuery.setCreateTime(new Date());
+                tokenInfoDao.save(tokenQuery);
+                return tokenQuery;
             }
+            return tokenInfo;
 
-        }    catch (Exception e) {
+        } catch (Exception e) {
             log.error("addToken error", e);
+            return null;
         }
-
     }
 
     /**
@@ -325,7 +325,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             asset = Objects.equals(add, true) ? asset.add(txAmount): asset.subtract(txAmount);
             if( CollectionUtils.isEmpty(balances) || asset.compareTo(BigInteger.ZERO) < 0){
                 asset =  vm30Utils.balanceOf(web3j, contract, fromAddr);
-
             }
 
             if (balances.size() < 1 && asset.compareTo(BigInteger.ZERO) > 0) {
@@ -350,7 +349,13 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * @param contract
      */
     @Transactional
-    public void updateNftAccount(String fromAddr, String contract) {
+    public void updateNftAccount(String fromAddr, String contract,BigInteger tokenId,boolean isAdd ) {
+        if(ZERO_ADDRESS.equals(fromAddr)){
+            return;
+        }
+        if(tokenId.intValue() < 0) {
+            return;
+        }
         AccountInfo accountInfo = accountInfoDao.findByAddress(fromAddr);
         if (accountInfo == null) {
             //新增用户数据;
@@ -361,46 +366,35 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             accountInfo.setDeleted(false);
             accountInfoDao.save(accountInfo);
         }
-        TokenInfo tokens = tokenInfoDao.findAllByAddress(contract);
-        if( tokens == null || tokens.getTokenType() != 2){
+        TokenInfo nft = tokenInfoDao.findAllByAddress(contract);
+        if( nft == null || nft.getTokenType() != 2){
             return;
         }
-        NftAccount nftAccountQuer = new NftAccount();
-        nftAccountQuer.setAccountId(accountInfo.getId());
-        nftAccountQuer.setTokenId(tokens.getId());
-        nftAccountDao.deleteNftAccount(accountInfo.getId(), tokens.getId()); //清楚账户的NFT旧信息;
-        //批量获取nft的数据信息;
-        BigInteger            count = vm30Utils.balanceOf(web3j, contract, fromAddr);
-        ArrayList<NftAccount> nfts  = new ArrayList<>();
-        for (int i = 0; i < count.intValue(); i++) {
+
+        if(isAdd){
             NftAccount nftAccount = new NftAccount();
             try {
-                nftAccount.setContractName(tokens.getTokenName());
+                nftAccount.setContractName(nft.getTokenName());
                 nftAccount.setAccountId(accountInfo.getId());
-                nftAccount.setTokenId(tokens.getId());
+                nftAccount.setTokenId(nft.getId());
                 //tokenOfOwnerByIndex
-                BigInteger tokenId  = vm30Utils.tokenOfOwnerByIndex(web3j, contract, fromAddr, i);
-                if(tokenId.intValue() == -1 || ( tokenId.intValue() == 0 && i >0)) {
-                    tokens.setTokenType(1);
-                    tokenInfoDao.updateTokenType(tokens.getId(), 1);
-                    return;
-                }
+
                 Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
                 if(StringUtils.isEmpty(tokenURL.toString())){
-                    tokens.setTokenType(1);
-                    tokenInfoDao.updateTokenType(tokens.getId(), 1);
                     return;
                 }
                 nftAccount.setNftData(tokenURL.toString());
                 nftAccount.setNftId(tokenId.longValue());
                 nftAccount.setCreateTime(new Date().toInstant());
                 nftAccount.setUpdateTime(new Date().toInstant());
-            }   catch (Exception e) {
+            }  catch (Exception e) {
                 log.info("updateNftAccount.");
             }
-            nfts.add(nftAccount);
+            nftAccountDao.save(nftAccount);
+        }else{
+            nftAccountDao.deleteNftTokenId(accountInfo.getId(),tokenId.longValue(),nft.getId());
         }
-        nftAccountDao.saveAll(nfts);
+
     }
 
 
@@ -410,93 +404,23 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * @param contract
      */
     private void checkTokenType(String contract, String fromAddr, TokenInfo tokenInfo,BigInteger decimals) {
-        boolean erc20  = false;
-        boolean erc721  = false;
-
         try {
             List<Type> parames = new ArrayList<>();
-            //ERC20:
-            //function totalSupply() constant returns (uint totalSupply);
-            //function balanceOf(address _owner) constant returns (uint balance);
-            //function transfer(address _to, uint _value) returns (bool success);
-            //function transferFrom(address _from, address _to, uint _value) returns (bool success);
-            //function approve(address _spender, uint _value) returns (bool success);
-            //function allowance(address _owner, address _spender) constant returns (uint remaining);
-            parames.add(new Address(fromAddr));
-            parames.add(new Uint256(1));
-            boolean transfer = vm30Utils.querryFunction(web3j, parames, "transfer", fromAddr, contract);
-            parames.clear();
-            parames.add(new Address(fromAddr));
-            parames.add(new Address(fromAddr));
-            boolean allowance = vm30Utils.querryFunction(web3j, parames, "allowance", fromAddr, contract);
-            parames.clear();
-            boolean totalSupply = vm30Utils.querryFunction(web3j, parames, "totalSupply", fromAddr, contract);
-            parames.clear();
-            parames.add(new Address(fromAddr));
-            boolean balanceOf = vm30Utils.querryFunction(web3j, parames, "balanceOf", fromAddr, contract);
-            parames.clear();
-            parames.add(new Address(fromAddr));
-            parames.add(new Address(fromAddr));
-            parames.add(new Uint256(1));
-            boolean transferFrom = vm30Utils.querryFunction(web3j, parames, "transferFrom", fromAddr, contract);
 
-            //ERC721
-            //function balanceOf(address _owner) external view returns (uint256);
-            //function ownerOf(uint256 _tokenId) external view returns (address);
-            //function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) external payable;
-            //function transferFrom(address _from, address _to, uint256 _tokenId) external payable;
-            //function approve(address _approved, uint256 _tokenId) external payable;
-            //function setApprovalForAll(address _operator, bool _approved) external;
-            //function getApproved(uint256 _tokenId) external view returns (address);
-            //function isApprovedForAll(address _owner, address _operator) external view returns (bool);
-            parames.clear();
-            parames.add(new Uint256(1));
-            boolean ownerOf = vm30Utils.querryFunction(web3j, parames, "ownerOf", fromAddr, contract);
-            parames.clear();
-            parames.add(new Address(fromAddr));
-            parames.add(new Address(fromAddr));
-            parames.add(new Uint256(1));
-            //parames.add(new Bytes31("".getBytes()));
-            boolean safeTransferFrom = vm30Utils.querryFunction(web3j, parames, "safeTransferFrom", fromAddr, contract);
-            parames.clear();
-            parames.add(new Address(fromAddr));
-            parames.add(new Address(fromAddr));
-            parames.add(new Uint256(1));
-            boolean transferFrom721 = vm30Utils.querryFunction(web3j, parames, "transferFrom", fromAddr, contract);
-            parames.clear();
-            parames.add(new Address(fromAddr));
-            parames.add(new Uint256(1));
-            boolean approve = vm30Utils.querryFunction(web3j, parames, "approve", fromAddr, contract);
-            parames.clear();
-            parames.add(new Address(fromAddr));
-            parames.add(new Bool(true));
-            boolean setApprovalForAll = vm30Utils.querryFunction(web3j, parames, "setApprovalForAll", fromAddr, contract);
-            parames.clear();
-            parames.add(new Uint256(1));
-            boolean getApproved = vm30Utils.querryFunction(web3j, parames, "getApproved", fromAddr, contract);
-            parames.clear();
-            parames.add(new Address(fromAddr));
-            parames.add(new Address(fromAddr));
-            boolean isApprovedForAll = vm30Utils.querryFunction(web3j, parames, "isApprovedForAll", fromAddr, contract);
+            parames.add(new Uint256(0));
+            boolean tokenURI = vm30Utils.querryFunction(web3j, parames, "tokenURI", fromAddr, contract);
 
-           erc20  = transfer && allowance && totalSupply && balanceOf && transferFrom;
-           erc721 = balanceOf && ownerOf && safeTransferFrom && transferFrom && approve && setApprovalForAll && getApproved && isApprovedForAll;
-
-            if (erc721) {
+            if(tokenURI){
+                //nft
                 tokenInfo.setTokenType(2);
-            } else if (erc20) {
-                tokenInfo.setTokenType(1);
-            } else {
-                tokenInfo.setTokenType(0);
-            }
-            if(erc20 && decimals.intValue() != 0  ){
+            }else{
+                //erc20
                 tokenInfo.setTokenType(1);
             }
         } catch (Exception e) {
             log.error("识别合约类型异常:" + e.getMessage());
-           // e.printStackTrace();
             tokenInfo.setTokenType(0);
-            if(erc20 && decimals.intValue() != 0  ){
+            if(decimals.intValue() > 0  ){
                 tokenInfo.setTokenType(1);
             }
         }
