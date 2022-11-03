@@ -235,6 +235,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         try {
             TokenInfo  tokenInfo = tokenInfoDao.findAllByAddress(toAddr);
             if( tokenInfo == null && StringUtils.isNotBlank(toAddr)){
+                long start = System.currentTimeMillis();
                 String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
                 if(StringUtils.isBlank(symbol)){
                     return null;
@@ -250,6 +251,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 TokenInfo tokenQuery = new TokenInfo();
                 //判断合约类型
                 checkTokenType(toAddr, fromAddr, tokenQuery,decimals);
+
+                log.error("查询耗时 :{}",System.currentTimeMillis()-start);
 
                 //增加部署合约者;
                 String input = inputData;
