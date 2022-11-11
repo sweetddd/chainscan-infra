@@ -146,7 +146,7 @@ public class BridgeHistoryServiceImpl implements BridgeHistoryService {
 
             String topic = environment.getProperty("bridge.proposal");
            // log.info("发送mq,topic is [{}],transaction is [{}]",topic,transaction);
-            rocketMQTemplate.syncSend(topic, MessageBuilder.withPayload(transaction).build(),1000*60,5);
+//            rocketMQTemplate.syncSend(topic, MessageBuilder.withPayload(transaction).build(),1000*60,5);
         }
 
     }
