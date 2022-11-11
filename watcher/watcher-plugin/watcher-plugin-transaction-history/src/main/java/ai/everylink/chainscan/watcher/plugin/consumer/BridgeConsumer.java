@@ -34,7 +34,7 @@ public class BridgeConsumer implements RocketMQListener<String> {
     @Override
     public void onMessage(String message) {
         Transaction body = JacksonHelper.deserialize(message, Transaction.class);
-        log.info("消费延迟消息队列, [{}]",body);
+//        log.info("消费延迟消息队列, [{}]",body);
         bridgeHistoryService.bridgeHistoryScan(body);
     }
 }
