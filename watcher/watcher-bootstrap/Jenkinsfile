@@ -44,5 +44,13 @@ pipeline {
          kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, configs: 'watcher/watcher-bootstrap/deploy/production/**', kubeconfigId: 'kubeconfig-prd')
        }
      }
+
+
+     stage('deploy to mainnet') {
+        steps {
+          input(message: 'Waiting for audit @eric  ', submitter: 'eric,admin')
+          kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, configs: 'watcher/watcher-bootstrap/deploy/main/**', kubeconfigId: 'kubeconfig-prd')
+        }
+      }
   }
 }
