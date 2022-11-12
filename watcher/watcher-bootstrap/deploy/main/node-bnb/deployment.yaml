@@ -50,7 +50,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: bnb.main.rpc.api
+                key: bnb.mainnet.rpc.api
           - name: "nacos.config.server-addr"
             valueFrom:
               configMapKeyRef:
@@ -100,22 +100,22 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: bnb.main.rpc.api
+                key: bnb.mainnet.rpc.api
           - name: "coin.dtx.api"
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: dtx.rpc.api
+                key: bnb.mainnet.rpc.api
           - name: "evm.vmChainUrl"
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: dtx.rpc.api
+                key: bnb.mainnet.rpc.api
           - name: "watcher.vmChainUrl"
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: bnb.main.rpc.api
+                key: bnb.mainnet.rpc.api
           - name: "watcher.chain.scanStep"
             value: 1
           - name: "watcher.chain.chainId"
@@ -140,27 +140,27 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-bridge-contract-address
+                key: bnb-mainnet-bridge-contract-address
           - name: "watcher.contract.lending.lending-config"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-lending-contract-config
+                key: bnb-mainnet-lending-contract-config
           - name: "watcher.contract.l2"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-l2-contract-config
+                key: bnb-mainnet-l2-contract-config
           - name: "watcher.confirm.block"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-watcher-confirm-block
+                key: bnb-mainnet-watcher-confirm-block
           - name: "watcher.contract.lending.stable-config"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-stable-contract-config
+                key: bnb-mainnet-stable-contract-config
           - name: "watcher.monitor.cron"
             value: "0 */1 * * * ?"
           - name: "watcher.monitor.threshold"
@@ -169,7 +169,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-start-block-number
+                key: bnb-mainnet-start-block-number
       volumes:
       - name: host-time
         hostPath:
