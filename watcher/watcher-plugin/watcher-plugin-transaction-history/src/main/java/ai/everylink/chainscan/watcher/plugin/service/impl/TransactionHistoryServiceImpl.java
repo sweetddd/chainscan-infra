@@ -185,6 +185,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                         return;
                     }
                     logs = transactionReceipt.getLogs();
+                    transaction.setStatus(transactionReceipt.getStatus());
                 }else{
                     Map<String, List<Log>> transactionLogMap =
                             data.getTransactionLogMap();
@@ -221,11 +222,25 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
                     //Deposit depositERC20 :0x58242801d371a53f9cddac5a44a17e4ca2523fc7ba7b171a9d71e0b8fd069630
                     if (params.size() > 1 && method.contains("0xe17376b5")) {
+                        if(!selectTransaction){
+                            TransactionReceipt transactionReceipt = EvmTransactionUtils.replayTx(transaction.getTransactionHash(), web3j);
+                            if(null == transactionReceipt){
+                                return;
+                            }
+                            transaction.setStatus(transactionReceipt.getStatus());
+                        }
                         log.info("transactionHistoryScan:method" + "0xe17376b5");
                         depositHistoryService.depositERC20HistoryScan(transaction);
                     }
                     // depositNativeToken :0x79031410a6b2e95b5cc4e954c236e45c9dab96ad22ea80b26c2611097819b001
                     if (params.size() > 1 && method.contains("0x20e2d818")) {
+                        if(!selectTransaction){
+                            TransactionReceipt transactionReceipt = EvmTransactionUtils.replayTx(transaction.getTransactionHash(), web3j);
+                            if(null == transactionReceipt){
+                                return;
+                            }
+                            transaction.setStatus(transactionReceipt.getStatus());
+                        }
                         log.info("transactionHistoryScan:method" + "0x20e2d818");
                         depositHistoryService.depositERC20HistoryScan(transaction);
                     }
