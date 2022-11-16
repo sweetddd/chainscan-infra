@@ -20,6 +20,7 @@ package ai.everylink.chainscan.watcher.plugin.service.impl;
 import ai.everylink.chainscan.watcher.core.config.DataSourceEnum;
 import ai.everylink.chainscan.watcher.core.config.TargetDataSource;
 import ai.everylink.chainscan.watcher.core.util.DecodUtils;
+import ai.everylink.chainscan.watcher.core.util.EvmTransactionUtils;
 import ai.everylink.chainscan.watcher.core.util.OkHttpUtil;
 import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
@@ -153,13 +154,18 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
     @Override
     @TargetDataSource(value = DataSourceEnum.wallet)
-    public void transactionHistoryScan(EvmData data) {
+    public void transactionHistoryScan(EvmData data) throws Exception {
         String bridgeContracts = environment.getProperty("watcher.bridge.contract.address");
         String l2Contract = environment.getProperty("watcher.contract.l2");
 
         int               chainId         = data.getChainId();
         List<Transaction> txList          = buildTransactionList(data, chainId);
 
+        String property = environment.getProperty("watcher.select.transaction.log");
+        Boolean selectTransaction = false;
+        if(!org.springframework.util.StringUtils.isEmpty(property) && "true".equals(property)){
+            selectTransaction = true;
+        }
         log.info("bridge transaction scan contracts is [{}],txlist is [{}]",bridgeContracts,txList.size());
         // 事件监听 解析;
         for (Transaction transaction : txList) {
@@ -172,6 +178,20 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
             if (StringUtils.isNotBlank(toAddr) && bridgeContracts.toLowerCase().equals(toAddr.toLowerCase())) {
                 String input = transaction.getInput();
+                List<Log> logs ;
+                if(!selectTransaction){
+                    TransactionReceipt transactionReceipt = EvmTransactionUtils.replayTx(transaction.getTransactionHash(), web3j);
+                    if(null == transactionReceipt){
+                        return;
+                    }
+                    logs = transactionReceipt.getLogs();
+                }else{
+                    Map<String, List<Log>> transactionLogMap =
+                            data.getTransactionLogMap();
+                    logs = transactionLogMap.get(transaction.getTransactionHash());
+                }
+
+
                 if (StringUtils.isNotBlank(input) && input.length() > 10) {
                     List<String> params = DecodUtils.getParams2List(input);
                     String       method = params.get(0);
@@ -179,10 +199,8 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     if (params.size() > 2 && (method.contains("0xa44f5fe6") ||   //ERC20
                             method.contains("0xee1c1c7b") ||  //原生币
                             method.contains("0xfe4464a7"))) {  //NFT
-                        List<TransactionLog> transactionLogs = bridgeHistoryService.txLog(transaction.getTransactionHash());
-                        Map<String, List<Log>> transactionLogMap =
-                                data.getTransactionLogMap();
-                        List<Log> logs = transactionLogMap.get(transaction.getTransactionHash());
+
+
 
                         bridgeHistoryService.depositBridge(transaction,logs);
                         //目标链接收跨链交易解析;
@@ -194,7 +212,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             }
 
 
-            if (StringUtils.isNotBlank(toAddr) && l2Contract.toLowerCase().equals(toAddr.toLowerCase())) {
+            if (StringUtils.isNotBlank(toAddr) && StringUtils.isNotBlank(l2Contract) && l2Contract.toLowerCase().equals(toAddr.toLowerCase())) {
                 String input = transaction.getInput();
                 if (StringUtils.isNotBlank(input) && input.length() > 10) {
                     List<String> params = DecodUtils.getParams2List(input);

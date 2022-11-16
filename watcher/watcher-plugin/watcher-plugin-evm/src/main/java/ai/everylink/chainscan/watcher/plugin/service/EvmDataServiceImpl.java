@@ -156,7 +156,12 @@ public class EvmDataServiceImpl implements EvmDataService {
         Block block = buildBlock(data, chainId);
         List<Transaction> txList = buildTransactionList(data, chainId);
 
-        setBlockGasUsed(block, txList);
+        String property = environment.getProperty("watcher.insert.transaction.log");
+
+        if(!StringUtils.isEmpty(property) && "true".equals(property)){
+            setBlockGasUsed(block, txList);
+        }
+
         setBlockReward(block, txList);
 
         List<TransactionLog> logList = buildTransactionLogList(data);
@@ -439,7 +444,7 @@ public class EvmDataServiceImpl implements EvmDataService {
         insertBlock(block);
         String property = environment.getProperty("watcher.insert.transaction.log");
 
-        if(StringUtils.isEmpty(property) || "true".equals(property)){
+        if(!StringUtils.isEmpty(property) && "true".equals(property)){
             insertTxList(block, txList);
             insertTxLog(block, logList);
         }

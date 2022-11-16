@@ -161,6 +161,10 @@ spec:
             value: false
           - name: "watcher.process.concurrent.switch"
             value: false
+          - name: "watcher.insert.transaction.log"
+            value: true
+          - name: "watcher.select.transaction.log"
+            value: true
           - name: "watcher.monitor.cron"
             value: "0 */1 * * * ?"
           - name: "watcher.monitor.threshold"

@@ -32,7 +32,7 @@ public interface IWatcherPlugin {
      * @return true-处理成功 false-处理失败。框架暂时不处理返回结果。
      * @throws WatcherExecutionException 方法可以选择抛出异常或者自己处理异常(try-catch)。框架目前捕获到异常后只是打印日志。
      */
-    <T> boolean processBlock(T block) throws WatcherExecutionException;
+    <T> boolean processBlock(T block) throws Exception;
 
     /**
      * 执行顺序。

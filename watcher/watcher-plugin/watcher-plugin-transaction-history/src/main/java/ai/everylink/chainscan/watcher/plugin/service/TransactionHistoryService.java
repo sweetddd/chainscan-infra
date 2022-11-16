@@ -32,7 +32,7 @@ public interface TransactionHistoryService {
     /**
      *transaction 信息扫描
      */
-    void transactionHistoryScan(EvmData blockData);
+    void transactionHistoryScan(EvmData blockData) throws Exception;
 
     /**
      * 更新交易区块确认信息;

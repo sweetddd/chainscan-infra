@@ -117,6 +117,8 @@ spec:
             value: 5
           - name: "watcher.insert.transaction.log"
             value: false
+          - name: "watcher.select.transaction.log"
+            value: true
           - name: "watcher.chain.chainType"
             value: EVM_PoW
           - name: "watcher.notify.template"

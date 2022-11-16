@@ -195,11 +195,18 @@ public class EvmWatcher implements IWatcher {
     private List<EvmData> currentReplayBlock(long start, long end) {
         List<EvmData> list = new CopyOnWriteArrayList<EvmData>();
 
+        String property = System.getenv("watcher.select.transaction.log");
+
+        Boolean insertTransaction = false;
+        if(!StringUtils.isEmpty(property) && "true".equals(property)){
+            insertTransaction = true;
+        }
+
         try {
             CountDownLatch latch = new CountDownLatch((int) (end - start + 1));
 
             for (long blockNum = start; blockNum <= end; blockNum++) {
-                scanBlockPool.submit(new ReplayBlockThread(latch, blockNum, list));
+                scanBlockPool.submit(new ReplayBlockThread(latch, blockNum, list,insertTransaction));
             }
 
             latch.await(3, TimeUnit.MINUTES);
@@ -228,10 +235,12 @@ public class EvmWatcher implements IWatcher {
         private final CountDownLatch latch;
         private final Long           blockNum;
         private final List<EvmData>  list;
-        private ReplayBlockThread (CountDownLatch latch, Long blockNum, List<EvmData> list) {
+        private final Boolean  insertTransaction;
+        private ReplayBlockThread (CountDownLatch latch, Long blockNum, List<EvmData> list,Boolean insertTransaction) {
             this.latch = latch;
             this.blockNum = blockNum;
             this.list = list;
+            this.insertTransaction = insertTransaction;
         }
 
         @Override
@@ -245,12 +254,15 @@ public class EvmWatcher implements IWatcher {
 
                 // 并发查询交易列表
                 if (!CollectionUtils.isEmpty(data.getBlock().getTransactions())) {
-                    CountDownLatch txLatch = new CountDownLatch(data.getBlock().getTransactions().size());
-                    for (EthBlock.TransactionResult transactionResult : data.getBlock().getTransactions()) {
-                        Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
-                        scanTxPool.submit(new ReplayTransactionThread(txLatch, data, tx.getHash()));
+                    if(insertTransaction){
+                        CountDownLatch txLatch = new CountDownLatch(data.getBlock().getTransactions().size());
+                        for (EthBlock.TransactionResult transactionResult : data.getBlock().getTransactions()) {
+                            Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
+                                scanTxPool.submit(new ReplayTransactionThread(txLatch, data, tx.getHash()));
+                        }
+                        txLatch.await(3, TimeUnit.MINUTES);
                     }
-                    txLatch.await(3, TimeUnit.MINUTES);
+
                 }
 
                 list.add(data);

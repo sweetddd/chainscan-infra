@@ -36,7 +36,7 @@ public class TransactionHistorySpiPlugin implements IEvmWatcherPlugin {
     private TransactionHistoryService transactionHistoryService;
 
     @Override
-    public <T> boolean processBlock(T block) throws WatcherExecutionException {
+    public <T> boolean processBlock(T block) throws Exception {
         initService();
 
         long    start     = System.currentTimeMillis();
