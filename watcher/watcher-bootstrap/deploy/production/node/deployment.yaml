@@ -174,7 +174,7 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: dtx-bridge-contract-address
-          - name: "watcher.l2.rpc.url"
+          - name: "watcher.l2.rest.api"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config

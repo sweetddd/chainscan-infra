@@ -125,7 +125,7 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: eth-l2-contract-config
-          - name: "watcher.l2.rpc.url"
+          - name: "watcher.l2.rest.api"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config

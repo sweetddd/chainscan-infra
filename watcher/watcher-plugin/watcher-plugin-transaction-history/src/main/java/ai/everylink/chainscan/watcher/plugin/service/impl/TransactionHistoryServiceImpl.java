@@ -380,7 +380,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             //查二层状态
             JSONObject result = null;
             try {
-                JSONObject respObj = restTemplate.getForObject(restApi+"api/v0.2/transactions/eth/"+history.getFromTxHash(), JSONObject.class);
+                JSONObject respObj = restTemplate.getForObject(restApi+"/api/v0.2/transactions/eth/"+history.getFromTxHash(), JSONObject.class);
                  result = respObj.getJSONObject("result");
             }catch (Exception e){
                 sb.append("Deposit查询二层失败报警 ").append(e.getMessage()).append("\n");

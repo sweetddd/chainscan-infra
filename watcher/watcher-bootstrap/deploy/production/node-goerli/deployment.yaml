@@ -167,7 +167,7 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: eth-start-block-number
-          - name: "watcher.l2.rpc.url"
+          - name: "watcher.l2.rest.api"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
