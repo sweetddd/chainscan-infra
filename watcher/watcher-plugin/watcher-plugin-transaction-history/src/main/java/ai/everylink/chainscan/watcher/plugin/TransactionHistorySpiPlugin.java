@@ -53,6 +53,7 @@ public class TransactionHistorySpiPlugin implements IEvmWatcherPlugin {
             EvmData blockData = (EvmData) block;
             transactionHistoryService.transactionHistoryScan(blockData);
             transactionHistoryService.updateConfirmBlock(blockData);
+            transactionHistoryService.checkL2Status(blockData);
 
         }
         log.info("TxHistory-end:" + System.currentTimeMillis());
