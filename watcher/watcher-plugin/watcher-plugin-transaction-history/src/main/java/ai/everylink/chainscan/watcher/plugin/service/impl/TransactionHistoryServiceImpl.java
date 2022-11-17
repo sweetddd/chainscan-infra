@@ -19,6 +19,7 @@ package ai.everylink.chainscan.watcher.plugin.service.impl;
 
 import ai.everylink.chainscan.watcher.core.config.DataSourceEnum;
 import ai.everylink.chainscan.watcher.core.config.TargetDataSource;
+import ai.everylink.chainscan.watcher.core.rocketmq.SlackUtils;
 import ai.everylink.chainscan.watcher.core.util.DecodUtils;
 import ai.everylink.chainscan.watcher.core.util.EvmTransactionUtils;
 import ai.everylink.chainscan.watcher.core.util.OkHttpUtil;
@@ -32,6 +33,7 @@ import ai.everylink.chainscan.watcher.plugin.service.BridgeHistoryService;
 import ai.everylink.chainscan.watcher.plugin.service.ConvertHistoryService;
 import ai.everylink.chainscan.watcher.plugin.service.DepositHistoryService;
 import ai.everylink.chainscan.watcher.plugin.service.TransactionHistoryService;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -40,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthBlock;
@@ -49,6 +52,7 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
@@ -79,6 +83,9 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
     @Autowired
     private WalletTranactionHistoryDao wTxHistoryDao;
+
+    @Resource
+    private RestTemplate restTemplate;
 
     @Autowired
     Environment environment;
@@ -353,6 +360,49 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             }
         }
         log.info("TxHistory-findConfirmBlock-for-consum:" + (System.currentTimeMillis() - startTime2));
+    }
+
+    @Override
+    @TargetDataSource(value = DataSourceEnum.wallet)
+    public void checkL2Status(EvmData blockData) {
+        BigInteger  chainId     = new BigInteger(blockData.getChainId() + "");
+        BigInteger  currentBlockNumber = blockData.getBlock().getNumber();
+        Integer confirmBlock = Integer.valueOf(environment.getProperty("watcher.confirm.block"));
+
+        Long endBlockNumber =currentBlockNumber.longValue()-confirmBlock*2;
+        List<WalletTransactionHistory> txHistorys  = wTxHistoryDao.findL2Status(chainId.intValue(),endBlockNumber);
+
+        String restApi = environment.getProperty("watcher.l2.rest.api");
+
+        StringBuilder sb = new StringBuilder();
+        for(WalletTransactionHistory history : txHistorys){
+            // 超过一定区块数，还没被二层执行的交易
+            //查二层状态
+            JSONObject result = null;
+            try {
+                JSONObject respObj = restTemplate.getForObject(restApi+"api/v0.2/transactions/eth/"+history.getFromTxHash(), JSONObject.class);
+                 result = respObj.getJSONObject("result");
+            }catch (Exception e){
+                sb.append("Deposit查询二层失败报警 ").append(e.getMessage()).append("\n");
+                continue;
+            }
+
+            if(null == result){
+                //报警
+                sb.append("Deposit交易二层没有执行 ").append(history.getFromTxHash()).append("\n");
+
+            }else{
+                //执行了
+                history.setL2Executed(1);
+                wTxHistoryDao.save(history);
+            }
+
+        }
+
+        String s = sb.toString();
+        if(StringUtils.isNotBlank(s)){
+            SlackUtils.sendSlackNotify("C02SQNUGEAU", "二层没有执行交易报警", s);
+        }
     }
 
 

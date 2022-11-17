@@ -125,6 +125,11 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: eth-l2-contract-config
+          - name: "watcher.l2.rpc.url"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: eth-l2-rpc-url
           - name: "rocketmq.name-server"
             valueFrom:
               configMapKeyRef:

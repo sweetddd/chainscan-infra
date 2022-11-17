@@ -40,6 +40,9 @@ public interface TransactionHistoryService {
      */
     void updateConfirmBlock(EvmData blockData);
 
+
+    void checkL2Status(EvmData blockData);
+
     /**
      * 扫描现有数据加载插件
      * @param transaction

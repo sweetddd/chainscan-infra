@@ -167,6 +167,11 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: eth-start-block-number
+          - name: "watcher.l2.rpc.url"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: eth-l2-rpc-url
       volumes:
       - name: host-time
         hostPath:

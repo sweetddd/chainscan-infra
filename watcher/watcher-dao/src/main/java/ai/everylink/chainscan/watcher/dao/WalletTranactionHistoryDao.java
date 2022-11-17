@@ -78,4 +78,8 @@ public interface WalletTranactionHistoryDao extends JpaRepository<WalletTransact
      */
     @Query(value = "select * from wallet_transaction_history where   tx_state != 'Failure'  and tx_state != 'Finalized' and tx_state != 'L1 Depositing (12/12)' ", nativeQuery = true)
     List<WalletTransactionHistory> findConfirmBlock();
+
+
+    @Query(value = "select * from wallet_transaction_history where  from_chain_id = :chainId and type = 'Deposit' and  submit_block < :blockHeight and l2_executed = 0 ", nativeQuery = true)
+    List<WalletTransactionHistory> findL2Status(Integer chainId,Long blockHeight);
 }

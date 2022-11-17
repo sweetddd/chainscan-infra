@@ -143,4 +143,7 @@ public class WalletTransactionHistory implements Serializable {
     @JsonProperty("update_time")
     @Column(name = "update_time")
     private Timestamp updateTime;
+
+    @Column(name = "l2_executed")
+    private Integer l2Executed;
 }

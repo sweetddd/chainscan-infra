@@ -154,6 +154,11 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: bnb-start-block-number
+          - name: "watcher.l2.rpc.url"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: bnb-l2-rpc-url
       volumes:
       - name: host-time
         hostPath:

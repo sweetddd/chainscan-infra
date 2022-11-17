@@ -153,6 +153,11 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: dtx-start-block-number
+          - name: "watcher.l2.rpc.url"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: dtx-l2-rpc-url
           - name: "watcher.bridge.contract.address"
             valueFrom:
               configMapKeyRef:
