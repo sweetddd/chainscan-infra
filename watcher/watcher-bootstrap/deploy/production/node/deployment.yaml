@@ -179,6 +179,11 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: dtx-l2-rpc-url
+          - name: "watcher.notify.channel.id"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: notify-channel-id
       volumes:
       - name: host-time
         hostPath:

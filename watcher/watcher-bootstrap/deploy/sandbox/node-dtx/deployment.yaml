@@ -192,6 +192,11 @@ spec:
             value: "0 */1 * * * ?"
           - name: "watcher.monitor.threshold"
             value: "5"
+          - name: "watcher.notify.channel.id"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: notify-channel-id
       volumes:
       - name: host-time
         hostPath:
