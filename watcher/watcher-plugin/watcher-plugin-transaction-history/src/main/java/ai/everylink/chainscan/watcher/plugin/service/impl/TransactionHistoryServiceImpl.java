@@ -401,7 +401,8 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
         String s = sb.toString();
         if(StringUtils.isNotBlank(s)){
-            SlackUtils.sendSlackNotify("C02SQNUGEAU", "二层没有执行交易报警", s);
+            String channelId = environment.getProperty("watcher.notify.channel.id");
+            SlackUtils.sendSlackNotify(channelId, "二层没有执行交易报警", s);
         }
     }
 

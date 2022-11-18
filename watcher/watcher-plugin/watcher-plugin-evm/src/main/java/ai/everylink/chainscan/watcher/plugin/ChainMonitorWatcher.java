@@ -124,6 +124,8 @@ public class ChainMonitorWatcher implements IWatcher {
     }
 
     private void monitor() {
+        String channelId = System.getenv("watcher.notify.channel.id");
+
         logger.info("[ChainMonitorWatcher]monitor begin");
         int web3ErrCnt = 0;
         for (int i = 0; i < 10; i++) {
@@ -139,7 +141,7 @@ public class ChainMonitorWatcher implements IWatcher {
         }
         if (web3ErrCnt > 5) {
             logger.info("[ChainMonitorWatcher]network error.");
-            SlackUtils.sendSlackNotify("C02SQNUGEAU", "DTX链告警", "链连接出错: " + WatcherUtils.getVmChainUrl());
+            SlackUtils.sendSlackNotify(channelId, "DTX链告警", "链连接出错: " + WatcherUtils.getVmChainUrl());
             return;
         }
 
@@ -155,7 +157,7 @@ public class ChainMonitorWatcher implements IWatcher {
                 return;
             }
             String chainName = (chainId == 4) ? "Rinkeby": "DTX";
-            SlackUtils.sendSlackNotify("C02SQNUGEAU", chainName + "链告警",
+            SlackUtils.sendSlackNotify(channelId, chainName + "链告警",
                     "链长时间未出块，请关注！最后出块于(\"" + diff / 1000 / 60 + "\")分钟前");
         } catch (Exception e) {
             logger.error("[MonitorThread]error:" + e.getMessage(), e);
