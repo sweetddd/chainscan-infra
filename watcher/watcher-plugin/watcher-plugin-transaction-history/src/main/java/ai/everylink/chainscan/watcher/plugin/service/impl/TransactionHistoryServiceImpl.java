@@ -376,33 +376,37 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
         StringBuilder sb = new StringBuilder();
         for(WalletTransactionHistory history : txHistorys){
-            // 超过一定区块数，还没被二层执行的交易
-            //查二层状态
-            JSONObject result = null;
-            try {
-                JSONObject respObj = restTemplate.getForObject(restApi+"/api/v0.2/transactions/eth/"+history.getFromTxHash(), JSONObject.class);
-                 result = respObj.getJSONObject("result");
-            }catch (Exception e){
-                sb.append("Deposit查询二层失败报警 ").append(e.getMessage()).append("\n");
-                continue;
-            }
-
-            if(null == result){
-                //报警
-                sb.append("Deposit交易二层没有执行 ").append(history.getFromTxHash()).append("\n");
-
-            }else{
-                //执行了
+            if("Failure".equals(history.getTxState())){
+                //一层失败了，二层不需要执行
                 history.setL2Executed(1);
                 wTxHistoryDao.save(history);
+            }else{
+                // 超过一定区块数，还没被二层执行的交易
+                //查二层状态
+                JSONObject result = null;
+                try {
+                    JSONObject respObj = restTemplate.getForObject(restApi+"/api/v0.2/transactions/eth/"+history.getFromTxHash(), JSONObject.class);
+                    result = respObj.getJSONObject("result");
+                }catch (Exception e){
+                    sb.append("Deposit查询二层失败报警 ").append(e.getMessage()).append("\n");
+                    continue;
+                }
+
+                if(null == result){
+                    //报警
+                    sb.append("Deposit交易二层没有执行 ").append(history.getFromTxHash()).append("\n");
+
+                }else{
+                    //执行了
+                    history.setL2Executed(1);
+                    wTxHistoryDao.save(history);
+                }
             }
-
-        }
-
-        String s = sb.toString();
-        if(StringUtils.isNotBlank(s)){
-            String channelId = environment.getProperty("watcher.notify.channel.id");
-            SlackUtils.sendSlackNotify(channelId, "二层没有执行交易报警", s);
+            String s = sb.toString();
+            if(StringUtils.isNotBlank(s)){
+                String channelId = environment.getProperty("watcher.notify.channel.id");
+                SlackUtils.sendSlackNotify(channelId, "二层没有执行交易报警", s);
+            }
         }
     }
 
