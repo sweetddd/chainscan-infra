@@ -380,6 +380,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 //一层失败了，二层不需要执行
                 history.setL2Executed(1);
                 wTxHistoryDao.save(history);
+                sb.append("Deposit交易一层执行失败 ").append(history.getFromTxHash()).append("\n");
             }else{
                 // 超过一定区块数，还没被二层执行的交易
                 //查二层状态
