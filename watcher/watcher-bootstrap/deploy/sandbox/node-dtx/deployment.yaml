@@ -135,15 +135,15 @@ spec:
           - name: "watcher.notify.template"
             value: 'DTX_TEST'
           - name: "watcher.scan.switch"
-            value: false
+            value: "false"
           - name: "watcher.process.concurrent.switch"
-            value: false
+            value: "false"
           - name: "watcher.process.only.evmplugin"
-            value: false
+            value: "false"
           - name: "watcher.insert.transaction.log"
-            value: true
+            value: "true"
           - name: "watcher.select.transaction.log"
-            value: true
+            value: "true"
           - name: "watcher.transaction.bridge.group"
             value: "dtx-watcher-transaction-bridge-group"
           - name: "bridge.proposal"
