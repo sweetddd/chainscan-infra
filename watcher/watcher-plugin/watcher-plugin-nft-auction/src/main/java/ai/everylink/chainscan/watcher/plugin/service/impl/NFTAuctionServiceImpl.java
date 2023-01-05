@@ -111,31 +111,40 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
     @Override
     public void nftAuctionScan(EvmData blockData) {
         String            nftAuctionContracts = environment.getProperty("watcher.nft.auction.address");
+        log.info("nftAuctionScan.nftAuctionContracts:{}", nftAuctionContracts);
        // String            nftAuctionContracts = "0x9b38f6fa3943c24f4998d73d178fb1e2899a1365";
         int               chainId             = blockData.getChainId();
         List<Transaction> txList              = buildTransactionList(blockData, chainId);
+        log.info("nftAuctionScan.txList.size:{}, txList:{}", txList.size(), txList);
         // 事件监听 解析;
         for (Transaction transaction : txList) {
             String toAddr = transaction.getToAddr();
+            log.info("nftAuctionScan.transaction.toAddr:{}, status:{}, transaction:{}", toAddr, transaction.getStatus(), transaction);
             if (StringUtils.isBlank(transaction.getStatus())) {
                 continue;
             }
             int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
+            log.info("nftAuctionScan.txSatte.:{}", txSatte);
 
             if (StringUtils.isNotBlank(toAddr) && nftAuctionContracts != null && nftAuctionContracts.equals(toAddr) && txSatte == 1) {
            // if (StringUtils.isNotBlank(toAddr) ) {
                 String input = transaction.getInput();
+                log.info("nftAuctionScan.transaction.getInput():{}", input);
                 if (StringUtils.isNotBlank(input) && input.length() > 10) {
                     List<String> params = DecodUtils.getParams2List(input);
                     String       method = params.get(0);
+                    log.info("nftAuctionScan.transaction.method:{}, params:{}", method, params);
                     //监控NFT 拍卖创建交易
                     if (params.size() > 2 && method.contains("0x8fa4a10f")) {
+                        log.info("监控NFT 拍卖创建交易");
                         createNewNftAuction(transaction, params);
                         //监控NFT 拍卖成交交易
                     } else if (params.size() > 2 && (method.contains("0x848e5c77")  || method.contains("0xc24d5a5c"))) {
+                        log.info("监控NFT 拍卖成交交易");
                         finishNftAuction(transaction, params);
                         //监控NFT 拍卖取消交易
                     }else if (params.size() > 2 && method.contains("0xebea6025")) {
+                        log.info("监控NFT 拍卖取消交易");
                         cancelNftAuction(transaction, params);
                     }
                 }
@@ -146,6 +155,7 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
 
     //监控NFT 拍卖创建交易
     private void createNewNftAuction(Transaction transaction, List<String> params) {
+        log.info("createNewNftAuction.transaction:{}, params:{}", transaction, params);
         NftAuction nftAuction         = new NftAuction();
         String nftContractAddress = "0x" + params.get(1).substring(params.get(1).length() - 40);
         TokenInfo  nftContract        = tokenInfoDao.findAllByAddress(nftContractAddress);
@@ -163,15 +173,18 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         boolean result = updateNftAccount(transaction.getFromAddr(), nftContractAddress);
 
         Utf8String tokenURL = vm30Utils.tokenURL(web3j, nftContractAddress,new BigInteger(tokenId.toString()));
+        log.info("createNewNftAuction.tokenURL:{}", tokenURL!=null?tokenURL.toString():null);
         if(tokenURL != null && StringUtils.isNotBlank(tokenURL.toString())){
             //拍卖需求增加字段;
             String nftData = tokenURL.toString();
             String[] split = nftData.split(",");
+            log.info("createNewNftAuction.nftData:{}", nftData);
             if(split.length >1){
                 try {
                     Base64.Decoder decoder = Base64.getDecoder();
                     String  decodeNftData = new String(decoder.decode(split[1]), StandardCharsets.UTF_8);
                     JSONObject  data = JSON.parseObject(decodeNftData);
+                    log.info("createNewNftAuction.data:{}", data);
                     if(data.getBoolean("explicit")!=null){
                         nftAuction.setNftExplicit(data.getBoolean("explicit"));
                     }
@@ -229,24 +242,34 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         if(chainId != null){
             nftAuction.setChainId(Long.parseLong(chainId));
         }
+        log.info("createNewNftAuction.nftAuction:{}", nftAuction);
         nftAuctionDao.save(nftAuction);
+        log.info("createNewNftAuction.nftAuction end");
     }
 
     //监控NFT 拍卖取消交易
     private void cancelNftAuction(Transaction transaction, List<String> params) {
+        log.info("cancelNftAuction.transaction:{}", transaction);
         String status = transaction.getStatus();
+        log.info("cancelNftAuction.status:{}", status);
         if(status.equals("0x1")){
             List<TransactionLog> txLog = transactionLogDao.findByTxHash(transaction.getTransactionHash());
+            log.info("cancelNftAuction.txLog:{}", txLog);
             for (TransactionLog transactionLog : txLog) {
+                log.info("cancelNftAuction.transactionLog:{}", transactionLog);
                 String topicsStr = transactionLog.getTopics();
                 //topics转为数组
                 JSONArray topics = JSONArray.parseArray(topicsStr);
+                log.info("cancelNftAuction.transactionLog.topics:{}", topics);
                 if (topics.size() > 0) {
                     String topic = topics.get(0).toString();
+                    log.info("cancelNftAuction.topic:{}", topic);
                     if (topic.equals(NFTAUCTION_CANCEL_TOPIC)) {
                         String nftContractAddress = transactionLog.getAddress();
                         Long tokenId = Long.parseLong(topics.get(3).toString().substring(2, 66), 16) ;
+                        log.info("cancelNftAuction.cancel start. nftContractAddress:{}, tokenId:{}", nftContractAddress, tokenId);
                         nftAuctionDao.cancel(nftContractAddress, tokenId);
+                        log.info("cancelNftAuction.updateNftAccount start.transaction:{}", transaction);
                         boolean result = updateNftAccount(transaction.getFromAddr(), nftContractAddress);
                         log.info("卖家测试NFT拍卖 nftContractAddress:" + nftContractAddress + "tokenid =" + tokenId);
                     }
@@ -258,20 +281,27 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
 
     //监控NFT 拍卖成交
     private void finishNftAuction(Transaction transaction, List<String> params) {
+        log.info("finishNftAuction.transaction:{}", transaction);
         List<TransactionLog> txLog = transactionLogDao.findByTxHash(transaction.getTransactionHash());
+        log.info("finishNftAuction.txLog:{}, transaction:{}", txLog, transaction);
         for (TransactionLog transactionLog : txLog) {
+            log.info("finishNftAuction.transactionLog:{}", transactionLog);
             String topicsStr = transactionLog.getTopics();
             //topics转为数组
             JSONArray topics = JSONArray.parseArray(topicsStr);
+            log.info("finishNftAuction.transactionLog.topics():{}", topics);
             if (topics.size() > 0) {
                 String topic = topics.get(0).toString();
                 if (topic.equals(NFTAUCTION_FINISH_TOPIC)) {
                     String data = transactionLog.getData();
+                    log.info("finishNftAuction.data:{}", data);
                     String substring = data.substring(2, 66);
                     String nftContractAddress ="0x" +  substring.substring(substring.length() - 40);
                     Long tokenId = Long.parseLong(data.substring(66, 130), 16) ;
                     nftAuctionDao.finish(nftContractAddress, tokenId);
+                    log.info("finishNftAuction.updateNftAccount start");
                     boolean result = updateNftAccount(transaction.getFromAddr(), nftContractAddress);
+                    log.info("finishNftAuction.updateNftAccount end");
                   //  System.out.println(result);
                 }
 
