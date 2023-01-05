@@ -35,13 +35,31 @@ pipeline {
     }
     stage('deploy to sandbox') {
       steps {
-        kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, configs: 'watcher/watcher-bootstrap/deploy/sandbox/**', kubeconfigId: 'kubeconfig')
+         container ('maven-jdk11') {
+                          withCredentials([
+                              kubeconfigFile(
+                              credentialsId: 'kubeconfig',
+                              variable: 'KUBECONFIG')
+                              ]) {
+                              sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/deployment.yaml | kubectl apply -f -'
+                              sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/service.yaml | kubectl apply -f -'
+                          }
+                     }
       }
     }
     stage('deploy to production') {
        steps {
          input(message: 'Waiting for audit @eric  ', submitter: 'eric,admin')
-         kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, configs: 'watcher/watcher-bootstrap/deploy/production/**', kubeconfigId: 'kubeconfig-prd')
+          container ('maven-jdk11') {
+                                   withCredentials([
+                                       kubeconfigFile(
+                                       credentialsId: 'kubeconfig-prd',
+                                       variable: 'KUBECONFIG')
+                                       ]) {
+                                       sh 'envsubst < watcher/watcher-bootstrap/deploy/production/deployment.yaml | kubectl apply -f -'
+                                       sh 'envsubst < watcher/watcher-bootstrap/deploy/production/service.yaml | kubectl apply -f -'
+                                   }
+                              }
        }
      }
 
@@ -49,7 +67,16 @@ pipeline {
      stage('deploy to mainnet') {
         steps {
           input(message: 'Waiting for audit @eric  ', submitter: 'eric,admin')
-          kubernetesDeploy(enableConfigSubstitution: true, deleteResource: false, configs: 'watcher/watcher-bootstrap/deploy/main/**', kubeconfigId: 'kubeconfig-prd')
+           container ('maven-jdk11') {
+                                             withCredentials([
+                                                 kubeconfigFile(
+                                                 credentialsId: 'kubeconfig-prd',
+                                                 variable: 'KUBECONFIG')
+                                                 ]) {
+                                                 sh 'envsubst < watcher/watcher-bootstrap/deploy/main/deployment.yaml | kubectl apply -f -'
+                                                 sh 'envsubst < watcher/watcher-bootstrap/deploy/main/service.yaml | kubectl apply -f -'
+                                             }
+                                        }
         }
       }
   }
