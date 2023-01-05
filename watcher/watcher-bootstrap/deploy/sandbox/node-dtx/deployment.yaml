@@ -129,7 +129,7 @@ spec:
                 name: watcher-config
                 key: dtx-chain-id
           - name: "watcher.finalized.status.switch"
-            value: false
+            value: "false"
           - name: "watcher.chain.chainType"
             value: 'EVM_PoS'
           - name: "watcher.notify.template"
