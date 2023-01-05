@@ -96,9 +96,9 @@ spec:
           - name: "watcher.chain.chainId"
             value: '5'
           - name: "watcher.chain.chainType"
-            value: EVM_PoW
+            value: "EVM_PoW"
           - name: "watcher.notify.template"
-            value: Goerli
+            value: "Goerli"
           - name: "watcher.scan.switch"
             value: false
           - name: "watcher.chain.monitor"

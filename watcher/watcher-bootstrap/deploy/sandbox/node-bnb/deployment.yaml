@@ -101,9 +101,9 @@ spec:
           - name: "watcher.chain.chainId"
             value: '97'
           - name: "watcher.chain.chainType"
-            value: EVM_PoW
+            value: "EVM_PoW"
           - name: "watcher.notify.template"
-            value: BNB
+            value: "BNB"
           - name: "watcher.scan.switch"
             value: false
           - name: "watcher.process.concurrent.switch"
