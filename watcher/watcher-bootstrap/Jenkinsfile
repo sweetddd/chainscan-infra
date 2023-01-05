@@ -41,8 +41,12 @@ pipeline {
                               credentialsId: 'kubeconfig',
                               variable: 'KUBECONFIG')
                               ]) {
-                              sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/deployment.yaml | kubectl apply -f -'
-                              sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/service.yaml | kubectl apply -f -'
+                              sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/node-dtx/deployment.yaml | kubectl apply -f -'
+                              sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/node-dtx/service.yaml | kubectl apply -f -'
+                               sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/node-bnb/deployment.yaml | kubectl apply -f -'
+                                sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/node-bnb/service.yaml | kubectl apply -f -'
+                                 sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/node-goerli/deployment.yaml | kubectl apply -f -'
+                              sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/node-goerli/service.yaml | kubectl apply -f -'
                           }
                      }
       }
