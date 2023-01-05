@@ -122,7 +122,7 @@ spec:
                 name: network-config
                 key: dtx.rpc.api
           - name: "watcher.chain.scanStep"
-            value: 100
+            value: '100'
           - name: "watcher.chain.chainId"
             valueFrom:
               configMapKeyRef:
@@ -131,9 +131,9 @@ spec:
           - name: "watcher.finalized.status.switch"
             value: false
           - name: "watcher.chain.chainType"
-            value: EVM_PoS
+            value: 'EVM_PoS'
           - name: "watcher.notify.template"
-            value: DTX_TEST
+            value: 'DTX_TEST'
           - name: "watcher.scan.switch"
             value: false
           - name: "watcher.process.concurrent.switch"

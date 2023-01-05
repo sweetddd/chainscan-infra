@@ -92,9 +92,9 @@ spec:
                 name: network-config
                 key: eth.rpc.api
           - name: "watcher.chain.scanStep"
-            value: 1
+            value: '1'
           - name: "watcher.chain.chainId"
-            value: 5
+            value: '5'
           - name: "watcher.chain.chainType"
             value: EVM_PoW
           - name: "watcher.notify.template"
