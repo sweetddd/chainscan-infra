@@ -37,19 +37,23 @@ public class NFTAuctionSpiPlugin implements IEvmWatcherPlugin {
 
     @Override
     public <T> boolean processBlock(T block) throws WatcherExecutionException {
+        log.info("NFTAuctionSpiPlugin.processBlock start, block:{}", block);
         initService();
 
         Transaction transaction = null;
         try {
             transaction = (Transaction) block;
         }   catch (Exception e) {
-            // log.error("block is not a transaction", e);
+            log.error("block is not a transaction", e);
         }
+        log.info("NFTAuctionSpiPlugin.processBlock, transaction:{}", transaction);
         if (transaction != null) {
            return true;
         }else {
             EvmData blockData = (EvmData) block;
+            log.info("NFTAuctionSpiPlugin.processBlock, blockData.start:{}", blockData);
             nftAuctionService.nftAuctionScan(blockData);
+            log.info("NFTAuctionSpiPlugin.processBlock, blockData.end");
         }
         return true;
     }

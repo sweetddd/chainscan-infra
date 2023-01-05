@@ -85,12 +85,14 @@ public class BlockChainScanJob implements Job {
                 long t1 = System.currentTimeMillis();
                 log.info("[{}]Execute plugin '{}' start.", watcherId, pluginId);
                 if (!WatcherUtils.isProcessConcurrent()) {
+                    log.info("BlockChainScanJob->非并发处理:{}", blockList);
                     for (Object block : blockList) {
                         try {
                             boolean result = plugin.processBlock(block);
 
                             // block需要按顺序处理，一个处理失败，后续不能再继续
                             if (!result) {
+                                log.info("block需要按顺序处理，一个处理失败，后续不能再继续");
                                 break;
                             }
                         } catch (Throwable e) {
@@ -99,7 +101,7 @@ public class BlockChainScanJob implements Job {
                     }
                 } else {
                     // 并发处理区块
-                    log.info("[{}]Execute plugin '{}' concurrent start.", watcherId, pluginId);
+                    log.info("[{}]Execute plugin '{}' concurrent start. 并发处理区块:{}", watcherId, pluginId, blockList);
                     CountDownLatch latch = new CountDownLatch(blockList.size());
                     for (Object block : blockList) {
                         blockProcessPool.submit(new BlockProcessThread(latch, watcher, plugin, block));
