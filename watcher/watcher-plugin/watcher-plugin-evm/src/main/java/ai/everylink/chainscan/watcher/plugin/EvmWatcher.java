@@ -196,6 +196,7 @@ public class EvmWatcher implements IWatcher {
         List<EvmData> list = new CopyOnWriteArrayList<EvmData>();
 
         String property = System.getenv("watcher.select.transaction.log");
+        logger.info("watcher.select.transaction.log:{}", property);
 
         Boolean insertTransaction = false;
         if(!StringUtils.isEmpty(property) && "true".equals(property)){
@@ -252,6 +253,7 @@ public class EvmWatcher implements IWatcher {
                     return;
                 }
 
+                logger.info("EvmWatcher.run().data.getBlock().getTransactions():{}", data.getBlock().getTransactions());
                 // 并发查询交易列表
                 if (!CollectionUtils.isEmpty(data.getBlock().getTransactions())) {
                     if(insertTransaction){
