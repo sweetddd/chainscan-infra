@@ -393,8 +393,10 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             }  catch (Exception e) {
                 log.info("updateNftAccount.");
             }
+            log.info("新增nftAccount:{}", nftAccount);
             nftAccountDao.save(nftAccount);
         }else{
+            log.info("删除nftAccount:accountInfo.getId():{}, tokenId:{}, nft.getId():{}", accountInfo.getId(), tokenId.longValue(),nft.getId());
             nftAccountDao.deleteNftTokenId(accountInfo.getId(),tokenId.longValue(),nft.getId());
         }
 
