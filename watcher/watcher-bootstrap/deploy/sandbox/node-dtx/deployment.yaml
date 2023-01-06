@@ -122,28 +122,28 @@ spec:
                 name: network-config
                 key: dtx.rpc.api
           - name: "watcher.chain.scanStep"
-            value: 100
+            value: '100'
           - name: "watcher.chain.chainId"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
                 key: dtx-chain-id
           - name: "watcher.finalized.status.switch"
-            value: false
+            value: "false"
           - name: "watcher.chain.chainType"
-            value: EVM_PoS
+            value: 'EVM_PoS'
           - name: "watcher.notify.template"
-            value: DTX_TEST
+            value: 'DTX_TEST'
           - name: "watcher.scan.switch"
-            value: false
+            value: "false"
           - name: "watcher.process.concurrent.switch"
-            value: false
+            value: "false"
           - name: "watcher.process.only.evmplugin"
-            value: false
+            value: "false"
           - name: "watcher.insert.transaction.log"
-            value: true
+            value: "true"
           - name: "watcher.select.transaction.log"
-            value: true
+            value: "true"
           - name: "watcher.transaction.bridge.group"
             value: "dtx-watcher-transaction-bridge-group"
           - name: "bridge.proposal"

@@ -92,25 +92,25 @@ spec:
                 name: network-config
                 key: eth.rpc.api
           - name: "watcher.chain.scanStep"
-            value: 1
+            value: '1'
           - name: "watcher.chain.chainId"
-            value: 5
+            value: '5'
           - name: "watcher.chain.chainType"
-            value: EVM_PoW
+            value: "EVM_PoW"
           - name: "watcher.notify.template"
-            value: Goerli
+            value: "Goerli"
           - name: "watcher.scan.switch"
-            value: false
+            value: "false"
           - name: "watcher.chain.monitor"
-            value: true
+            value: "true"
           - name: "watcher.process.concurrent.switch"
-            value: false
+            value: "false"
           - name: "watcher.insert.transaction.log"
-            value: false
+            value: "false"
           - name: "watcher.select.transaction.log"
-            value: true
+            value: "true"
           - name: "watcher.process.only.evmplugin"
-            value: false
+            value: "false"
           - name: "watcher.transaction.bridge.group"
             value: "eth-watcher-transaction-bridge-group"
           - name: "bridge.proposal"
