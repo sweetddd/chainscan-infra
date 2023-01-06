@@ -124,9 +124,9 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
                 continue;
             }
             int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
-            log.info("nftAuctionScan.txSatte.:{}", txSatte);
+            log.info("nftAuctionScan.txSatte:{}", txSatte);
 
-            if (StringUtils.isNotBlank(toAddr) && nftAuctionContracts != null && nftAuctionContracts.equals(toAddr) && txSatte == 1) {
+            if (StringUtils.isNotBlank(toAddr) && nftAuctionContracts != null && nftAuctionContracts.equalsIgnoreCase(toAddr) && txSatte == 1) {
            // if (StringUtils.isNotBlank(toAddr) ) {
                 String input = transaction.getInput();
                 log.info("nftAuctionScan.transaction.getInput():{}", input);
@@ -166,7 +166,13 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         Integer tokenId = Integer.parseInt(params.get(2), 16);
         nftAuction.setNftId(tokenId.longValue());
         //获取NFT的data信息;
-        NftAccount  nftAccount = nftAccountDao.selectByTokenIdContract(tokenId.longValue(), nftContract.getId());
+        NftAccount nftAccount = null;
+        try {
+            nftAccount = nftAccountDao.selectByTokenIdContract(tokenId.longValue(), nftContract.getId());
+        } catch (Exception e){
+            e.printStackTrace();
+            throw e;
+        }
         if(nftAccount != null){
             nftAuction.setNftData(nftAccount.getNftData());
         }
