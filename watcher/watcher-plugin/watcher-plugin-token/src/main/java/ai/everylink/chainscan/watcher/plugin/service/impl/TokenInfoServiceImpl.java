@@ -375,7 +375,12 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         }
 
         if(isAdd){
-            NftAccount nftAccount = new NftAccount();
+            NftAccount nftAccount = nftAccountDao.selectByTokenIdContract(nft.getId(), tokenId.longValue());
+            log.info("TokenInfoServiceImpl.nftAccount:{}, nftId:{}, tokenId:{}", nftAccount, nft.getId(), tokenId);
+            if(nftAccount == null) {
+                nftAccount = new NftAccount();
+                nftAccount.setCreateTime(new Date().toInstant());
+            }
             try {
                 nftAccount.setContractName(nft.getTokenName());
                 nftAccount.setAccountId(accountInfo.getId());
@@ -388,7 +393,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 }
                 nftAccount.setNftData(tokenURL.toString());
                 nftAccount.setNftId(tokenId.longValue());
-                nftAccount.setCreateTime(new Date().toInstant());
                 nftAccount.setUpdateTime(new Date().toInstant());
             }  catch (Exception e) {
                 log.info("updateNftAccount.");
