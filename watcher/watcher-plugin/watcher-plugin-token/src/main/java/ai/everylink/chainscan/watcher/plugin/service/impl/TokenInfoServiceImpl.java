@@ -384,7 +384,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             try {
                 nftAccount.setContractName(nft.getTokenName());
                 nftAccount.setAccountId(accountInfo.getId());
-                nftAccount.setTokenId(nft.getId());
+                nftAccount.setTokenId(tokenId.longValue());
                 //tokenOfOwnerByIndex
 
                 Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
@@ -392,7 +392,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     return;
                 }
                 nftAccount.setNftData(tokenURL.toString());
-                nftAccount.setNftId(tokenId.longValue());
+                nftAccount.setNftId(nft.getId());
                 nftAccount.setUpdateTime(new Date().toInstant());
             }  catch (Exception e) {
                 log.info("updateNftAccount.");
