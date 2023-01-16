@@ -143,7 +143,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     saveOrUpdateBalance(topicFrom, transactionLog.getAddress(), txAmt, false);
                     saveOrUpdateBalance(topicTo, transactionLog.getAddress(), txAmt, true);
                     updateNftAccount(topicFrom, transactionLog.getAddress(),txAmt,false);
+                    log.info("topicFrom=>:{}, transactionLog.getAddress():{}, txAmt:{}", topicFrom, transactionLog.getAddress(), txAmt);
                     updateNftAccount(topicTo, transactionLog.getAddress(),txAmt,true);
+                    log.info("topicTo=>:{}, transactionLog.getAddress():{}, txAmt:{}", topicTo, transactionLog.getAddress(), txAmt);
                 }
             }
         } );
@@ -353,6 +355,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      */
     @Transactional
     public void updateNftAccount(String fromAddr, String contract,BigInteger tokenId,boolean isAdd ) {
+        log.info("updateNftAccount.fromAddr:{}, contract:{}, tokenId:{}, isAdd:{}", fromAddr, contract, tokenId, isAdd);
         if(ZERO_ADDRESS.equals(fromAddr)){
             return;
         }
@@ -384,7 +387,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             try {
                 nftAccount.setContractName(nft.getTokenName());
                 nftAccount.setAccountId(accountInfo.getId());
-                nftAccount.setTokenId(nft.getId());
+                nftAccount.setTokenId(tokenId.longValue());
                 //tokenOfOwnerByIndex
 
                 Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
@@ -392,7 +395,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     return;
                 }
                 nftAccount.setNftData(tokenURL.toString());
-                nftAccount.setNftId(tokenId.longValue());
+                nftAccount.setNftId(nft.getId());
                 nftAccount.setUpdateTime(new Date().toInstant());
             }  catch (Exception e) {
                 log.info("updateNftAccount.");
@@ -401,7 +404,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             nftAccountDao.save(nftAccount);
         }else{
             log.info("删除nftAccount:accountInfo.getId():{}, tokenId:{}, nft.getId():{}", accountInfo.getId(), tokenId.longValue(),nft.getId());
-            nftAccountDao.deleteNftTokenId(accountInfo.getId(),tokenId.longValue(),nft.getId());
+            //nftAccountDao.deleteNftTokenId(accountInfo.getId(),tokenId.longValue(),nft.getId());
         }
 
     }

@@ -168,7 +168,7 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         //获取NFT的data信息;
         NftAccount nftAccount = null;
         try {
-            nftAccount = nftAccountDao.selectByTokenIdContract(tokenId.longValue(), nftContract.getId());
+            nftAccount = nftAccountDao.selectByTokenIdContract(nftContract.getId(), tokenId.longValue());
         } catch (Exception e){
             e.printStackTrace();
             throw e;
@@ -273,7 +273,7 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
                     if (topic.equals(NFTAUCTION_CANCEL_TOPIC)) {
                         String nftContractAddress = transactionLog.getAddress();
                         Long tokenId = Long.parseLong(topics.get(3).toString().substring(2, 66), 16) ;
-                        log.info("cancelNftAuction.cancel start. nftContractAddress:{}, tokenId:{}", nftContractAddress, tokenId);
+                        log.info("cancelNftAuction.cancel start. nftContractAddress:{}, tokenId:{}, topics:{}", nftContractAddress, tokenId, topics);
                         nftAuctionDao.cancel(nftContractAddress, tokenId);
                         log.info("cancelNftAuction.updateNftAccount start.transaction:{}", transaction);
                         boolean result = updateNftAccount(transaction.getFromAddr(), nftContractAddress);
@@ -562,6 +562,7 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
                 nftAccount.setTokenId(tokens.getId());
                 //tokenOfOwnerByIndex
                 BigInteger tokenId  = vm30Utils.tokenOfOwnerByIndex(web3j, contract, fromAddr, i);
+                log.info("updateNftAccount.accountInfo.getId():{}, tokens.getId():{}, tokenId:{}, fromAddr: {}", accountInfo.getId(), tokens.getId(), tokenId, fromAddr);
                 if(tokenId.intValue() == -1 || ( tokenId.intValue() == 0 && i >0)) {
                     tokens.setTokenType(1);
                     tokenInfoDao.updateTokenType(tokens.getId(), 1);
