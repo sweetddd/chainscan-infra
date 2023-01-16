@@ -50,4 +50,8 @@ public interface NftAuctionDao extends JpaRepository<NftAuction, String> {
     @Modifying
     @Transactional
     void cancel(String nftContractAddress, Long tokenId);
+
+    @Query(value = "SELECT e FROM NftAuction e WHERE e.txHash = :txHash")
+    NftAuction getByTxHash(String txHash);
+
 }

@@ -363,6 +363,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             return;
         }
         AccountInfo accountInfo = accountInfoDao.findByAddress(fromAddr);
+        log.info("updateNftAccount.accountInfo:{}", accountInfo);
         if (accountInfo == null) {
             //新增用户数据;
             accountInfo = new AccountInfo();
@@ -378,7 +379,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         }
 
         if(isAdd){
-            NftAccount nftAccount = nftAccountDao.selectByTokenIdContract(nft.getId(), tokenId.longValue());
+            NftAccount nftAccount = nftAccountDao.selectByTokenIdContract(tokenId.longValue(), nft.getId());
             log.info("TokenInfoServiceImpl.nftAccount:{}, nftId:{}, tokenId:{}", nftAccount, nft.getId(), tokenId);
             if(nftAccount == null) {
                 nftAccount = new NftAccount();
@@ -387,7 +388,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             try {
                 nftAccount.setContractName(nft.getTokenName());
                 nftAccount.setAccountId(accountInfo.getId());
-                nftAccount.setTokenId(tokenId.longValue());
+                nftAccount.setTokenId(nft.getId());
                 //tokenOfOwnerByIndex
 
                 Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
@@ -395,7 +396,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     return;
                 }
                 nftAccount.setNftData(tokenURL.toString());
-                nftAccount.setNftId(nft.getId());
+                nftAccount.setNftId(tokenId.longValue());
                 nftAccount.setUpdateTime(new Date().toInstant());
             }  catch (Exception e) {
                 log.info("updateNftAccount.");

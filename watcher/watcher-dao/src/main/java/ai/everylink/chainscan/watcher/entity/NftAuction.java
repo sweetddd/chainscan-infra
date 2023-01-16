@@ -41,10 +41,10 @@ public class NftAuction {
     private String payToken;
 
     @Column(name = "min_price", nullable = false)
-    private Long minPrice;
+    private String minPrice;
 
     @Column(name = "buy_now_price", nullable = false)
-    private Long buyNowPrice;
+    private String buyNowPrice;
 
     @Column(name = "auction_bid_period", nullable = false)
     private Long auctionBidPeriod;
@@ -110,5 +110,14 @@ public class NftAuction {
 
     @Column(name = "layer", length = 80)
     private String layer = "L1";
+
+    @Column(name = "tx_hash")
+    private String txHash;
+
+    @Column(name = "tx_status")
+    private Boolean txStatus = true;
+
+    @Column(name = "nft_account_id")
+    private Long nftAccountId;
 
 }
