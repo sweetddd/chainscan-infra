@@ -1,0 +1,185 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $APP_NAME-polygon-sandbox
+  namespace: paas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: $APP_NAME-polygon-sandbox
+  template:
+    metadata:
+      labels:
+        app: $APP_NAME-polygon-sandbox
+    spec:
+      containers:
+      - name: $APP_NAME-polygon-sandbox
+        image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9196
+            httpHeaders:
+              - name: X-Custom-Header
+                value: Awesome
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 15
+          successThreshold: 1
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 0.1
+            memory: 2Gi
+          limits:
+            cpu: 0.5
+            memory: 8Gi
+        volumeMounts:
+        - name: host-time
+          mountPath: /etc/localtime
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9196
+        env:
+          - name: "spring.profiles.active"
+            value: "test"
+          - name: TZ
+            value: UTC
+          - name: "evm.chain.polygonUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: polygon.rpc.api
+          - name: "nacos.config.server-addr"
+            valueFrom:
+              configMapKeyRef:
+                name: nacos-config
+                key: nacos.config.server-addr
+          - name: "spring.datasource.chainscan.jdbc-url"
+            valueFrom:
+              secretKeyRef:
+                name: database-polygon
+                key: url
+          - name: "spring.datasource.chainscan.username"
+            valueFrom:
+              secretKeyRef:
+                name: database-polygon
+                key: username
+          - name: "spring.datasource.chainscan.password"
+            valueFrom:
+              secretKeyRef:
+                name: database-polygon
+                key: password
+          - name: "watcher.rocketmq.server.addr"
+            valueFrom:
+              configMapKeyRef:
+                name: rocketmq-config
+                key: rocketmq.server.addr
+          - name: "coin.ether.api"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: polygon.rpc.api
+          - name: "coin.dtx.api"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: polygon.rpc.api
+          - name: "evm.vmChainUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: polygon.rpc.api
+          - name: "watcher.vmChainUrl"
+            valueFrom:
+              configMapKeyRef:
+                name: network-config
+                key: polygon.rpc.api
+          - name: "watcher.chain.scanStep"
+            value: '1'
+          - name: "watcher.chain.chainId"
+            value: '80001'
+          - name: "watcher.chain.chainType"
+            value: "EVM_PoW"
+          - name: "watcher.notify.template"
+            value: "polygon"
+          - name: "watcher.scan.switch"
+            value: "false"
+          - name: "watcher.process.concurrent.switch"
+            value: "false"
+          - name: "watcher.insert.transaction.log"
+            value: "false"
+          - name: "watcher.select.transaction.log"
+            value: "false"
+          - name: "watcher.process.only.evmplugin"
+            value: "false"
+          - name: "watcher.transaction.bridge.group"
+            value: "polygon-watcher-transaction-bridge-group"
+          - name: "bridge.proposal"
+            value: "polygon-bridge-proposal"
+          - name: "watcher.confirm.block"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: polygon-watcher-confirm-block
+          - name: "watcher.contract.l2"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: polygon-l2-contract-config
+          - name: "rocketmq.name-server"
+            valueFrom:
+              configMapKeyRef:
+                name: rocketmq-config
+                key: rocketmq.server.addr
+          - name: "watcher.bridge.contract.address"
+            value: "0x707051c90909741a340eccc47f0527a8a57d5708"
+          - name: "watcher.contract.lending.lending-config"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: polygon-lending-contract-config
+          - name: "watcher.contract.lending.stable-config"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: polygon-stable-contract-config
+          - name: "watcher.monitor.cron"
+            value: "0 */1 * * * ?"
+          - name: "watcher.monitor.threshold"
+            value: "10"
+          - name: "start.block.number"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: polygon-start-block-number
+          - name: "watcher.l2.rest.api"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: polygon-l2-rpc-url
+          - name: "watcher.notify.channel.id"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: notify-channel-id
+      volumes:
+      - name: host-time
+        hostPath:
+          path: /etc/localtime
+      imagePullSecrets:
+      - name: regcred
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - $APP_NAME-dtx-sandbox
+                      - $APP_NAME-rinkeby-sandbox
+              topologyKey: "kubernetes.io/hostname"
