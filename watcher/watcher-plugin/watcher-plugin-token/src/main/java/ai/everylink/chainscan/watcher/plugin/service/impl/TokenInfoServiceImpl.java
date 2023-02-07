@@ -17,6 +17,7 @@
 
 package ai.everylink.chainscan.watcher.plugin.service.impl;
 
+import ai.everylink.chainscan.watcher.core.enums.ErcTypeEnum;
 import ai.everylink.chainscan.watcher.core.util.DecodUtils;
 import ai.everylink.chainscan.watcher.core.util.VM30Utils;
 import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
@@ -24,6 +25,9 @@ import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.dao.*;
 import ai.everylink.chainscan.watcher.entity.*;
 import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
+import ai.everylink.chainscan.watcher.plugin.strategy.ErcTokenFactory;
+import ai.everylink.chainscan.watcher.plugin.strategy.ErcTokenService;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -36,10 +40,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Bool;
 import org.web3j.abi.datatypes.Type;
-import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
@@ -63,6 +64,7 @@ import java.util.concurrent.TimeUnit;
 public class TokenInfoServiceImpl implements TokenInfoService {
 
     private static final String TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+    private static final String TRANSFER_ERC1155_TOPIC = "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62";
     public static final String ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
     private Web3j web3j;
@@ -124,28 +126,32 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 //            addAccountInfo(fromAddr); //增加用户信息;
 //        }
         //转账事件
-        transactionLogDao.findByTxHash(transaction.getTransactionHash()).forEach(transactionLog -> {
+        String transactionHash = transaction.getTransactionHash();
+        transactionLogDao.findByTxHash(transactionHash).forEach(transactionLog -> {
             String topicsStr = transactionLog.getTopics();
             //topics转为数组
-            JSONArray topics = JSONArray.parseArray(topicsStr);
+            List<String> topics = JSONArray.parseArray(topicsStr).toJavaList(String.class);
             if (topics.size() > 0) {
-                String topic = topics.get(0).toString();
-                if (topic.equals(TRANSFER_TOPIC)) {
-                    String topicFrom = topics.get(1).toString();
-
-                    topicFrom = "0x"+topicFrom.substring(topicFrom.length()-40);
-                    String topicTo = topics.get(2).toString();
-                    topicTo = "0x"+topicTo.substring(topicTo.length()-40);
-                    String hexadecimal = topics.size() > 3 ? topics.get(3).toString(): transactionLog.getData();
-                    BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
+                String topic = topics.get(0);
+                boolean topicDefault = topic.equals(TRANSFER_TOPIC);
+                boolean topicErc1155 = topic.equals(TRANSFER_ERC1155_TOPIC);
+                if (topicDefault || topicErc1155) {
+                    ErcTokenService ercTokenService = ErcTokenFactory.getInstance(topicErc1155 ? ErcTypeEnum.ERC1155 : ErcTypeEnum.DEFAULT);
+                    String transactionLogData = transactionLog.getData();
+                    String topicFrom = ercTokenService.getFrom(topics);
+                    String topicTo = ercTokenService.getTo(topics);
+                    BigInteger nftId = ercTokenService.getNftId(topics, transactionLogData);
                     addToken(transaction.getFromAddr(),transaction.getToAddr(),transaction.getInput());
                     addToken(topicFrom,transactionLog.getAddress(),transaction.getInput());
-                    saveOrUpdateBalance(topicFrom, transactionLog.getAddress(), txAmt, false);
-                    saveOrUpdateBalance(topicTo, transactionLog.getAddress(), txAmt, true);
-                    updateNftAccount(topicFrom, transactionLog.getAddress(),txAmt,false);
-                    log.info("topicFrom=>:{}, transactionLog.getAddress():{}, txAmt:{}", topicFrom, transactionLog.getAddress(), txAmt);
-                    updateNftAccount(topicTo, transactionLog.getAddress(),txAmt,true);
-                    log.info("topicTo=>:{}, transactionLog.getAddress():{}, txAmt:{}", topicTo, transactionLog.getAddress(), txAmt);
+                    saveOrUpdateBalance(topicFrom, transactionLog.getAddress(), nftId, false);
+                    saveOrUpdateBalance(topicTo, transactionLog.getAddress(), nftId, true);
+                    long amount = ercTokenService.getAmount(transactionLogData);
+                    //删除from-nft
+                    updateNftAccount(topicFrom, transactionLog.getAddress(),nftId, transactionHash, amount, ercTokenService, false);
+                    log.info("topicFrom=>:{}, transactionLog.getAddress():{}, txAmt:{}", topicFrom, transactionLog.getAddress(), nftId);
+                    //新增to-nft
+                    updateNftAccount(topicTo, transactionLog.getAddress(),nftId, transactionHash, amount, ercTokenService, true);
+                    log.info("topicTo=>:{}, transactionLog.getAddress():{}, txAmt:{}", topicTo, transactionLog.getAddress(), nftId);
                 }
             }
         } );
@@ -167,28 +173,38 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                     List<Log> logs = data.getTransactionLogMap().get(transaction.getTransactionHash());
                     if(!CollectionUtils.isEmpty(logs)){
                         logs.forEach(log -> {
-                            if (log.getTopics().size() > 0) {
-                                String topic = log.getTopics().get(0);
-                                if (topic.equals(TRANSFER_TOPIC)) {
-                                    String topicFrom = log.getTopics().get(1);
-
-                                    topicFrom = "0x"+topicFrom.substring(topicFrom.length()-40);
-                                    String topicTo = log.getTopics().get(2);
-                                    topicTo = "0x"+topicTo.substring(topicTo.length()-40);
-                                    String hexadecimal = log.getTopics().size() > 3 ? log.getTopics().get(3): log.getData();
-                                    BigInteger txAmt = VmChainUtil.hexadecimal2Decimal(hexadecimal);
+                            List<String> topics = log.getTopics();
+                            if (topics.size() > 0) {
+                                String topic = topics.get(0);
+                                boolean topicDefault = topic.equals(TRANSFER_TOPIC);
+                                boolean topicErc1155 = topic.equals(TRANSFER_ERC1155_TOPIC); //NFT合约：链上event，一个合约类似：一个java类，topic类似：方法名+参数列表hash
+                                String transactionHash = log.getTransactionHash();
+                                /*if(transactionHash.equals("0x2868fc4a2767dae3f47010208870d915df1dca64121a60f38da7e416d9a0426d")){
+                                    System.out.println(1);
+                                }*/
+                                if (topicDefault || topicErc1155) {
+                                    ErcTokenService ercTokenService = ErcTokenFactory.getInstance(topicErc1155 ? ErcTypeEnum.ERC1155 : ErcTypeEnum.DEFAULT);
+                                    String logData = log.getData();
+                                    String topicFrom = ercTokenService.getFrom(topics);
+                                    String topicTo = ercTokenService.getTo(topics);
+                                    BigInteger nftId = ercTokenService.getNftId(topics, logData);
                                     addToken(transaction.getFromAddr(),transaction.getToAddr(),transaction.getInput());
                                     String contractAddress = log.getAddress();
                                     TokenInfo tokenInfo = addToken(topicFrom, contractAddress, transaction.getInput());
                                     if(null == tokenInfo || null == tokenInfo.getId()){
                                         return;
                                     }
-                                    if(tokenInfo.getTokenType() == 1){
-                                        saveOrUpdateBalance(topicFrom, contractAddress, txAmt, false);
-                                        saveOrUpdateBalance(topicTo, contractAddress, txAmt, true);
-                                    }else if (tokenInfo.getTokenType() == 2){
-                                        updateNftAccount(topicFrom, contractAddress,txAmt,false);
-                                        updateNftAccount(topicTo, contractAddress,txAmt,true);
+
+                                    Long amount = ercTokenService.getAmount(logData);
+                                    if(tokenInfo.getTokenType() == 1){ //erc20(wbtc、usdt...)
+                                        saveOrUpdateBalance(topicFrom, contractAddress, nftId, false);
+                                        saveOrUpdateBalance(topicTo, contractAddress, nftId, true);
+                                    }else if (tokenInfo.getTokenType() == 2){ //erc721(nft)
+                                        updateNftAccount(topicFrom, contractAddress,nftId, transactionHash, amount, ercTokenService, false);
+                                        updateNftAccount(topicTo, contractAddress,nftId, transactionHash, amount, ercTokenService, true);
+                                    }else if (tokenInfo.getTokenType() == 3){ //erc1155(nft)
+                                        updateNftAccount(topicFrom, contractAddress,nftId, transactionHash, amount, ercTokenService, false);
+                                        updateNftAccount(topicTo, contractAddress,nftId, transactionHash, amount, ercTokenService,true);
                                     }
                                 }
                             }
@@ -237,24 +253,32 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         try {
             TokenInfo  tokenInfo = tokenInfoDao.findAllByAddress(toAddr);
             if( tokenInfo == null && StringUtils.isNotBlank(toAddr)){
-                long start = System.currentTimeMillis();
-                String     symbol   = vm30Utils.symbol(web3j, toAddr).toString();
-                if(StringUtils.isBlank(symbol)){
-                    return null;
-                }
-                String     name     = vm30Utils.name(web3j, toAddr).toString();
-                if(StringUtils.isBlank(name)){
-                    return null;
-                }
-                BigInteger decimals = vm30Utils.decimals(web3j, toAddr);
-                if(null == decimals){
-                    return null;
-                }
+                //首先判断是不是erc1155，1155没有symbol、name、精度等字段
+                boolean erc1155 = vm30Utils.querryFunction(web3j, Lists.newArrayList(new Uint256(1)), "uri", fromAddr, toAddr);
                 TokenInfo tokenQuery = new TokenInfo();
-                //判断合约类型
-                checkTokenType(toAddr, fromAddr, tokenQuery,decimals);
-
-                log.error("查询耗时 :{}",System.currentTimeMillis()-start);
+                String symbol = StringUtils.EMPTY;
+                String name = StringUtils.EMPTY;
+                BigInteger decimals = BigInteger.ZERO;
+                if(!erc1155) {
+                    long start = System.currentTimeMillis();
+                    symbol = vm30Utils.symbol(web3j, toAddr).toString();
+                    if (StringUtils.isBlank(symbol)) {
+                        return null;
+                    }
+                    name = vm30Utils.name(web3j, toAddr).toString();
+                    if (StringUtils.isBlank(name)) {
+                        return null;
+                    }
+                    decimals = vm30Utils.decimals(web3j, toAddr);
+                    if (null == decimals) {
+                        return null;
+                    }
+                    //判断合约类型
+                    this.checkTokenType(toAddr, fromAddr, tokenQuery, decimals);
+                    log.error("查询耗时 :{}",System.currentTimeMillis()-start);
+                }else{
+                    tokenQuery.setTokenType(3); //erc1155
+                }
 
                 //增加部署合约者;
                 String input = inputData;
@@ -354,7 +378,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
      * @param contract
      */
     @Transactional
-    public void updateNftAccount(String fromAddr, String contract,BigInteger tokenId,boolean isAdd ) {
+    public void updateNftAccount(String fromAddr, String contract, BigInteger tokenId,
+                                 String transactionHash, Long amount, ErcTokenService ercTokenService,
+                                 boolean isAdd) {
         log.info("updateNftAccount.fromAddr:{}, contract:{}, tokenId:{}, isAdd:{}", fromAddr, contract, tokenId, isAdd);
         if(ZERO_ADDRESS.equals(fromAddr)){
             return;
@@ -374,16 +400,18 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             accountInfoDao.save(accountInfo);
         }
         TokenInfo nft = tokenInfoDao.findAllByAddress(contract);
-        if( nft == null || nft.getTokenType() != 2){
+        if(nft == null || (nft.getTokenType() != 2 && nft.getTokenType() != 3)){
             return;
         }
 
         if(isAdd){
-            NftAccount nftAccount = nftAccountDao.selectByTokenIdContract(tokenId.longValue(), nft.getId());
+            //NftAccount nftAccount = nftAccountDao.selectByTokenIdContract(tokenId.longValue(), nft.getId(), accountInfo.getId());
+            NftAccount nftAccount = nftAccountDao.findByTxHash(transactionHash);
             log.info("TokenInfoServiceImpl.nftAccount:{}, nftId:{}, tokenId:{}", nftAccount, nft.getId(), tokenId);
             if(nftAccount == null) {
                 nftAccount = new NftAccount();
                 nftAccount.setCreateTime(new Date().toInstant());
+                nftAccount.setTxHash(transactionHash);
             }
             try {
                 nftAccount.setContractName(nft.getTokenName());
@@ -391,13 +419,21 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 nftAccount.setTokenId(nft.getId());
                 //tokenOfOwnerByIndex
 
-                Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
-                if(StringUtils.isEmpty(tokenURL.toString())){
+                //Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
+                String nftData = ercTokenService.getNftData(web3j, contract, tokenId);
+                if(StringUtils.isEmpty(nftData)){
                     return;
                 }
-                nftAccount.setNftData(tokenURL.toString());
+                nftAccount.setNftData(nftData);
                 nftAccount.setNftId(tokenId.longValue());
+                nftAccount.setAmount(amount);
                 nftAccount.setUpdateTime(new Date().toInstant());
+                nftAccount.setWatcherUpdated(1);
+
+                String nftName = ercTokenService.getNftName(nftAccount.getContractName(), nftData);
+                if(StrUtil.isNotBlank(nftName)) {
+                    nftAccount.setNftName(nftName);
+                }
             }  catch (Exception e) {
                 log.info("updateNftAccount.");
             }
@@ -405,7 +441,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
             nftAccountDao.save(nftAccount);
         }else{
             log.info("删除nftAccount:accountInfo.getId():{}, tokenId:{}, nft.getId():{}", accountInfo.getId(), tokenId.longValue(),nft.getId());
-            //nftAccountDao.deleteNftTokenId(accountInfo.getId(),tokenId.longValue(),nft.getId());
+            nftAccountDao.deleteNftTokenId(accountInfo.getId(), nft.getId(), tokenId.longValue());
         }
 
     }
@@ -422,9 +458,8 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
             parames.add(new Uint256(0));
             boolean tokenURI = vm30Utils.querryFunction(web3j, parames, "tokenURI", fromAddr, contract);
-
-            if(tokenURI){
-                //nft
+            if(tokenURI) {
+                //nft erc721
                 tokenInfo.setTokenType(2);
             }else{
                 //erc20

@@ -47,9 +47,13 @@ public interface NftAccountDao extends JpaRepository<NftAccount, String> {
      * @param tokenId
      * @return
      */
-    @Query(value = "select * from nft_account where nft_id=:nftId and token_id =:tokenId ", nativeQuery = true)
-    NftAccount selectByTokenIdContract(long nftId, Long tokenId);
+    @Query(value = "select * from nft_account where nft_id=:nftId and token_id =:tokenId and account_id=:accountId", nativeQuery = true)
+    NftAccount selectByTokenIdContract(long nftId, Long tokenId, Long accountId);
 
+    /**
+     * 根据交易hash获取nft
+     */
+    NftAccount findByTxHash(String txHash);
 
     /**
      * 删除账户在合约上的NFT信息
@@ -59,5 +63,5 @@ public interface NftAccountDao extends JpaRepository<NftAccount, String> {
     @Query(value = "delete from nft_account   where  account_id=(?1) and token_id=(?2) and nft_id = (?3)", nativeQuery = true)
     @Modifying
     @Transactional
-    void deleteNftTokenId(Long accountId, Long tokenId,Long nftId);
+    void deleteNftTokenId(Long accountId, Long tokenId, Long nftId);
 }

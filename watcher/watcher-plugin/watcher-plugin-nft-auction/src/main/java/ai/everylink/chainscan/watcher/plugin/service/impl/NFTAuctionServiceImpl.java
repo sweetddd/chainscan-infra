@@ -173,9 +173,10 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         Integer tokenId = Integer.parseInt(params.get(2), 16);
         nftAuction.setNftId(tokenId.longValue());
         //获取NFT的data信息;
-        NftAccount nftAccount = null;
+        NftAccount nftAccount;
         try {
-            nftAccount = nftAccountDao.selectByTokenIdContract(tokenId.longValue(), nftContract.getId());
+            //nftAccount = nftAccountDao.selectByTokenIdContract(tokenId.longValue(), nftContract.getId());
+            nftAccount = nftAccountDao.findByTxHash(transactionHash);
         } catch (Exception e){
             e.printStackTrace();
             throw e;

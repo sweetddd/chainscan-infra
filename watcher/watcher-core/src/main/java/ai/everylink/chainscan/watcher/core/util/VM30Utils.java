@@ -146,6 +146,31 @@ public class VM30Utils {
         return tokenURL;
     }
 
+    /**
+     * 查询1155合约的tokenURL
+     *
+     * @param web3j
+     * @param contractAddress
+     * @return
+     */
+    @SneakyThrows
+    public Utf8String URI(Web3j web3j, String contractAddress,BigInteger tokenId) {
+        VM30       contract = getContract(web3j, contractAddress);
+        Utf8String tokenURL   = new Utf8String("");
+        try {
+            tokenURL = contract.URI(tokenId).send();
+        } catch (Exception ex) {
+            String message = ex.getMessage();
+            if (message.indexOf("to expected type: Utf8String") >= 0) {
+                message = message.replace(" to expected type: Utf8String", "");
+                message = message.replace("Unable to convert response: ", "");
+                tokenURL = new Utf8String(message);
+            } else {
+                log.debug("获取uri失败:" + contractAddress);
+            }
+        }
+        return tokenURL;
+    }
 
     @SneakyThrows
     public String underlying(Web3j web3j, String contractAddress) {
