@@ -15,6 +15,15 @@ public class NftAccount {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @Column(name = "tx_hash")
+    private String txHash;
+
+    @Column(name = "watcher_updated")
+    private Integer watcherUpdated;
+
+    @Column(name = "amount")
+    private Long amount;
+
     @Column(name = "account_id", nullable = false, length = 80)
     private Long accountId;
 
