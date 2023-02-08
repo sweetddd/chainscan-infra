@@ -121,7 +121,7 @@ spec:
           - name: "watcher.chain.chainId"
             value: '80001'
           - name: "watcher.insert.transaction.log"
-            value: 'true'
+            value: 'false'
           - name: "watcher.select.transaction.log"
             value: 'true'
           - name: "watcher.chain.chainType"

@@ -141,7 +141,7 @@ spec:
           - name: "watcher.process.only.evmplugin"
             value: "false"
           - name: "watcher.insert.transaction.log"
-            value: "false"
+            value: "true"
           - name: "watcher.select.transaction.log"
             value: "true"
           - name: "watcher.transaction.bridge.group"
