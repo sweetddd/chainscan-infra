@@ -151,6 +151,7 @@ public class EvmDataServiceImpl implements EvmDataService {
     @TargetDataSource(value = DataSourceEnum.chainscan)
     @Override
     public void saveEvmData(EvmData data) {
+        log.info("saveEvmData.evmData,chainId:{},transactionLogMap:{},txList:{}", data.getChainId(), data.getTransactionLogMap(), data.getTxList());
         int chainId = data.getChainId();
 
         Block block = buildBlock(data, chainId);
