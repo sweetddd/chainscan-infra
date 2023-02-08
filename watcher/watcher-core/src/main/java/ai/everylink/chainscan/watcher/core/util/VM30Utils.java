@@ -1,6 +1,7 @@
 package ai.everylink.chainscan.watcher.core.util;
 
 
+import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -129,18 +130,20 @@ public class VM30Utils {
      */
     @SneakyThrows
     public Utf8String tokenURL(Web3j web3j, String contractAddress,BigInteger tokenId) {
-        VM30       contract = getContract(web3j, contractAddress);
         Utf8String tokenURL   = new Utf8String("");
         try {
+            VM30 contract = getContract(web3j, contractAddress);
             tokenURL = contract.tokenURL(tokenId).send();
         } catch (Exception ex) {
+            ex.printStackTrace();
             String message = ex.getMessage();
+            log.error("message error:{}", message);
             if (message.indexOf("to expected type: Utf8String") >= 0) {
                 message = message.replace(" to expected type: Utf8String", "");
                 message = message.replace("Unable to convert response: ", "");
                 tokenURL = new Utf8String(message);
             } else {
-                log.debug("获取tokenURL失败:" + contractAddress);
+                log.error("获取tokenURL失败:" + contractAddress);
             }
         }
         return tokenURL;
@@ -155,18 +158,19 @@ public class VM30Utils {
      */
     @SneakyThrows
     public Utf8String URI(Web3j web3j, String contractAddress,BigInteger tokenId) {
-        VM30       contract = getContract(web3j, contractAddress);
         Utf8String tokenURL   = new Utf8String("");
         try {
+            VM30 contract = getContract(web3j, contractAddress);
             tokenURL = contract.URI(tokenId).send();
         } catch (Exception ex) {
+            ex.printStackTrace();
             String message = ex.getMessage();
             if (message.indexOf("to expected type: Utf8String") >= 0) {
                 message = message.replace(" to expected type: Utf8String", "");
                 message = message.replace("Unable to convert response: ", "");
                 tokenURL = new Utf8String(message);
             } else {
-                log.debug("获取uri失败:" + contractAddress);
+                log.error("获取uri失败:" + contractAddress);
             }
         }
         return tokenURL;
@@ -392,6 +396,10 @@ public class VM30Utils {
             return false;
         }
         return true;
+    }
+
+    public boolean isErc1155(Web3j web3j, String fromAddr, String toAddr){
+        return this.querryFunction(web3j, Lists.newArrayList(new Uint256(1)), "uri", fromAddr, toAddr);
     }
 
     public static void main(String[] args) {
