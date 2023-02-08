@@ -25,6 +25,7 @@ import ai.everylink.chainscan.watcher.core.config.PluginChainId;
 import ai.everylink.chainscan.watcher.core.util.*;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import okhttp3.OkHttpClient;
@@ -112,6 +113,7 @@ public class EvmWatcher implements IWatcher {
             return defaultList;
         }
 
+        logger.info("chainId:{}", chainId);
         Long dbHeight = evmDataService.getMaxBlockNum(chainId);
         Long number = SpringApplicationUtils.getBean(BlockNumber.class).getNumber();
         number = null == number ? 0 : number;
@@ -119,6 +121,7 @@ public class EvmWatcher implements IWatcher {
 
         // 获取链上高度
         Long chainHeight = getNetworkBlockHeight();
+        logger.info("dbHeight:{}, number: {}, chainHeight: {}", dbHeight, number, chainHeight);
         if (dbHeight.equals(chainHeight)) {
             logger.info("[WatcherScan]dbHeight catch the chain height.");
             return defaultList;
@@ -253,14 +256,16 @@ public class EvmWatcher implements IWatcher {
                     return;
                 }
 
-                logger.info("EvmWatcher.run().data.getBlock().getTransactions():{}", data.getBlock().getTransactions());
+                List<EthBlock.TransactionResult> transactions = data.getBlock().getTransactions();
+                logger.info("EvmWatcher.run().data.getBlock().getTransactions().size:{}", transactions.size());
                 // 并发查询交易列表
-                if (!CollectionUtils.isEmpty(data.getBlock().getTransactions())) {
+                if (!CollectionUtils.isEmpty(transactions)) {
                     if(insertTransaction){
-                        CountDownLatch txLatch = new CountDownLatch(data.getBlock().getTransactions().size());
-                        for (EthBlock.TransactionResult transactionResult : data.getBlock().getTransactions()) {
+                        CountDownLatch txLatch = new CountDownLatch(transactions.size());
+                        for (EthBlock.TransactionResult transactionResult : transactions) {
                             Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
-                                scanTxPool.submit(new ReplayTransactionThread(txLatch, data, tx.getHash()));
+                            logger.info("tx.getHash():{}", tx.getHash());
+                            scanTxPool.submit(new ReplayTransactionThread(txLatch, data, tx.getHash()));
                         }
                         txLatch.await(3, TimeUnit.MINUTES);
                     }
@@ -330,7 +335,9 @@ public class EvmWatcher implements IWatcher {
 
         // 获取receipt
         try {
+            logger.info("replayTx.start.txHash:{}", txHash);
             EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(txHash).send();
+            logger.info("replayTx.end.txHash:{}，receipt.getResult():{}", txHash, JSON.toJSONString(receipt.getResult()));
             if (receipt.getResult() == null) {
                 logger.warn("[EvmWatcher]tx receipt not found. blockNum={}, tx={}", blockNumber, txHash);
                 return ;
@@ -340,6 +347,7 @@ public class EvmWatcher implements IWatcher {
             if (!CollectionUtils.isEmpty(receipt.getResult().getLogs())) {
                 data.getTransactionLogMap().put(txHash, receipt.getResult().getLogs());
             }
+            logger.info("replayTx.txHash:{}，data.getTransactionLogMap():{}", txHash, data.getTransactionLogMap().size());
         } catch (Exception e) {
             logger.error("获取 Transaction Receipt 异常：", e);
         }
@@ -451,6 +459,7 @@ public class EvmWatcher implements IWatcher {
 
     private Long getNetworkBlockHeight() {
         try {
+            logger.info("getNetworkBlockHeight.WatcherUtils.getVmChainUrl():{}", WatcherUtils.getVmChainUrl());
             EthBlockNumber blockNumber = web3j.ethBlockNumber().send();
             return blockNumber.getBlockNumber().longValue();
         } catch (Throwable e) {
