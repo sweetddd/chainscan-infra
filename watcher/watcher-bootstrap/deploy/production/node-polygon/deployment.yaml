@@ -121,9 +121,9 @@ spec:
           - name: "watcher.chain.chainId"
             value: '80001'
           - name: "watcher.insert.transaction.log"
-            value: 'false'
+            value: 'true'
           - name: "watcher.select.transaction.log"
-            value: 'false'
+            value: 'true'
           - name: "watcher.chain.chainType"
             value: 'EVM_PoW'
           - name: "watcher.notify.template"
