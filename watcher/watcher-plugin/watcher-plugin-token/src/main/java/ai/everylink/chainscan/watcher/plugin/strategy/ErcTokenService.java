@@ -1,6 +1,5 @@
 package ai.everylink.chainscan.watcher.plugin.strategy;
 
-import ai.everylink.chainscan.watcher.core.enums.ErcTypeEnum;
 import org.web3j.protocol.Web3j;
 
 import java.math.BigInteger;
@@ -8,7 +7,9 @@ import java.util.List;
 
 public interface ErcTokenService {
 
-    ErcTypeEnum type();
+    ErcTypeTokenEnum type();
+
+    boolean isScan();
 
     String getFrom(List<String> topics);
 

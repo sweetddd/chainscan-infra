@@ -1,18 +1,24 @@
 package ai.everylink.chainscan.watcher.plugin.strategy;
 
 import ai.everylink.chainscan.watcher.core.util.VM30Utils;
+import ai.everylink.chainscan.watcher.dao.NftAuctionDao;
+import ai.everylink.chainscan.watcher.plugin.service.NFTAuctionService;
 import cn.hutool.core.util.StrUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
-public abstract class ErcTokenBaseService implements ErcTokenService {
+public abstract class ErcNftBaseService implements ErcNftService {
 
     @Autowired
     protected VM30Utils vm30Utils;
     @Autowired
     protected Environment environment;
+    @Autowired
+    protected NftAuctionDao nftAuctionDao;
+    @Autowired
+    protected NFTAuctionService nftAuctionService;
 
     protected String ipfs = "ipfs://";
 

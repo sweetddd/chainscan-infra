@@ -1,17 +1,17 @@
-package ai.everylink.chainscan.watcher.core.enums;
+package ai.everylink.chainscan.watcher.plugin.strategy;
 
 import lombok.Getter;
 
 @Getter
-public enum ErcTypeEnum {
+public enum ErcTypeTokenEnum {
 
     ERC1155("ercToken1155ServiceImpl"),
     DEFAULT("ercTokenDefaultServiceImpl"),
     ;
 
-    private String serviceName;
+    private final String serviceName;
 
-    ErcTypeEnum(String serviceName){
+    ErcTypeTokenEnum(String serviceName){
         this.serviceName = serviceName;
     }
 

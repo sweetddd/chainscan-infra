@@ -116,6 +116,8 @@ spec:
               configMapKeyRef:
                 name: network-config
                 key: polygon.rpc.api
+          - name: "watcher.token.not.scan.erc20"
+            value: 'true'
           - name: "watcher.chain.scanStep"
             value: '1'
           - name: "watcher.chain.chainId"

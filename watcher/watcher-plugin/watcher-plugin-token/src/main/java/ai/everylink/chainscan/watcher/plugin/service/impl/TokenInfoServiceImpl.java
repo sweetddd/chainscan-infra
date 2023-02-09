@@ -17,7 +17,6 @@
 
 package ai.everylink.chainscan.watcher.plugin.service.impl;
 
-import ai.everylink.chainscan.watcher.core.enums.ErcTypeEnum;
 import ai.everylink.chainscan.watcher.core.util.DecodUtils;
 import ai.everylink.chainscan.watcher.core.util.VM30Utils;
 import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
@@ -27,6 +26,7 @@ import ai.everylink.chainscan.watcher.entity.*;
 import ai.everylink.chainscan.watcher.plugin.service.TokenInfoService;
 import ai.everylink.chainscan.watcher.plugin.strategy.ErcTokenFactory;
 import ai.everylink.chainscan.watcher.plugin.strategy.ErcTokenService;
+import ai.everylink.chainscan.watcher.plugin.strategy.ErcTypeTokenEnum;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.google.common.collect.Lists;
@@ -66,6 +66,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
     private static final String TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
     private static final String TRANSFER_ERC1155_TOPIC = "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62";
     public static final String ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+    @Autowired
+    Environment environment;
 
     private Web3j web3j;
 
@@ -135,8 +138,14 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 String topic = topics.get(0);
                 boolean topicDefault = topic.equals(TRANSFER_TOPIC);
                 boolean topicErc1155 = topic.equals(TRANSFER_ERC1155_TOPIC);
+                log.info("tokenTxScan.topic.transactionHash:{}, topicDefault:{}, topicErc1155: {}", transactionHash, topicDefault, topicErc1155);
                 if (topicDefault || topicErc1155) {
-                    ErcTokenService ercTokenService = ErcTokenFactory.getInstance(topicErc1155 ? ErcTypeEnum.ERC1155 : ErcTypeEnum.DEFAULT);
+                    ErcTokenService ercTokenService = ErcTokenFactory.getInstance(topicErc1155 ? ErcTypeTokenEnum.ERC1155 : ErcTypeTokenEnum.DEFAULT);
+                    boolean isScan = ercTokenService.isScan();
+                    log.info("tokenTxScan.topic.transactionHash:{}, isScan:{}", transactionHash, isScan);
+                    if(!isScan){
+                        return;
+                    }
                     String transactionLogData = transactionLog.getData();
                     String topicFrom = ercTokenService.getFrom(topics);
                     String topicTo = ercTokenService.getTo(topics);
@@ -157,8 +166,6 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         } );
     }
 
-    @Autowired
-    Environment environment;
     @Override
     public void tokenScan(EvmData data) {
         int chainId = data.getChainId();
@@ -185,35 +192,35 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                                 }*/
                                 log.info("tokenScan.topic.transactionHash:{}, topicDefault:{}, topicErc1155: {}", transactionHash, topicDefault, topicErc1155);
                                 if (topicDefault || topicErc1155) {
-                                    try {
-                                        ErcTokenService ercTokenService = ErcTokenFactory.getInstance(topicErc1155 ? ErcTypeEnum.ERC1155 : ErcTypeEnum.DEFAULT);
-                                        String logData = nftLog.getData();
-                                        String topicFrom = ercTokenService.getFrom(topics);
-                                        String topicTo = ercTokenService.getTo(topics);
-                                        BigInteger nftId = ercTokenService.getNftId(topics, logData);
-                                        addToken(transaction.getFromAddr(), transaction.getToAddr(), transaction.getInput());
-                                        String contractAddress = nftLog.getAddress();
-                                        TokenInfo tokenInfo = addToken(topicFrom, contractAddress, transaction.getInput());
-                                        log.info("tokenScan.transactionHash:{}, tokenInfo: {}", transactionHash, tokenInfo);
-                                        if (null == tokenInfo || null == tokenInfo.getId()) {
-                                            return;
-                                        }
+                                    ErcTokenService ercTokenService = ErcTokenFactory.getInstance(topicErc1155 ? ErcTypeTokenEnum.ERC1155 : ErcTypeTokenEnum.DEFAULT);
+                                    boolean isScan = ercTokenService.isScan();
+                                    log.info("tokenScan.topic.transactionHash:{}, isScan:{}", transactionHash, isScan);
+                                    if(!isScan){
+                                        return;
+                                    }
+                                    String logData = nftLog.getData();
+                                    String topicFrom = ercTokenService.getFrom(topics);
+                                    String topicTo = ercTokenService.getTo(topics);
+                                    BigInteger nftId = ercTokenService.getNftId(topics, logData);
+                                    addToken(transaction.getFromAddr(), transaction.getToAddr(), transaction.getInput());
+                                    String contractAddress = nftLog.getAddress();
+                                    TokenInfo tokenInfo = addToken(topicFrom, contractAddress, transaction.getInput());
+                                    log.info("tokenScan.transactionHash:{}, tokenInfo: {}", transactionHash, tokenInfo);
+                                    if (null == tokenInfo || null == tokenInfo.getId()) {
+                                        return;
+                                    }
 
-                                        Long amount = ercTokenService.getAmount(logData);
-                                        log.info("tokenScan.transactionHash:{}, amount: {}, tokenType: {}", transactionHash, amount, tokenInfo.getTokenType());
-                                        if (tokenInfo.getTokenType() == 1) { //erc20(wbtc、usdt...)
-                                            saveOrUpdateBalance(topicFrom, contractAddress, nftId, false);
-                                            saveOrUpdateBalance(topicTo, contractAddress, nftId, true);
-                                        } else if (tokenInfo.getTokenType() == 2) { //erc721(nft)
-                                            updateNftAccount(topicFrom, contractAddress, nftId, transactionHash, amount, ercTokenService, false);
-                                            updateNftAccount(topicTo, contractAddress, nftId, transactionHash, amount, ercTokenService, true);
-                                        } else if (tokenInfo.getTokenType() == 3) { //erc1155(nft)
-                                            updateNftAccount(topicFrom, contractAddress, nftId, transactionHash, amount, ercTokenService, false);
-                                            updateNftAccount(topicTo, contractAddress, nftId, transactionHash, amount, ercTokenService, true);
-                                        }
-                                    } catch (Exception e){
-                                        e.printStackTrace();
-                                        log.error("error tokenScan.topic.transactionHash:{}, topicDefault:{}, topicErc1155: {}", transactionHash, topicDefault, topicErc1155);
+                                    Long amount = ercTokenService.getAmount(logData);
+                                    log.info("tokenScan.transactionHash:{}, amount: {}, tokenType: {}", transactionHash, amount, tokenInfo.getTokenType());
+                                    if (tokenInfo.getTokenType() == 1) { //erc20(wbtc、usdt...)
+                                        saveOrUpdateBalance(topicFrom, contractAddress, nftId, false);
+                                        saveOrUpdateBalance(topicTo, contractAddress, nftId, true);
+                                    } else if (tokenInfo.getTokenType() == 2) { //erc721(nft)
+                                        updateNftAccount(topicFrom, contractAddress, nftId, transactionHash, amount, ercTokenService, false);
+                                        updateNftAccount(topicTo, contractAddress, nftId, transactionHash, amount, ercTokenService, true);
+                                    } else if (tokenInfo.getTokenType() == 3) { //erc1155(nft)
+                                        updateNftAccount(topicFrom, contractAddress, nftId, transactionHash, amount, ercTokenService, false);
+                                        updateNftAccount(topicTo, contractAddress, nftId, transactionHash, amount, ercTokenService, true);
                                     }
                                 }
                             }
@@ -427,22 +434,23 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                 nftAccount.setContractName(nft.getTokenName());
                 nftAccount.setAccountId(accountInfo.getId());
                 nftAccount.setTokenId(nft.getId());
-                //tokenOfOwnerByIndex
-
-                //Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
-                log.info("TokenInfoServiceImpl.transactionHash:{}.contract:{}, tokenId:{}", transactionHash, contract, tokenId);
-                String nftData = ercTokenService.getNftData(web3j, contract, tokenId);
-                log.info("nftData:{}", nftData);
-                if(StringUtils.isEmpty(nftData)){
-                    return;
-                }
-                nftAccount.setNftData(nftData);
                 nftAccount.setNftId(tokenId.longValue());
                 nftAccount.setAmount(amount);
                 nftAccount.setUpdateTime(new Date().toInstant());
                 nftAccount.setWatcherUpdated(1);
+                //tokenOfOwnerByIndex
 
-                String nftName = ercTokenService.getNftName(nftAccount.getContractName(), nftData);
+                //Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
+                log.info("TokenInfoServiceImpl.transactionHash:{}.contract:{}, tokenId:{}", transactionHash, contract, tokenId);
+                if(StrUtil.isBlank(nftAccount.getNftData())) {
+                    String nftData = ercTokenService.getNftData(web3j, contract, tokenId);
+                    log.info("nftData:{}", nftData);
+                    if (StringUtils.isEmpty(nftData)) {
+                        return;
+                    }
+                    nftAccount.setNftData(nftData);
+                }
+                String nftName = ercTokenService.getNftName(nftAccount.getContractName(), nftAccount.getNftData());
                 if(StrUtil.isNotBlank(nftName)) {
                     nftAccount.setNftName(nftName);
                 }

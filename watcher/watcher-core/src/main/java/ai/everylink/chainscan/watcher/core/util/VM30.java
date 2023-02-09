@@ -149,13 +149,13 @@ public class VM30 extends Contract {
      * erc1155标准合约方法
      * @param tokenId
      */
-    public RemoteCall<Utf8String> URI(BigInteger tokenId) {
+    public RemoteCall<String> URI(BigInteger tokenId) {
         Function function = new Function("uri",
                 Arrays.<Type>asList(
                         new Uint256(tokenId)),
                 Arrays.<TypeReference<?>>asList(new TypeReference<Utf8String>() {
                 }));
-        return executeRemoteCallSingleValueReturn(function, Utf8String.class);
+        return executeRemoteCallSingleValueReturn(function, String.class);
     }
 
     public RemoteCall<String> underlying() {
