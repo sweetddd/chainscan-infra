@@ -1,11 +1,9 @@
 package ai.everylink.chainscan.watcher.plugin.strategy;
 
-import ai.everylink.chainscan.watcher.core.enums.ErcTypeEnum;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.protocol.Web3j;
 import cn.hutool.core.util.StrUtil;
 
@@ -17,8 +15,16 @@ import java.util.List;
 public class ErcToken1155ServiceImpl extends ErcTokenBaseService {
 
     @Override
-    public ErcTypeEnum type() {
-        return ErcTypeEnum.ERC1155;
+    public ErcTypeTokenEnum type() {
+        return ErcTypeTokenEnum.ERC1155;
+    }
+
+    @Override
+    public boolean isScan() {
+        String erc1155NotScanStr = environment.getProperty("watcher.token.not.scan.erc1155");
+        boolean erc1155NotScan = Boolean.parseBoolean(erc1155NotScanStr);
+        log.info("erc1155NotScanStr:{}, erc1155NotScan:{}", erc1155NotScanStr, erc1155NotScan);
+        return !erc1155NotScan;
     }
 
     @Override
@@ -49,9 +55,9 @@ public class ErcToken1155ServiceImpl extends ErcTokenBaseService {
 
     @Override
     public String getNftData(Web3j web3j, String contract, BigInteger tokenId) {
-        Utf8String tokenURL = vm30Utils.URI(web3j, contract, tokenId);
+        String tokenURL = vm30Utils.URI(web3j, contract, tokenId);
         log.info("ErcToken1155ServiceImpl.getNftData:{}", tokenURL);
-        return tokenURL.toString();
+        return tokenURL;
     }
 
     @Override

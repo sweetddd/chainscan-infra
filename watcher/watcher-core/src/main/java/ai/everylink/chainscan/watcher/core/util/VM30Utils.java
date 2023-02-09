@@ -157,18 +157,19 @@ public class VM30Utils {
      * @return
      */
     @SneakyThrows
-    public Utf8String URI(Web3j web3j, String contractAddress,BigInteger tokenId) {
-        Utf8String tokenURL   = new Utf8String("");
+    public String URI(Web3j web3j, String contractAddress,BigInteger tokenId) {
+        String tokenURL = "";
         try {
             VM30 contract = getContract(web3j, contractAddress);
             tokenURL = contract.URI(tokenId).send();
         } catch (Exception ex) {
             ex.printStackTrace();
             String message = ex.getMessage();
+            log.error("message error:{}", message);
             if (message.indexOf("to expected type: Utf8String") >= 0) {
                 message = message.replace(" to expected type: Utf8String", "");
                 message = message.replace("Unable to convert response: ", "");
-                tokenURL = new Utf8String(message);
+                tokenURL = message;
             } else {
                 log.error("获取uri失败:" + contractAddress);
             }
@@ -398,8 +399,8 @@ public class VM30Utils {
         return true;
     }
 
-    public boolean isErc1155(Web3j web3j, String fromAddr, String toAddr){
-        return this.querryFunction(web3j, Lists.newArrayList(new Uint256(1)), "uri", fromAddr, toAddr);
+    public boolean isErc1155(Web3j web3j, String fromAddr, String nftContractAddress){
+        return this.querryFunction(web3j, Lists.newArrayList(new Uint256(1)), "uri", fromAddr, nftContractAddress);
     }
 
     public static void main(String[] args) {

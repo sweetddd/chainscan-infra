@@ -1,6 +1,5 @@
 package ai.everylink.chainscan.watcher.plugin.strategy;
 
-import ai.everylink.chainscan.watcher.core.enums.ErcTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +10,7 @@ public class ErcTokenFactory {
 
     private static Map<String, ErcTokenService> ERC_TOKEN_SERVICE_MAP;
 
-    public static ErcTokenService getInstance(ErcTypeEnum ercType){
+    public static ErcTokenService getInstance(ErcTypeTokenEnum ercType){
         return ERC_TOKEN_SERVICE_MAP.get(ercType.getServiceName());
     }
 

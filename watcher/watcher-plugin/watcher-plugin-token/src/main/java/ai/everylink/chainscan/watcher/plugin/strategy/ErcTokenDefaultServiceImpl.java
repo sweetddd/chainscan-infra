@@ -1,6 +1,5 @@
 package ai.everylink.chainscan.watcher.plugin.strategy;
 
-import ai.everylink.chainscan.watcher.core.enums.ErcTypeEnum;
 import ai.everylink.chainscan.watcher.core.util.VmChainUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,8 +14,16 @@ import java.util.List;
 public class ErcTokenDefaultServiceImpl extends ErcTokenBaseService {
 
     @Override
-    public ErcTypeEnum type() {
-        return ErcTypeEnum.DEFAULT;
+    public ErcTypeTokenEnum type() {
+        return ErcTypeTokenEnum.DEFAULT;
+    }
+
+    @Override
+    public boolean isScan() {
+        String erc20NotScanStr = environment.getProperty("watcher.token.not.scan.erc20");
+        boolean erc20NotScan = Boolean.parseBoolean(erc20NotScanStr);
+        log.info("erc20NotScanStr:{}, erc20NotScan:{}", erc20NotScanStr, erc20NotScan);
+        return !erc20NotScan;
     }
 
     @Override
