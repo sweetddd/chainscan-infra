@@ -33,4 +33,7 @@ public interface NFTAuctionService {
      * @param blockData
      */
     void nftAuctionScan(EvmData blockData);
+
+    boolean updateNftAccount(String fromAddr, String contract, boolean erc1155);
+
 }
