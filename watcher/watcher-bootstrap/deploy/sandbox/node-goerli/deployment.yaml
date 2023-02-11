@@ -91,20 +91,6 @@ spec:
               configMapKeyRef:
                 name: network-config
                 key: eth.rpc.api
-          - name: "watcher.nft.auction.address"
-            valueFrom:
-              configMapKeyRef:
-                name: watcher-config
-                key: polygon-nft-auction-address
-          - name: "watcher.transfer.contract.address"
-            valueFrom:
-              configMapKeyRef:
-                name: watcher-config
-                key: polygon-watcher.transfer.contract.address
-          - name: "watcher.token.not.scan.erc20"
-            value: 'true'
-          - name: "watcher.monitor.select.transaction.log"
-            value: 'true'
           - name: "watcher.chain.scanStep"
             value: '1'
           - name: "watcher.chain.chainId"
