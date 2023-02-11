@@ -202,7 +202,7 @@ public class EvmWatcher implements IWatcher {
         logger.info("watcher.select.transaction.log:{}", property);
 
         //todo
-        Boolean insertTransaction = true;
+        Boolean insertTransaction = false;
         if(!StringUtils.isEmpty(property) && "true".equals(property)){
             insertTransaction = true;
         }
@@ -251,7 +251,7 @@ public class EvmWatcher implements IWatcher {
         @Override
         public void run() {
             try {
-                EvmData data = replayBlock(blockNum);
+                EvmData data = replayBlock(blockNum, 0);
                 if (data == null) {
                     logger.error("[EvmWatcher]fetched empty block:" + blockNum);
                     return;
@@ -306,23 +306,30 @@ public class EvmWatcher implements IWatcher {
         }
     }
 
-    private static EvmData replayBlock(Long blockNumber) throws Exception {
+    private static EvmData replayBlock(Long blockNumber, int retryCount) throws Exception {
+        retryCount = retryCount + 1;
         EvmData data = new EvmData();
         data.setChainId(chainId);
 
         // 查询block
-        EthBlock block = web3j.ethGetBlockByNumber(
-                new DefaultBlockParameterNumber(blockNumber), true).send();
-        if (block == null || block.getBlock() == null) {
-            for (int i = 0; i <= 10; i++) {
-                logger.info("[EvmWatcher] Retry scan block: {}", blockNumber);
-                block = web3j.ethGetBlockByNumber(
-                        new DefaultBlockParameterNumber(blockNumber), true).send();
-                if (block != null && block.getBlock() != null) {
-                    break;
+        EthBlock block = null;
+        try{
+            block = web3j.ethGetBlockByNumber(
+                    new DefaultBlockParameterNumber(blockNumber), true).send();
+            if (block == null || block.getBlock() == null) {
+                if(retryCount < VM30Utils.GLOBAL_RETRY_COUNT) {
+                    TimeUnit.MILLISECONDS.sleep(VM30Utils.GLOBAL_RETRY_SLEEP_MILL);
+                    return replayBlock(blockNumber, retryCount);
                 }
             }
-            logger.error("[EvmWatcher]Block is null. block={}", blockNumber);
+        } catch (Exception e){
+            logger.error("replayBlock error!", e);
+            if(retryCount < VM30Utils.GLOBAL_RETRY_COUNT) {
+                TimeUnit.MILLISECONDS.sleep(VM30Utils.GLOBAL_RETRY_SLEEP_MILL);
+                return replayBlock(blockNumber, retryCount);
+            }
+        }
+        if(block == null){
             return null;
         }
 
@@ -337,12 +344,17 @@ public class EvmWatcher implements IWatcher {
         // 获取receipt
         try {
             logger.info("replayTx.start.txHash:{}", txHash);
+            //指定一个交易哈希，返回一个交易的收据。需要指出的是，处于pending状态的交易，收据是不可用的。
             EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(txHash).send();
-            logger.info("replayTx.end.txHash:{}，receipt.getResult():{}", txHash, JSON.toJSONString(receipt.getResult()));
             if (receipt.getResult() == null) {
-                logger.warn("[EvmWatcher]tx receipt not found. blockNum={}, tx={}", blockNumber, txHash);
+                logger.info("replayTx.end.txHash:{}，receipt.getResult() is null!", txHash);
+                logger.info("[EvmWatcher]tx receipt not found. blockNum={}, tx={}", blockNumber, txHash);
                 return ;
             }
+            if(txHash.equals("0xfdeaabbe123ff71775c10fefa97faab7514349af7a579a019a2b2d4331b90f0b")){
+                System.out.println(2);
+            }
+            logger.info("replayTx.end.txHash:{}，receipt.getResult():{}", txHash, receipt.getResult().toString());
             data.getTxList().put(txHash, receipt.getResult());
             // 获取Logs
             if (!CollectionUtils.isEmpty(receipt.getResult().getLogs())) {

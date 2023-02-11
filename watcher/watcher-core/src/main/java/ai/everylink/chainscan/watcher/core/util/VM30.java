@@ -25,6 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * VM30 合约调用工具类
@@ -218,6 +220,32 @@ public class VM30 extends Contract {
                 }));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
+
+    public RemoteCall<BigInteger> balanceOfErc1155(String _owner, Long tokenId) {
+        Function function = new Function("balanceOf",
+                Arrays.<Type>asList(new Address(_owner), new Uint256(tokenId)),
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
+                }));
+        return executeRemoteCallSingleValueReturn(function, BigInteger.class);
+    }
+
+    /*public RemoteCall<Object> balanceOfBatch(List<String> _owners, List<Long> tokenIds) {
+        //List ownerList = _owners.stream().map(Address::new).collect(Collectors.toList());
+        //List tokenIdList = tokenIds.stream().map(Uint256::new).collect(Collectors.toList());
+        Address[] addresses = new Address[]{new Address("0x0e3ae202a06a125dfe0dab65a9d9fb137123ef51"), new Address("0x0e3ae202a06a125dfe0dab65a9d9fb137123ef51")};
+        Uint256[] uint256s = new Uint256[]{new Uint256(25L), new Uint256(25L)};
+        List lists = List.of(addresses, uint256s);
+        Function function = new Function("balanceOfBatch",
+                Arrays.<Type>asList(
+                        new Address("0x0e3ae202a06a125dfe0dab65a9d9fb137123ef51"),
+                        new Address("0x0e3ae202a06a125dfe0dab65a9d9fb137123ef51"),
+                        new Uint256(25L),
+                        new Uint256(25L)
+                ),
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {
+                }));
+        return executeRemoteCallSingleValueReturn(function, Object.class);
+    }*/
 
     public RemoteCall<BigInteger> tokenOfOwnerByIndex(String _owner,int index) {
         Function function = new Function("tokenOfOwnerByIndex",

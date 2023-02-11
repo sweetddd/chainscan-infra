@@ -51,6 +51,23 @@ public interface NftAuctionDao extends JpaRepository<NftAuction, String> {
     @Transactional
     void cancel(String nftContractAddress, Long tokenId);
 
+    /**
+     * 拍卖成交（erc1155）
+     */
+    @Query(value = "update nft_auction set state=2,update_time= NOW()  where nft_contract_address=:nftContractAddress and nft_id =:tokenId and nft_auction_id =:auctionId", nativeQuery = true)
+    @Modifying
+    @Transactional
+    void finish1155(String nftContractAddress, Long tokenId, Long auctionId);
+
+    /**
+     * 拍卖成交（erc1155）
+     */
+    @Query(value = "update nft_auction set state=3,update_time= NOW()  where nft_contract_address=:nftContractAddress and nft_id =:tokenId and nft_auction_id =:auctionId", nativeQuery = true)
+    @Modifying
+    @Transactional
+    int cancel1155(String nftContractAddress, Long tokenId, Long auctionId);
+
+
     @Query(value = "SELECT e FROM NftAuction e WHERE e.txHash = :txHash")
     NftAuction getByTxHash(String txHash);
 

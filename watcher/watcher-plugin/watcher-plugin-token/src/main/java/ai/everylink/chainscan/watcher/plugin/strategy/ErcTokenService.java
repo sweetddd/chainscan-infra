@@ -17,7 +17,7 @@ public interface ErcTokenService {
 
     BigInteger getNftId(List<String> topics, String logData);
 
-    Long getAmount(String logData);
+    Long getAmount(Web3j web3j, String contractAddress, String address, Long tokenId);
 
     String getNftData(Web3j web3j, String contract, BigInteger tokenId);
 

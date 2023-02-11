@@ -23,6 +23,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
+
 /**
  * NftAccountDao
  *
@@ -64,4 +66,9 @@ public interface NftAccountDao extends JpaRepository<NftAccount, String> {
     @Modifying
     @Transactional
     void deleteNftTokenId(Long accountId, Long tokenId, Long nftId);
+
+    @Query(value = "update  nft_account set amount=:amount where id=:primaryId", nativeQuery = true)
+    @Modifying
+    @Transactional
+    int updateAmount(Long primaryId, Long amount);
 }

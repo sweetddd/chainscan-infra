@@ -1,8 +1,10 @@
 package ai.everylink.chainscan.watcher.plugin.strategy;
 
+import ai.everylink.chainscan.watcher.dao.NftAccountDao;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.Web3j;
 import cn.hutool.core.util.StrUtil;
@@ -13,6 +15,9 @@ import java.util.List;
 @Slf4j
 @Service
 public class ErcToken1155ServiceImpl extends ErcTokenBaseService {
+
+    @Autowired
+    private NftAccountDao nftAccountDao;
 
     @Override
     public ErcTypeTokenEnum type() {
@@ -48,9 +53,10 @@ public class ErcToken1155ServiceImpl extends ErcTokenBaseService {
     }
 
     @Override
-    public Long getAmount(String logData) {
-        String amount = logData.substring(logData.length() - 64);
-        return Long.valueOf(amount, 16);
+    public Long getAmount(Web3j web3j, String contractAddress, String address, Long tokenId) {
+        /*String amount = logData.substring(logData.length() - 64);
+        return Long.valueOf(amount, 16);*/
+        return vm30Utils.balanceOfErc1155(web3j, contractAddress, address, tokenId, 0).longValue();
     }
 
     @Override
@@ -81,5 +87,13 @@ public class ErcToken1155ServiceImpl extends ErcTokenBaseService {
         }
         return StrUtil.EMPTY;
     }
+
+    //@Override
+    /*public void updateAmount(Web3j web3j, String nftContractAddress, String address, Long accountId, Long tokenId, Long nftId) {
+        BigInteger amount = vm30Utils.balanceOf(web3j, nftContractAddress, address);
+        System.out.println(amount);
+        int count = nftAccountDao.updateAmount(accountId, tokenId, nftId, amount);
+        System.out.println(count);
+    }*/
 
 }

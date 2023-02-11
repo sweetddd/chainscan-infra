@@ -1,6 +1,7 @@
 package ai.everylink.chainscan.watcher.plugin.strategy;
 
 import ai.everylink.chainscan.watcher.core.util.VM30Utils;
+import ai.everylink.chainscan.watcher.dao.NftAccountDao;
 import ai.everylink.chainscan.watcher.dao.NftAuctionDao;
 import ai.everylink.chainscan.watcher.plugin.service.NFTAuctionService;
 import cn.hutool.core.util.StrUtil;
@@ -19,6 +20,8 @@ public abstract class ErcNftBaseService implements ErcNftService {
     protected NftAuctionDao nftAuctionDao;
     @Autowired
     protected NFTAuctionService nftAuctionService;
+    @Autowired
+    protected NftAccountDao nftAccountDao;
 
     protected String ipfs = "ipfs://";
 

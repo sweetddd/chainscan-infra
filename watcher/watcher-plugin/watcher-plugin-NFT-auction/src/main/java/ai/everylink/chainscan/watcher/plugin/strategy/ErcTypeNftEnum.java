@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 public enum ErcTypeNftEnum {
 
-    ERC1155("ercNft1155ServiceImpl", List.of("0x6863adcf"), List.of(""), List.of("0xeb47b241")),
+    ERC1155("ercNft1155ServiceImpl", List.of("0x6863adcf"), List.of("0xdfa584b6"), List.of("0xeb47b241")),
     DEFAULT("ercNftDefaultServiceImpl", List.of("0x8fa4a10f"), List.of("0x848e5c77", "0xc24d5a5c"), List.of("0xebea6025")),
     ;
 

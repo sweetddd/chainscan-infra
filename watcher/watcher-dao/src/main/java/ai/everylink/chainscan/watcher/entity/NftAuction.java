@@ -27,6 +27,9 @@ public class NftAuction {
     @Column(name = "nft_contract_address", length = 80)
     private String nftContractAddress;
 
+    @Column(name = "nft_auction_id")
+    private String nftAuctionId;
+
     @Column(name = "nft_id", nullable = false)
     private Long nftId;
 
