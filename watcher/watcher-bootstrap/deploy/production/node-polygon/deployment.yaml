@@ -121,7 +121,7 @@ spec:
               configMapKeyRef:
                 name: watcher-config
                 key: polygon-nft-auction-address
-          - name: "watcher.transfer.contract.address"
+          - name: "watcher.nft.transfer.address"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config

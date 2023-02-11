@@ -231,6 +231,7 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         log.info("createNewNftAuction.transactionHash:{}.nftAuction:{}", transactionHash, nftAuction);
         //更新nft_account
         Long amount = ercNftService.getAmount(web3j, nftContractAddress, fromAddr, nftId);
+        //注意点：nftAccount如果没有前置步骤创建nft，则这里获取为空，会报空指针异常
         ercNftService.updateNftAccountAmount(nftAccount, amount);
         log.info("createNewNftAuction.transactionHash:{} end", transactionHash);
     }

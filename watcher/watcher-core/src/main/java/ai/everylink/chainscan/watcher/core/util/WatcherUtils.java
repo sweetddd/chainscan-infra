@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class WatcherUtils {
 
     private static Map<String, Object> CONFIG_MAP = new ConcurrentHashMap<>();
-    public final static String TRANSFER_CONTRACT_ADDRESS = "watcher.transfer.contract.address";
+    public final static String TRANSFER_CONTRACT_ADDRESS = "watcher.nft.transfer.address";
     public final static String MONITOR_SELECT_TRANSACTION_LOG = "watcher.monitor.select.transaction.log";
 
 
