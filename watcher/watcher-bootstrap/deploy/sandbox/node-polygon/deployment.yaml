@@ -105,7 +105,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: polygon-nft.transfer.address
+                key: polygon-nft-transfer-address
           - name: "watcher.token.not.scan.erc20"
             value: 'true'
           - name: "watcher.monitor.select.transaction.log"
