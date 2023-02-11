@@ -1,12 +1,20 @@
 package ai.everylink.chainscan.watcher.core.util;
 
 
+import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
@@ -19,6 +27,7 @@ import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.Response;
 import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.EthGasPrice;
+import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.ContractGasProvider;
@@ -29,12 +38,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class VM30Utils {
 
     private final BigInteger gasLimit = BigInteger.valueOf(9000000);
+    @Autowired
+    Environment environment;
+    public final static Integer GLOBAL_RETRY_COUNT = 10;
+    public final static Long GLOBAL_RETRY_SLEEP_MILL = 50L;
 
     @SneakyThrows
     public VM30 getContract(Web3j web3j, String contractAddress) {
@@ -276,6 +290,41 @@ public class VM30Utils {
     }
 
     @SneakyThrows
+    public BigInteger balanceOfErc1155(Web3j web3j, String contractAddress, String address, Long tokenId, int retryCount) {
+        BigInteger result = BigInteger.ZERO;
+        try {
+            VM30 contract = getContract(web3j, contractAddress);
+            result = contract.balanceOfErc1155(address, tokenId).send();
+            log.info("Address [{}] sync balance from contract [{}] success, balance [{}]", address, contractAddress, result);
+        } catch (Exception e) {
+            retryCount = retryCount + 1;
+            log.error("balanceOfErc1155.获取 balanceOf 重试次数：{}，异常：{}", retryCount, ExceptionUtils.getStackTrace(e));
+            if(retryCount < GLOBAL_RETRY_COUNT){
+                TimeUnit.MILLISECONDS.sleep(GLOBAL_RETRY_SLEEP_MILL);
+                return balanceOfErc1155(web3j, contractAddress, address, tokenId, retryCount);
+            }
+        }
+        return result;
+    }
+
+    /*@SneakyThrows
+    public Object balanceOfBatch(Web3j web3j, String contractAddress, List<String> address, List<Long> tokenId) {
+        Object result = BigInteger.ZERO;
+        try {
+            VM30 contract = getContract(web3j, contractAddress);
+            result = contract.balanceOfBatch(address, tokenId).send();
+            log.info("Address [{}] sync balance from contract [{}] success, balance [{}]", address, contractAddress, result);
+        } catch (Exception ex) {
+            String message = ex.getMessage();
+            if(!message.equals("Contract Call has been reverted by the EVM with the reason: 'VM Exception while processing transaction: revert'.")){
+                ex.printStackTrace();
+            }
+            log.error("Address [{}] sync balance from contract [{}] error: [{}]", address, contractAddress, ex.getMessage());
+        }
+        return result;
+    }*/
+
+    @SneakyThrows
     public BigInteger balanceOf(Web3j web3j, String contractAddress, String address, String secret) {
         BigInteger balance = BigInteger.ZERO;
         try {
@@ -393,7 +442,7 @@ public class VM30Utils {
                 return false;
             }
         } catch (Exception e) {
-            e.getMessage();
+            log.error(e.getMessage(), e);
             return false;
         }
         return true;
@@ -433,4 +482,63 @@ public class VM30Utils {
         }
         return distributionReserve;
     }
+
+    public boolean isTransferContract(String transactionHash, String contractAddress){
+        log.info("转账合约判断，txHash：{}, 合约地址：{}", transactionHash, contractAddress);
+        if(StrUtil.isBlank(contractAddress)){
+            return false;
+        }
+        List<String> monitorContractAddress = WatcherUtils.getConfigValues(environment, WatcherUtils.TRANSFER_CONTRACT_ADDRESS);
+        if(CollUtil.isEmpty(monitorContractAddress)){
+            return true;
+        }
+        return monitorContractAddress.stream().map(String::toLowerCase).collect(Collectors.toList()).contains(contractAddress.toLowerCase());
+    }
+
+    /**
+     * 根据txHash查询交易明细（收据）
+     */
+    public void replayTxJudge(EvmData data, String transactionHash, Web3j web3j){
+        String selectTransactionLog = WatcherUtils.getConfigValue(environment, WatcherUtils.MONITOR_SELECT_TRANSACTION_LOG, String.class);
+        log.info("监听资产变化.selectTransactionLog:{}", selectTransactionLog);
+        if(Boolean.parseBoolean(selectTransactionLog) && MapUtil.isEmpty(data.getTxList())){
+            log.info("监听资产变化.transactionHash:{}, txList为空，进行查询", transactionHash);
+            this.replayTx(web3j, data, transactionHash, 0);
+        }
+    }
+
+    @SneakyThrows
+    public void replayTx(Web3j web3j, EvmData data, String txHash, int retryCount) {
+        long blockNumber = data.getBlock().getNumber().longValue();
+
+        // 获取receipt
+        try {
+            log.info("VM30Utils.replayTx.start.txHash:{}", txHash);
+            //指定一个交易哈希，返回一个交易的收据。需要指出的是，处于pending状态的交易，收据是不可用的。
+            EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(txHash).send();
+            if (receipt.getResult() == null) {
+                log.info("VM30Utils.[EvmWatcher]tx receipt not found. blockNum={}, tx={}", blockNumber, txHash);
+                return ;
+            }
+            log.info("VM30Utils.replayTx.end.txHash:{}，receipt.getResult():{}", txHash, receipt.getResult().toString());
+            //txList
+            data.getTxList().put(txHash, receipt.getResult());
+            // 获取Logs
+            if (!CollectionUtils.isEmpty(receipt.getResult().getLogs())) {
+                //LogMap
+                data.getTransactionLogMap().put(txHash, receipt.getResult().getLogs());
+            }
+            log.info("VM30Utils.replayTx.txHash:{}，data.getTransactionLogMap():{}", txHash, data.getTransactionLogMap().size());
+        } catch (Exception e) {
+            retryCount = retryCount + 1;
+            log.error("VM30Utils.获取 Transaction Receipt 重试次数：{}，异常：{}", retryCount, ExceptionUtils.getStackTrace(e));
+            if(retryCount < GLOBAL_RETRY_COUNT){
+                TimeUnit.MILLISECONDS.sleep(GLOBAL_RETRY_SLEEP_MILL);
+                replayTx(web3j, data, txHash, retryCount);
+            }
+        }
+    }
+
+
+
 }

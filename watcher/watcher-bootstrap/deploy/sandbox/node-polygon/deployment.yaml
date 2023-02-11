@@ -96,7 +96,19 @@ spec:
               configMapKeyRef:
                 name: network-config
                 key: polygon.rpc.api
+          - name: "watcher.nft.auction.address"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: polygon-nft-auction-address
+          - name: "watcher.transfer.contract.address"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: polygon-watcher.transfer.contract.address
           - name: "watcher.token.not.scan.erc20"
+            value: 'true'
+          - name: "watcher.monitor.select.transaction.log"
             value: 'true'
           - name: "watcher.chain.scanStep"
             value: '1'
@@ -113,7 +125,7 @@ spec:
           - name: "watcher.insert.transaction.log"
             value: "false"
           - name: "watcher.select.transaction.log"
-            value: "true"
+            value: "false"
           - name: "watcher.process.only.evmplugin"
             value: "false"
           - name: "watcher.transaction.bridge.group"

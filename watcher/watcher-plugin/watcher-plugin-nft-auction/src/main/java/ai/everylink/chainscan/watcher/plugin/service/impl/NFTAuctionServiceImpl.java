@@ -24,11 +24,11 @@ import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.dao.*;
 import ai.everylink.chainscan.watcher.entity.*;
+import ai.everylink.chainscan.watcher.plugin.bean.CreateNewNftAuctionBean;
 import ai.everylink.chainscan.watcher.plugin.service.NFTAuctionService;
 import ai.everylink.chainscan.watcher.plugin.strategy.ErcNftFactory;
 import ai.everylink.chainscan.watcher.plugin.strategy.ErcNftService;
 import ai.everylink.chainscan.watcher.plugin.strategy.ErcTypeNftEnum;
-import com.alibaba.fastjson.JSONArray;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -62,9 +62,8 @@ import java.util.*;
 @Service
 public class NFTAuctionServiceImpl implements NFTAuctionService {
 
-    private static final String NFTAUCTION_FINISH_TOPIC ="0x8df77c988c9550e96e43a66277f716818a74ed2188cdacb49d790623e6f22571";
+    public static final String NFTAUCTION_FINISH_TOPIC ="0x8df77c988c9550e96e43a66277f716818a74ed2188cdacb49d790623e6f22571";
     public static final String NFTAUCTION_CANCEL_TOPIC ="0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
-    public static final String NFTAUCTION_CANCEL_ERC1155_TOPIC ="0xec19f84af4aad6523d37faa19e243c77717842cca9bf492dc5379830cac958d0";
 
     private Web3j web3j;
 
@@ -110,23 +109,36 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
 
     @Override
     public void nftAuctionScan(EvmData blockData) {
-        String            nftAuctionContracts = environment.getProperty("watcher.nft.auction.address");
+        String nftAuctionContracts = environment.getProperty("watcher.nft.auction.address");
         log.info("nftAuctionScan.nftAuctionContracts:{}", nftAuctionContracts);
-       // String            nftAuctionContracts = "0x9b38f6fa3943c24f4998d73d178fb1e2899a1365";
-        int               chainId             = blockData.getChainId();
-        List<Transaction> txList              = buildTransactionList(blockData, chainId);
-        log.info("nftAuctionScan.txList.size:{}, txList:{}", txList.size(), txList);
+       // String nftAuctionContracts = "0x9b38f6fa3943c24f4998d73d178fb1e2899a1365";
+        int chainId = blockData.getChainId();
+        List<Transaction> txList = buildTransactionList(blockData, chainId);
+        log.info("nftAuctionScan.txList.size:{}", txList.size());
         // 事件监听 解析;
         for (Transaction transaction : txList) {
+            String transactionHash = transaction.getTransactionHash();
+            /*if(transactionHash.equals("0x6fda84fabede0cace5bd2cb4fccce175a211f143f48ad834fd3d29918490001e")){
+                System.out.println(2);
+            }*/
             String toAddr = transaction.getToAddr();
-            log.info("nftAuctionScan.transaction.toAddr:{}, status:{}, transactionHash:{}", toAddr, transaction.getStatus(), transaction.getTransactionHash());
-            if (StringUtils.isBlank(transaction.getStatus())) {
+            if(nftAuctionContracts != null && !nftAuctionContracts.equalsIgnoreCase(toAddr)){
                 continue;
             }
-            int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
+            //根据txHash查询交易明细（收据）
+            vm30Utils.replayTxJudge(blockData, transactionHash, web3j);
+            TransactionReceipt receipt = blockData.getTxList().get(transactionHash);
+            this.parseTxStatus(transaction, receipt);
+
+            String transactionStatus = transaction.getStatus();
+            log.info("nftAuctionScan.transaction.toAddr:{}, status:{}, transactionHash:{}", toAddr, transactionStatus, transactionHash);
+            if (StringUtils.isBlank(transactionStatus)) {
+                continue;
+            }
+            int txSatte = Integer.parseInt(transactionStatus.replace("0x", ""), 16);
             log.info("nftAuctionScan.txSatte:{}", txSatte);
 
-            if (StringUtils.isNotBlank(toAddr) && nftAuctionContracts != null && nftAuctionContracts.equalsIgnoreCase(toAddr) && txSatte == 1) {
+            if (StringUtils.isNotBlank(toAddr) && txSatte == 1) {
            // if (StringUtils.isNotBlank(toAddr) ) {
                 String input = transaction.getInput();
                 log.info("nftAuctionScan.transaction.getInput():{}", input);
@@ -140,17 +152,22 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
                     if(nftMethod == null){
                         continue;
                     }
+                    ErcNftService ercNftService = ErcNftFactory.getInstance(nftMethod.isErc1155() ? ErcTypeNftEnum.ERC1155 : ErcTypeNftEnum.DEFAULT);
+                    if(!ercNftService.isScan()){
+                        log.info("监控NFT 拍卖hash:{}被过滤！", transactionHash);
+                        continue;
+                    }
                     if (params.size() > 2 && nftMethod.isCreate()) {
-                        log.info("监控NFT 拍卖创建交易");
-                        createNewNftAuction(transaction, params);
+                        log.info("监控NFT 拍卖创建交易hash:{}", transactionHash);
+                        createNewNftAuction(transaction, params, ercNftService);
                         //监控NFT 拍卖成交交易
                     } else if (params.size() > 2 && nftMethod.isFinish()) {
-                        log.info("监控NFT 拍卖成交交易");
-                        finishNftAuction(transaction, params, nftMethod);
+                        log.info("监控NFT 拍卖成交交易hash:{}", transactionHash);
+                        finishNftAuction(transaction, params, ercNftService);
                         //监控NFT 拍卖取消交易
-                    }else if (params.size() > 2 && nftMethod.isCancel()) {
-                        log.info("监控NFT 拍卖取消交易");
-                        cancelNftAuction(transaction, params, nftMethod);
+                    } else if (params.size() > 2 && nftMethod.isCancel()) {
+                        log.info("监控NFT 拍卖取消交易hash:{}", transactionHash);
+                        cancelNftAuction(transaction, params, ercNftService);
                     }
                 }
              //}
@@ -159,19 +176,11 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
     }
 
     //监控NFT 拍卖创建交易
-    private void createNewNftAuction(Transaction transaction, List<String> params) {
-        log.info("createNewNftAuction.transaction:{}, params:{}", transaction, params);
-        String fromAddr = transaction.getFromAddr();
+    private void createNewNftAuction(Transaction transaction, List<String> params, ErcNftService ercNftService) {
         String transactionHash = transaction.getTransactionHash();
+        log.info("createNewNftAuction.transactionHash:{}, params:{}", transactionHash, params);
+        String fromAddr = transaction.getFromAddr();
         String nftContractAddress = "0x" + params.get(1).substring(params.get(1).length() - 40);
-        boolean erc1155 = vm30Utils.isErc1155(web3j, fromAddr, nftContractAddress);
-        log.info("createNewNftAuction.erc1155:{}", erc1155);
-        ErcNftService ercNftService = ErcNftFactory.getInstance(erc1155 ? ErcTypeNftEnum.ERC1155 : ErcTypeNftEnum.DEFAULT);
-        boolean isScan = ercNftService.isScan();
-        log.info("createNewNftAuction.topic.transactionHash:{}, isScan:{}", transactionHash, isScan);
-        if(!isScan){
-            return;
-        }
         //根据txHash查询拍卖表是否存在，存在则更新
         NftAuction nftAuction = nftAuctionDao.getByTxHash(transactionHash);
         if(nftAuction == null){
@@ -180,11 +189,11 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
         }
         nftAuction.setTxStatus(true);
 
-        TokenInfo  nftTokenContract        = tokenInfoDao.findAllByAddress(nftContractAddress);
+        TokenInfo  nftTokenContract = tokenInfoDao.findAllByAddress(nftContractAddress);
         if (Objects.isNull(nftTokenContract)) {
-            nftTokenContract = addTokenInfo(nftContractAddress, fromAddr, erc1155);
+            nftTokenContract = addTokenInfo(nftContractAddress, fromAddr, ercNftService.type()==ErcTypeNftEnum.ERC1155);
         }
-        Integer nftId = ercNftService.getNftId(params);
+        Long nftId = ercNftService.getNftId(params);
         nftAuction.setTokenId(nftTokenContract.getId());
         nftAuction.setNftContractAddress(nftContractAddress);
         //获取NFT的data信息;
@@ -198,47 +207,37 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
             throw e;
         }
         if(nftAccount != null){
-            nftAuction.setNftData(nftAccount.getNftData());
+            if(StringUtils.isBlank(nftAuction.getNftData())) {
+                nftAuction.setNftData(nftAccount.getNftData());
+            }
             nftAuction.setNftAccountId(nftAccount.getAccountId());
         }
         //更新并删除nft_account
-        boolean result = updateNftAccount(fromAddr, nftContractAddress, erc1155);
+        /*boolean result = updateNftAccount(fromAddr, nftContractAddress);
         //获取nftData（20、721使用）
         String nftData = ercNftService.getNftData2(web3j, nftContractAddress, new BigInteger(nftId.toString()));
-        log.info("createNewNftAuction.tokenURL.nftData:{}", nftData);
+        log.info("createNewNftAuction.tokenURL.nftData:{}", nftData);*/
+
+        CreateNewNftAuctionBean createBean = new CreateNewNftAuctionBean();
+        createBean.setFromAddr(fromAddr);
+        createBean.setNftContractAddress(nftContractAddress);
+        createBean.setNftId(nftId);
+        createBean.setParams(params);
+        createBean.setWeb3j(web3j);
+        createBean.setTransaction(transaction);
+        createBean.setErcNftService(ercNftService);
         //组装拍卖数据
-        ercNftService.createNewNftAuction(nftData, nftAuction, params, transaction);
-
-        log.info("createNewNftAuction.nftAuction:{}", nftAuction);
-
-        String  chainId = environment.getProperty("watcher.chain.chainId");
-        if(chainId != null){
-            nftAuction.setChainId(Long.parseLong(chainId));
-        }
-        nftAuctionDao.save(nftAuction);
-        log.info("createNewNftAuction.nftAuction end");
+        ercNftService.createNewNftAuction(createBean, nftAuction);
+        log.info("createNewNftAuction.transactionHash:{}.nftAuction:{}", transactionHash, nftAuction);
+        //更新nft_account
+        Long amount = ercNftService.getAmount(web3j, nftContractAddress, fromAddr, nftId);
+        ercNftService.updateNftAccountAmount(nftAccount, amount);
+        log.info("createNewNftAuction.transactionHash:{} end", transactionHash);
     }
 
-    /**
-     * event AuctionWithdrawn(
-     *         address nftContractAddress,
-     *         uint256 tokenId,
-     *         address nftOwner // 拍卖的创建者。
-     *     );
-     * @param transaction
-     * @param params
-     */
     //监控NFT 拍卖取消交易(721走db-log)
-    private void cancelNftAuction(Transaction transaction, List<String> params, ErcTypeNftEnum.Method nftMethod) {
-        String transactionHash = transaction.getTransactionHash();
-        log.info("cancelNftAuction.transaction:{}", transactionHash);
-        boolean erc1155 = nftMethod.isErc1155();
-        ErcNftService ercNftService = ErcNftFactory.getInstance(erc1155 ? ErcTypeNftEnum.ERC1155 : ErcTypeNftEnum.DEFAULT);
-        boolean isScan = ercNftService.isScan();
-        log.info("cancelNftAuction.transactionHash:{}, isScan:{}", transactionHash, isScan);
-        if(!isScan){
-            return;
-        }
+    private void cancelNftAuction(Transaction transaction, List<String> params, ErcNftService ercNftService) {
+        log.info("cancelNftAuction.transactionHash:{}", transaction.getTransactionHash());
 
         String status = transaction.getStatus();
         log.info("cancelNftAuction.status:{}", status);
@@ -250,35 +249,10 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
     }
 
     //监控NFT 拍卖成交(走db-log)
-    private void finishNftAuction(Transaction transaction, List<String> params, ErcTypeNftEnum.Method nftMethod) {
-        log.info("finishNftAuction.transaction:{}", transaction);
-        List<TransactionLog> txLog = transactionLogDao.findByTxHash(transaction.getTransactionHash());
-        log.info("finishNftAuction.txLog:{}, transaction:{}", txLog, transaction);
-        for (TransactionLog transactionLog : txLog) {
-            log.info("finishNftAuction.transactionLog:{}", transactionLog);
-            String topicsStr = transactionLog.getTopics();
-            //topics转为数组
-            JSONArray topics = JSONArray.parseArray(topicsStr);
-            log.info("finishNftAuction.transactionLog.topics():{}", topics);
-            if (topics.size() > 0) {
-                String topic = topics.get(0).toString();
-                if (topic.equals(NFTAUCTION_FINISH_TOPIC)) {
-                    String data = transactionLog.getData();
-                    log.info("finishNftAuction.data:{}", data);
-                    String substring = data.substring(2, 66);
-                    String nftContractAddress ="0x" +  substring.substring(substring.length() - 40);
-                    Long tokenId = Long.parseLong(data.substring(66, 130), 16) ;
-                    nftAuctionDao.finish(nftContractAddress, tokenId);
-                    log.info("finishNftAuction.updateNftAccount start");
-                    boolean result = updateNftAccount(transaction.getFromAddr(), nftContractAddress, nftMethod.isErc1155());
-                    log.info("finishNftAuction.updateNftAccount end");
-                  //  System.out.println(result);
-                }
-
-            }
-
-        }
-
+    private void finishNftAuction(Transaction transaction, List<String> params, ErcNftService ercNftService) {
+        log.info("finishNftAuction.transactionHash:{}", transaction.getTransactionHash());
+        //拍卖成交逻辑
+        ercNftService.finishNftAuction(transaction, params);
     }
 
     private List<Transaction> buildTransactionList(EvmData data, int chainId) {
@@ -315,13 +289,7 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
             TransactionReceipt receipt = data.getTxList().get(item.getHash());
             if (receipt != null) {
                 // status
-                if (receipt.getStatus() != null &&
-                        (receipt.getStatus().equalsIgnoreCase("1")
-                                || receipt.getStatus().equalsIgnoreCase("0x1"))) {
-                    tx.setStatus("0x1");
-                } else {
-                    tx.setStatus("0x0");
-                }
+                this.parseTxStatus(tx, receipt);
 
                 // gas fee
                 if (receipt.getGasUsed() != null) {
@@ -352,6 +320,15 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
             txList.add(tx);
         }
         return txList;
+    }
+
+    public void parseTxStatus(Transaction tx, TransactionReceipt receipt) {
+        if (receipt != null && receipt.getStatus() != null &&
+                (receipt.getStatus().equalsIgnoreCase("1") || receipt.getStatus().equalsIgnoreCase("0x1"))) {
+            tx.setStatus("0x1");
+        } else {
+            tx.setStatus("0x0");
+        }
     }
 
     private Date convertTime(long mills) {
@@ -506,7 +483,7 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
 
     @Override
     @Transactional
-    public boolean updateNftAccount(String fromAddr, String contract, boolean erc1155) {
+    public boolean updateNftAccount(String fromAddr, String contract) {
         AccountInfo accountInfo = accountInfoDao.findByAddress(fromAddr);
         if (accountInfo == null) {
             //新增用户数据;
@@ -516,9 +493,6 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
             accountInfo.setUpdateTime(new Date());
             accountInfo.setDeleted(false);
             accountInfoDao.save(accountInfo);
-        }
-        if(erc1155){
-            return true;
         }
         TokenInfo tokenInfo = tokenInfoDao.findAllByAddress(contract);
         if( tokenInfo == null ){

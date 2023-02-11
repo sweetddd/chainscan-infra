@@ -47,7 +47,7 @@ public class ErcTokenDefaultServiceImpl extends ErcTokenBaseService {
     }
 
     @Override
-    public Long getAmount(String logData) {
+    public Long getAmount(Web3j web3j, String contractAddress, String address, Long tokenId) {
         return 1L;
     }
 
