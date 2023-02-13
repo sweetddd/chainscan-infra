@@ -71,6 +71,21 @@ spec:
               secretKeyRef:
                 name: database-polygon
                 key: password
+          - name: "spring.datasource.marketplace.jdbc-url"
+            valueFrom:
+              secretKeyRef:
+                name: database-marketplace
+                key: url
+          - name: "spring.datasource.marketplace.username"
+            valueFrom:
+              secretKeyRef:
+                name: database-marketplace
+                key: username
+          - name: "spring.datasource.marketplace.password"
+            valueFrom:
+              secretKeyRef:
+                name: database-marketplace
+                key: password
           - name: "spring.datasource.wallet.jdbc-url"
             valueFrom:
               secretKeyRef:
