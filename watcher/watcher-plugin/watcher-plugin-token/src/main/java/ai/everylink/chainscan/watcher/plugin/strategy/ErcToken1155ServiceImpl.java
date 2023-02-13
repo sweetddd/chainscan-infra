@@ -1,10 +1,8 @@
 package ai.everylink.chainscan.watcher.plugin.strategy;
 
-import ai.everylink.chainscan.watcher.dao.NftAccountDao;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.Web3j;
 import cn.hutool.core.util.StrUtil;
@@ -15,9 +13,6 @@ import java.util.List;
 @Slf4j
 @Service
 public class ErcToken1155ServiceImpl extends ErcTokenBaseService {
-
-    @Autowired
-    private NftAccountDao nftAccountDao;
 
     @Override
     public ErcTypeTokenEnum type() {

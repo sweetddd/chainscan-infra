@@ -21,12 +21,14 @@ public interface ErcNftService {
 
     void createNewNftAuction(CreateNewNftAuctionBean createBean, NftAuction nftAuction);
 
-    void finishNftAuction(Transaction transaction, List<String> params);
+    void finishNftAuction(Transaction transaction, List<String> params, Web3j web3j);
 
-    void cancelNftAuction(Transaction transaction, List<String> params);
+    void cancelNftAuction(Transaction transaction, List<String> params, Web3j web3j);
 
     Long getAmount(Web3j web3j, String contractAddress, String address, Long tokenId);
 
     int updateNftAccountAmount(NftAccount nftAccount, Long amount);
+
+    NftAuction getByTxHash(String txHash);
 
 }

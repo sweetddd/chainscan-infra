@@ -19,6 +19,9 @@ package ai.everylink.chainscan.watcher.plugin.service;
 
 
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
+import ai.everylink.chainscan.watcher.entity.AccountInfo;
+import ai.everylink.chainscan.watcher.entity.NftAuction;
+import ai.everylink.chainscan.watcher.entity.TokenInfo;
 
 /**
  * transaction数据统计service
@@ -34,6 +37,12 @@ public interface NFTAuctionService {
      */
     void nftAuctionScan(EvmData blockData);
 
+    AccountInfo getAccountNotExistSave(String fromAddr);
+
     boolean updateNftAccount(String fromAddr, String contract);
+
+    TokenInfo addTokenInfo(String toAddr, String fromAddr, boolean erc1155);
+
+    void save(NftAuction nftAuction);
 
 }

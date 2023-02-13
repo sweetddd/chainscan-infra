@@ -38,14 +38,23 @@ public class DataSourceConfig {
         return build;
     }
 
+    @Bean(name = "marketplaceDataSource")
+    @ConfigurationProperties(prefix = "spring.datasource.marketplace")
+    public DataSource marketplaceDataSource() {
+        DataSource build = DataSourceBuilder.create().build();
+        return build;
+    }
+
     @Bean
     @Primary
     public DynamicRoutingDataSource dynamicDataSource(
             @Qualifier(value = "chainscanDataSource") DataSource chainscanDataSource,
-            @Qualifier(value = "walletDataSource") DataSource walletDataSource) {
-        Map<Object, Object> targetDataSources = new HashMap<>(2);
+            @Qualifier(value = "walletDataSource") DataSource walletDataSource,
+            @Qualifier(value = "marketplaceDataSource") DataSource marketplaceDataSource) {
+        Map<Object, Object> targetDataSources = new HashMap<>(3);
         targetDataSources.put(DataSourceEnum.chainscan, chainscanDataSource);
         targetDataSources.put(DataSourceEnum.wallet, walletDataSource);
+        targetDataSources.put(DataSourceEnum.marketplace, marketplaceDataSource);
         DynamicRoutingDataSource dynamicRoutingDataSource = new DynamicRoutingDataSource();
         //设置数据源
         dynamicRoutingDataSource.setTargetDataSources(targetDataSources);
