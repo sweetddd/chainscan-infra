@@ -48,7 +48,7 @@ public interface BlockDao extends JpaRepository<Block, Long> {
      * get max block num
      * @return
      */
-    @Query(value = "select max(block_number) from block WHERE chain_id = :chainId", nativeQuery = true)
+    @Query(value = "select max(block_number) from block", nativeQuery = true)
     Long getMaxBlockNum(int chainId);
 
     /**
