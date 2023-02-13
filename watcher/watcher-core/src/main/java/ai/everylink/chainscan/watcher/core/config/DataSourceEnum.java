@@ -9,5 +9,6 @@ public interface DataSourceEnum {
 
     String chainscan = "chainscan";
     String wallet = "wallet";
+    String marketplace = "marketplace";
 
 }

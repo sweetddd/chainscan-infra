@@ -501,7 +501,7 @@ public class VM30Utils {
     public void replayTxJudge(EvmData data, String transactionHash, Web3j web3j){
         String selectTransactionLog = WatcherUtils.getConfigValue(environment, WatcherUtils.MONITOR_SELECT_TRANSACTION_LOG, String.class);
         log.info("监听资产变化.selectTransactionLog:{}", selectTransactionLog);
-        if(Boolean.parseBoolean(selectTransactionLog) && MapUtil.isEmpty(data.getTxList())){
+        if(Boolean.parseBoolean(selectTransactionLog) && data.getTxList().get(transactionHash) == null){
             log.info("监听资产变化.transactionHash:{}, txList为空，进行查询", transactionHash);
             this.replayTx(web3j, data, transactionHash, 0);
         }

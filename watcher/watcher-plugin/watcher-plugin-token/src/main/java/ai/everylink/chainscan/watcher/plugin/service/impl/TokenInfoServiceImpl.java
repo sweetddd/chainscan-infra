@@ -176,7 +176,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
         for (Transaction transaction : txList) {
             String contractAddress = transaction.getToAddr();
             String transactionHash = transaction.getTransactionHash();
-            log.info("监听资产变化.contractAddress:{}", contractAddress);
+            log.info("监听资产变化.transactionHash:{}, contractAddress:{}", transactionHash, contractAddress);
             if(!vm30Utils.isTransferContract(transactionHash, contractAddress)){
                 log.info("监听资产变化.被排除transactionHash:{}, contractAddress:{}", transactionHash, contractAddress);
                 continue;
@@ -207,6 +207,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                         boolean topicErc1155 = topic.equals(TRANSFER_ERC1155_TOPIC); //NFT合约：链上event，一个合约类似：一个java类，topic类似：方法名+参数列表hash
                         log.info("tokenScan.topic.logTransactionHash:{}, topicDefault:{}, topicErc1155: {}", logTransactionHash, topicDefault, topicErc1155);
                         if (topicDefault || topicErc1155) {
+                            log.info("tokenScan.开始处理转账事件，txHash:{}，contractAddress:{}，topicErc1155:{}", transactionHash, contractAddress, topicErc1155);
                             ErcTokenService ercTokenService = ErcTokenFactory.getInstance(topicErc1155 ? ErcTypeTokenEnum.ERC1155 : ErcTypeTokenEnum.DEFAULT);
                             boolean isScan = ercTokenService.isScan();
                             log.info("tokenScan.topic.logTransactionHash:{}, isScan:{}", logTransactionHash, isScan);
@@ -235,6 +236,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                                 updateNftAccount(topicFrom, contractAddress, nftId, logTransactionHash, ercTokenService, true);
                                 updateNftAccount(topicTo, contractAddress, nftId, logTransactionHash, ercTokenService, true);
                             }
+                            log.info("tokenScan.开始处理转账事件已完成，txHash:{}，contractAddress:{}，topicErc1155:{}", transactionHash, contractAddress, topicErc1155);
                         }
                     });
                 }

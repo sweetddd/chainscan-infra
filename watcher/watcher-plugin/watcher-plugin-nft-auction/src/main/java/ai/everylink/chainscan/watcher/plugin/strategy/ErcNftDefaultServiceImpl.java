@@ -135,11 +135,11 @@ public class ErcNftDefaultServiceImpl extends ErcNftBaseService {
         if(chainId != null){
             nftAuction.setChainId(Long.parseLong(chainId));
         }
-        nftAuctionDao.save(nftAuction);
+        nftAuctionService.save(nftAuction);
     }
 
     @Override
-    public void finishNftAuction(Transaction transaction, List<String> params) {
+    public void finishNftAuction(Transaction transaction, List<String> params, Web3j web3j) {
         List<TransactionLog> txLog = transactionLogDao.findByTxHash(transaction.getTransactionHash());
         log.info("finishNftAuction.txLog:{}, transaction:{}", txLog, transaction);
         for (TransactionLog transactionLog : txLog) {
@@ -167,7 +167,7 @@ public class ErcNftDefaultServiceImpl extends ErcNftBaseService {
     }
 
     @Override
-    public void cancelNftAuction(Transaction transaction, List<String> params) {
+    public void cancelNftAuction(Transaction transaction, List<String> params, Web3j web3j) {
         String transactionHash = transaction.getTransactionHash();
         List<TransactionLog> txLog = transactionLogDao.findByTxHash(transactionHash);
         log.info("cancelNftAuction.txLog:{}", txLog);

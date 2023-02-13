@@ -31,7 +31,7 @@ import java.math.BigInteger;
  * @author brett
  * @since 2021-12-14
  */
-public interface NftAccountDao extends JpaRepository<NftAccount, String> {
+public interface NftAccountDao extends JpaRepository<NftAccount, Long> {
 
     /**
      * 删除账户在合约上的NFT信息
@@ -71,4 +71,15 @@ public interface NftAccountDao extends JpaRepository<NftAccount, String> {
     @Modifying
     @Transactional
     int updateAmount(Long primaryId, Long amount);
+
+    @Query(value = "update  nft_account set watcher_updated=:watcherUpdated, amount=:amount where nft_id=:nftId and token_id =:tokenId and account_id=:accountId", nativeQuery = true)
+    @Modifying
+    @Transactional
+    int updateAmountAndWatcherStatus(long nftId, Long tokenId, Long accountId, Integer watcherUpdated, Long amount);
+
+    @Query(value = "update  nft_account set watcher_updated=:watcherUpdated, amount=:amount where id=:id", nativeQuery = true)
+    @Modifying
+    @Transactional
+    int updateAmountAndWatcherStatus(long id, Long amount);
+
 }

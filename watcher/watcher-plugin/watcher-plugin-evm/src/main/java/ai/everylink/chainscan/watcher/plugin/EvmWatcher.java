@@ -25,10 +25,10 @@ import ai.everylink.chainscan.watcher.core.config.PluginChainId;
 import ai.everylink.chainscan.watcher.core.util.*;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.plugin.service.EvmDataService;
-import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -308,6 +308,7 @@ public class EvmWatcher implements IWatcher {
 
     private static EvmData replayBlock(Long blockNumber, int retryCount) throws Exception {
         retryCount = retryCount + 1;
+        logger.info("EvmWatcher.获取 replayBlock 第 {} 次", retryCount);
         EvmData data = new EvmData();
         data.setChainId(chainId);
 
@@ -323,18 +324,17 @@ public class EvmWatcher implements IWatcher {
                 }
             }
         } catch (Exception e){
-            logger.error("replayBlock error!", e);
+            logger.error("EvmWatcher.获取 replayBlock error! 重试次数：{}，异常：{}", retryCount, ExceptionUtils.getStackTrace(e));
             if(retryCount < VM30Utils.GLOBAL_RETRY_COUNT) {
                 TimeUnit.MILLISECONDS.sleep(VM30Utils.GLOBAL_RETRY_SLEEP_MILL);
                 return replayBlock(blockNumber, retryCount);
             }
         }
         if(block == null){
+            logger.error("EvmWatcher.获取replayBlock 已超过重试次数，失败！！！");
             return null;
         }
-
         data.setBlock(block.getBlock());
-
         return data;
     }
 
@@ -350,9 +350,6 @@ public class EvmWatcher implements IWatcher {
                 logger.info("replayTx.end.txHash:{}，receipt.getResult() is null!", txHash);
                 logger.info("[EvmWatcher]tx receipt not found. blockNum={}, tx={}", blockNumber, txHash);
                 return ;
-            }
-            if(txHash.equals("0xfdeaabbe123ff71775c10fefa97faab7514349af7a579a019a2b2d4331b90f0b")){
-                System.out.println(2);
             }
             logger.info("replayTx.end.txHash:{}，receipt.getResult():{}", txHash, receipt.getResult().toString());
             data.getTxList().put(txHash, receipt.getResult());
