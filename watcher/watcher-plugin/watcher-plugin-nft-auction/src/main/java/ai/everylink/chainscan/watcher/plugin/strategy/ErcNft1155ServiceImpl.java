@@ -140,7 +140,7 @@ public class ErcNft1155ServiceImpl extends ErcNftBaseService {
         //AccountInfo fromAccountInfo = nftAuctionService.getAccountNotExistSave(fromAddr);
         AccountInfo fromAccountInfo = accountInfoDao.findByAddress(fromAddr);
         if(fromAccountInfo == null){
-            log.error("数据错误！finishNftAuction.出价未查询到address:[{}]的数据！", fromAddr);
+            log.error("数据错误！finishNftAuction.出价未查询到AccountInfo，address:[{}]的数据！", fromAddr);
             return;
         }
         TokenInfo nftTokenContract = tokenInfoDao.findAllByAddress(nftContractAddress);
@@ -149,10 +149,12 @@ public class ErcNft1155ServiceImpl extends ErcNftBaseService {
             nftTokenContract = nftAuctionService.addTokenInfo(nftContractAddress, fromAddr, true);
         }
         //更新资产
-        Long amount = this.getAmount(web3j, nftContractAddress, fromAddr, nftId);
-        //更新nft_account amount、状态
-        int count = nftAccountDao.updateAmountAndWatcherStatus(nftId, nftTokenContract.getId(), fromAccountInfo.getId(), 1, amount);
-        log.info("finishNftAuction.updateNftAccount transactionHash:{}, count:{}", transaction.getTransactionHash(), count);
+        synchronized (this) {
+            Long amount = this.getAmount(web3j, nftContractAddress, fromAddr, nftId);
+            //更新nft_account amount、状态
+            int count = nftAccountDao.updateAmountAndWatcherStatus(nftId, nftTokenContract.getId(), fromAccountInfo.getId(), 1, amount);
+            log.info("finishNftAuction.updateNftAccount transactionHash:{}, count:{}", transaction.getTransactionHash(), count);
+        }
     }
 
     @Override
@@ -168,7 +170,7 @@ public class ErcNft1155ServiceImpl extends ErcNftBaseService {
         //AccountInfo fromAccountInfo = nftAuctionService.getAccountNotExistSave(fromAddr);
         AccountInfo fromAccountInfo = accountInfoDao.findByAddress(fromAddr);
         if(fromAccountInfo == null){
-            log.error("数据错误！cancelNftAuction.出价未查询到address:[{}]的数据！", fromAddr);
+            log.error("数据错误！cancelNftAuction.出价未查询到AccountInfo，address:[{}]的数据！", fromAddr);
             return;
         }
         TokenInfo nftTokenContract = tokenInfoDao.findAllByAddress(nftContractAddress);

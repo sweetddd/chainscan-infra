@@ -201,7 +201,6 @@ public class EvmWatcher implements IWatcher {
         String property = System.getenv("watcher.select.transaction.log");
         logger.info("watcher.select.transaction.log:{}", property);
 
-        //todo
         Boolean insertTransaction = false;
         if(!StringUtils.isEmpty(property) && "true".equals(property)){
             insertTransaction = true;

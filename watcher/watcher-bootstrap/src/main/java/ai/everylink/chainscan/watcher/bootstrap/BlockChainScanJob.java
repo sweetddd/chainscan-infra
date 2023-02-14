@@ -68,6 +68,7 @@ public class BlockChainScanJob implements Job {
 
             // 2.获取plugin列表
             List<IWatcherPlugin> pluginList = watcher.getOrderedPluginList();
+            log.info("pluginList===>{}", pluginList);
             if (CollectionUtils.isEmpty(pluginList)) {
                 return;
             }
@@ -83,7 +84,7 @@ public class BlockChainScanJob implements Job {
 
                 String pluginId = plugin.getClass().getSimpleName();
                 long t1 = System.currentTimeMillis();
-                log.info("[{}]Execute plugin '{}' start.", watcherId, pluginId);
+                log.info("[{}]Execute plugin start '{}' .", watcherId, pluginId);
                 if (!WatcherUtils.isProcessConcurrent()) {
                     log.info("BlockChainScanJob->非并发处理, blockList.size():{}", blockList.size());
                     for (Object block : blockList) {
