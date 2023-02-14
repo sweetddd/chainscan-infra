@@ -62,8 +62,8 @@ pipeline {
                                        credentialsId: 'kubeconfig-prd',
                                        variable: 'KUBECONFIG')
                                        ]) {
-                                        sh 'envsubst < watcher/watcher-bootstrap/deploy/production/node-dtx/deployment.yaml | kubectl apply -f -'
-                                         sh 'envsubst < watcher/watcher-bootstrap/deploy/production/node-dtx/service.yaml | kubectl apply -f -'
+                                        sh 'envsubst < watcher/watcher-bootstrap/deploy/production/node/deployment.yaml | kubectl apply -f -'
+                                         sh 'envsubst < watcher/watcher-bootstrap/deploy/production/node/service.yaml | kubectl apply -f -'
                                           sh 'envsubst < watcher/watcher-bootstrap/deploy/production/node-bnb/deployment.yaml | kubectl apply -f -'
                                            sh 'envsubst < watcher/watcher-bootstrap/deploy/production/node-bnb/service.yaml | kubectl apply -f -'
                                             sh 'envsubst < watcher/watcher-bootstrap/deploy/production/node-goerli/deployment.yaml | kubectl apply -f -'
