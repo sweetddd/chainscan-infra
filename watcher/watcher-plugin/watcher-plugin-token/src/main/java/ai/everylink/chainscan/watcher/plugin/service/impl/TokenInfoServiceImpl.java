@@ -173,6 +173,7 @@ public class TokenInfoServiceImpl implements TokenInfoService {
     public void tokenScan(EvmData data) {
         int chainId = data.getChainId();
         List<Transaction> txList  = buildTransactionList(data, chainId);
+        log.info("tokenScan.监听资产变化->topic为资产变化:{}", txList);
         for (Transaction transaction : txList) {
             String contractAddress = transaction.getToAddr();
             String transactionHash = transaction.getTransactionHash();
@@ -202,10 +203,9 @@ public class TokenInfoServiceImpl implements TokenInfoService {
                         }
                         //String contractAddress = nftLog.getAddress();
                         String topic = topics.get(0);
-                        log.info("tokenScan.topic:{}", topic);
                         boolean topicDefault = topic.equals(TRANSFER_TOPIC);
                         boolean topicErc1155 = topic.equals(TRANSFER_ERC1155_TOPIC); //NFT合约：链上event，一个合约类似：一个java类，topic类似：方法名+参数列表hash
-                        log.info("tokenScan.topic.logTransactionHash:{}, topicDefault:{}, topicErc1155: {}", logTransactionHash, topicDefault, topicErc1155);
+                        log.info("tokenScan.topic.logTransactionHash:{}, topic: {}, topicDefault:{}, topicErc1155: {}", logTransactionHash, topic, topicDefault, topicErc1155);
                         if (topicDefault || topicErc1155) {
                             log.info("tokenScan.开始处理转账事件，txHash:{}，contractAddress:{}，topicErc1155:{}", transactionHash, contractAddress, topicErc1155);
                             ErcTokenService ercTokenService = ErcTokenFactory.getInstance(topicErc1155 ? ErcTypeTokenEnum.ERC1155 : ErcTypeTokenEnum.DEFAULT);
