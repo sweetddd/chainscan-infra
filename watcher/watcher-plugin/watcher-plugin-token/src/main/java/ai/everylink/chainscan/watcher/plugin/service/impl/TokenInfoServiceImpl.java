@@ -434,56 +434,65 @@ public class TokenInfoServiceImpl implements TokenInfoService {
 
         if(isAdd){
             //NftAccount nftAccount = nftAccountDao.selectByTokenIdContract(tokenId.longValue(), nft.getId(), accountInfo.getId());
-            NftAccount nftAccount = nftAccountDao.findByTxHash(transactionHash);
-            if(nftAccount == null){
-                //除创建nft其他转账查询（txHash不一致）
-                nftAccount = nftAccountDao.selectByTokenIdContract(tokenId.longValue(), nft.getId(), accountInfo.getId());
-            }
-            log.info("TokenInfoServiceImpl.transactionHash:{}.nftAccount:{}, nftId:{}, tokenId:{}", transactionHash, nftAccount, nft.getId(), tokenId);
-            if(nftAccount == null) {
-                nftAccount = new NftAccount();
-                nftAccount.setCreateTime(new Date().toInstant());
-                nftAccount.setTxHash(transactionHash);
-            }
-            try {
-                Long amount = ercTokenService.getAmount(web3j, contract, fromAddr, tokenId.longValue());
-                log.info("updateNftAccount.amount:{}", amount);
-                nftAccount.setContractName(nft.getTokenName());
-                nftAccount.setAccountId(accountInfo.getId());
-                nftAccount.setTokenId(nft.getId());
-                nftAccount.setNftId(tokenId.longValue());
-                nftAccount.setAmount(amount);
-                nftAccount.setUpdateTime(new Date().toInstant());
-                nftAccount.setWatcherUpdated(1);
-                //tokenOfOwnerByIndex
-
-                //Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
-                log.info("TokenInfoServiceImpl.transactionHash:{}.contract:{}, tokenId:{}", transactionHash, contract, tokenId);
-                if(StrUtil.isBlank(nftAccount.getNftData())) {
-                    String nftData = ercTokenService.getNftData(web3j, contract, tokenId);
-                    log.info("nftData:{}", nftData);
-                    if (StringUtils.isEmpty(nftData)) {
-                        return;
-                    }
-                    nftAccount.setNftData(nftData);
-                }
-                if(StrUtil.isBlank(nftAccount.getNftName())) {
-                    String nftName = ercTokenService.getNftName(nftAccount.getContractName(), nftAccount.getNftData());
-                    if (StrUtil.isNotBlank(nftName)) {
-                        nftAccount.setNftName(nftName);
-                    }
-                }
-            }  catch (Exception e) {
-                e.printStackTrace();
-                log.error("updateNftAccount.", e);
-            }
-            log.info("新增nftAccount:{}", nftAccount);
-            nftAccountDao.save(nftAccount);
+            saveNftAccount(fromAddr, contract, tokenId, transactionHash, ercTokenService, nft, accountInfo, 0);
         }else{
             log.info("删除nftAccount:accountInfo.getId():{}, tokenId:{}, nft.getId():{}", accountInfo.getId(), tokenId.longValue(),nft.getId());
             nftAccountDao.deleteNftTokenId(accountInfo.getId(), nft.getId(), tokenId.longValue());
         }
+    }
 
+    private void saveNftAccount(String fromAddr, String contract, BigInteger tokenId,
+                                String transactionHash, ErcTokenService ercTokenService,
+                                TokenInfo nft, AccountInfo accountInfo, int retryCount){
+        NftAccount nftAccount = nftAccountDao.findByTxHash(transactionHash);
+        if(nftAccount == null){
+            //除创建nft其他转账查询（txHash不一致）
+            nftAccount = nftAccountDao.selectByTokenIdContract(tokenId.longValue(), nft.getId(), accountInfo.getId());
+        }
+        log.info("TokenInfoServiceImpl.transactionHash:{}.nftAccount:{}, nftId:{}, tokenId:{}", transactionHash, nftAccount, nft.getId(), tokenId);
+        if(nftAccount == null) {
+            nftAccount = new NftAccount();
+            nftAccount.setCreateTime(new Date().toInstant());
+            nftAccount.setTxHash(transactionHash);
+        }
+        try {
+            Long amount = ercTokenService.getAmount(web3j, contract, fromAddr, tokenId.longValue());
+            log.info("updateNftAccount.amount:{}", amount);
+            nftAccount.setContractName(nft.getTokenName());
+            nftAccount.setAccountId(accountInfo.getId());
+            nftAccount.setTokenId(nft.getId());
+            nftAccount.setNftId(tokenId.longValue());
+            nftAccount.setAmount(amount);
+            nftAccount.setUpdateTime(new Date().toInstant());
+            nftAccount.setWatcherUpdated(1);
+            //tokenOfOwnerByIndex
+
+            //Utf8String tokenURL = vm30Utils.tokenURL(web3j, contract, tokenId);
+            log.info("TokenInfoServiceImpl.transactionHash:{}.contract:{}, tokenId:{}", transactionHash, contract, tokenId);
+            if(StrUtil.isBlank(nftAccount.getNftData())) {
+                String nftData = ercTokenService.getNftData(web3j, contract, tokenId);
+                log.info("nftData:{}", nftData);
+                if (StringUtils.isEmpty(nftData)) {
+                    return;
+                }
+                nftAccount.setNftData(nftData);
+            }
+            if(StrUtil.isBlank(nftAccount.getNftName())) {
+                String nftName = ercTokenService.getNftName(nftAccount.getContractName(), nftAccount.getNftData());
+                if (StrUtil.isNotBlank(nftName)) {
+                    nftAccount.setNftName(nftName);
+                }
+            }
+            log.info("新增nftAccount:{}", nftAccount);
+            nftAccountDao.save(nftAccount);
+        }  catch (Exception e) {
+            retryCount = retryCount + 1;
+            e.printStackTrace();
+            log.error("updateNftAccount.", e);
+            if(retryCount < 3){
+                saveNftAccount(fromAddr, contract, tokenId, transactionHash, ercTokenService, nft, accountInfo, retryCount);
+            }
+        }
     }
 
 
