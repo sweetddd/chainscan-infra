@@ -87,6 +87,8 @@ pipeline {
                                                  ]) {
                                                  sh 'envsubst < watcher/watcher-bootstrap/deploy/main/node-bnb/deployment.yaml | kubectl apply -f -'
                                                  sh 'envsubst < watcher/watcher-bootstrap/deploy/main/node-bnb/service.yaml | kubectl apply -f -'
+                                                 sh 'envsubst < watcher/watcher-bootstrap/deploy/main/node-polygon/deployment.yaml | kubectl apply -f -'
+                                                 sh 'envsubst < watcher/watcher-bootstrap/deploy/main/node-polygon/service.yaml | kubectl apply -f -'
                                              }
                                         }
         }

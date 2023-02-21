@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $APP_NAME-bnb-mainnet
+  name: $APP_NAME-polygon-mainnet
   namespace: paas-mainnet
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: $APP_NAME-bnb-mainnet
+      app: $APP_NAME-polygon-mainnet
   template:
     metadata:
       labels:
-        app: $APP_NAME-bnb-mainnet
+        app: $APP_NAME-polygon-mainnet
     spec:
       containers:
-      - name: $APP_NAME-bnb-mainnet
+      - name: $APP_NAME-polygon-mainnet
         image:  $REGISTRY/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
         livenessProbe:
           httpGet:
@@ -50,7 +50,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: bnb.mainnet.rpc.api
+                key: polygon.rpc.api
           - name: "nacos.config.server-addr"
             valueFrom:
               configMapKeyRef:
@@ -59,17 +59,32 @@ spec:
           - name: "spring.datasource.chainscan.jdbc-url"
             valueFrom:
               secretKeyRef:
-                name: database-bnb-mainnet
+                name: database-polygon
                 key: url
           - name: "spring.datasource.chainscan.username"
             valueFrom:
               secretKeyRef:
-                name: database-bnb-mainnet
+                name: database-polygon
                 key: username
           - name: "spring.datasource.chainscan.password"
             valueFrom:
               secretKeyRef:
-                name: database-bnb-mainnet
+                name: database-polygon
+                key: password
+          - name: "spring.datasource.marketplace.jdbc-url"
+            valueFrom:
+              secretKeyRef:
+                name: database-marketplace
+                key: url
+          - name: "spring.datasource.marketplace.username"
+            valueFrom:
+              secretKeyRef:
+                name: database-marketplace
+                key: username
+          - name: "spring.datasource.marketplace.password"
+            valueFrom:
+              secretKeyRef:
+                name: database-marketplace
                 key: password
           - name: "spring.datasource.wallet.jdbc-url"
             valueFrom:
@@ -100,69 +115,83 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: bnb.mainnet.rpc.api
+                key: polygon.rpc.api
           - name: "coin.dtx.api"
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: bnb.mainnet.rpc.api
+                key: dtx.rpc.api
           - name: "evm.vmChainUrl"
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: bnb.mainnet.rpc.api
+                key: dtx.rpc.api
           - name: "watcher.vmChainUrl"
             valueFrom:
               configMapKeyRef:
                 name: network-config
-                key: bnb.mainnet.rpc.api
+                key: polygon.rpc.api
+          - name: "watcher.nft.auction.address"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: polygon-nft-auction-address
+          - name: "watcher.nft.transfer.address"
+            valueFrom:
+              configMapKeyRef:
+                name: watcher-config
+                key: polygon-nft-transfer-address
+          - name: "watcher.token.not.scan.erc20"
+            value: 'true'
+          - name: "watcher.monitor.select.transaction.log"
+            value: 'true'
           - name: "watcher.chain.scanStep"
-            value: "1"
+            value: '1'
           - name: "watcher.chain.chainId"
-            value: "56"
+            value: '80001'
           - name: "watcher.insert.transaction.log"
-            value: "false"
+            value: 'false'
           - name: "watcher.select.transaction.log"
-            value: "false"
+            value: 'false'
           - name: "watcher.chain.chainType"
-            value: "EVM_PoW"
+            value: 'EVM_PoW'
           - name: "watcher.notify.template"
-            value: "BNB-Mainnet"
+            value: 'polygon'
           - name: "watcher.scan.switch"
-            value: "false"
+            value: 'false'
           - name: "watcher.process.concurrent.switch"
-            value: "false"
+            value: 'false'
           - name: "watcher.process.only.evmplugin"
-            value: "false"
+            value: 'false'
           - name: "watcher.transaction.bridge.group"
-            value: "bnb-watcher-transaction-bridge-group"
+            value: "polygon-watcher-transaction-bridge-group"
           - name: "bridge.proposal"
-            value: "bnb-bridge-proposal"
+            value: "polygon-bridge-proposal"
           - name: "watcher.bridge.contract.address"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-mainnet-bridge-contract-address
+                key: polygon-bridge-contract-address
           - name: "watcher.contract.lending.lending-config"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-mainnet-lending-contract-config
+                key: polygon-lending-contract-config
           - name: "watcher.contract.l2"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-mainnet-l2-contract-config
+                key: polygon-l2-contract-config
           - name: "watcher.confirm.block"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-mainnet-watcher-confirm-block
+                key: polygon-watcher-confirm-block
           - name: "watcher.contract.lending.stable-config"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-mainnet-stable-contract-config
+                key: polygon-stable-contract-config
           - name: "watcher.monitor.cron"
             value: "0 */1 * * * ?"
           - name: "watcher.monitor.threshold"
@@ -171,12 +200,12 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-mainnet-start-block-number
+                key: polygon-start-block-number
           - name: "watcher.l2.rest.api"
             valueFrom:
               configMapKeyRef:
                 name: watcher-config
-                key: bnb-mainnet-l2-rpc-url
+                key: polygon-l2-rpc-url
           - name: "watcher.notify.channel.id"
             valueFrom:
               configMapKeyRef:
@@ -198,7 +227,7 @@ spec:
                   - key: app
                     operator: In
                     values:
-                      - $APP_NAME-dtx-mainnet
-                      - $APP_NAME-rinkeby-mainnet
                       - $APP_NAME-bnb-mainnet
+                      - $APP_NAME-rinkeby-mainnet
+                      - $APP_NAME-polygon-mainnet
               topologyKey: "kubernetes.io/hostname"
