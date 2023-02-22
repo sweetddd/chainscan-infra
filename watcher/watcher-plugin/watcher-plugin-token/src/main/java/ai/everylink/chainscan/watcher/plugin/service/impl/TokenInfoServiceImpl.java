@@ -173,13 +173,13 @@ public class TokenInfoServiceImpl implements TokenInfoService {
     public void tokenScan(EvmData data) {
         int chainId = data.getChainId();
         List<Transaction> txList  = buildTransactionList(data, chainId);
-        log.info("tokenScan.监听资产变化->topic为资产变化:{}", txList);
+        //log.info("tokenScan.监听资产变化->topic为资产变化:{}", txList);
         for (Transaction transaction : txList) {
             String contractAddress = transaction.getToAddr();
             String transactionHash = transaction.getTransactionHash();
-            log.info("监听资产变化.transactionHash:{}, contractAddress:{}", transactionHash, contractAddress);
+            log.debug("监听资产变化.transactionHash:{}, contractAddress:{}", transactionHash, contractAddress);
             if(!vm30Utils.isTransferContract(transactionHash, contractAddress)){
-                log.info("监听资产变化.被排除transactionHash:{}, contractAddress:{}", transactionHash, contractAddress);
+                log.debug("监听资产变化.被排除transactionHash:{}, contractAddress:{}", transactionHash, contractAddress);
                 continue;
             }
             //根据txHash查询交易明细（收据）
