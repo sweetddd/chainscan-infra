@@ -484,7 +484,7 @@ public class VM30Utils {
     }
 
     public boolean isTransferContract(String transactionHash, String contractAddress){
-        log.info("转账合约判断，txHash：{}, 合约地址：{}", transactionHash, contractAddress);
+        log.debug("转账合约判断，txHash：{}, 合约地址：{}", transactionHash, contractAddress);
         if(StrUtil.isBlank(contractAddress)){
             return false;
         }

@@ -112,11 +112,11 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
     @Override
     public void nftAuctionScan(EvmData blockData) {
         String nftAuctionContracts = environment.getProperty("watcher.nft.auction.address");
-        log.info("nftAuctionScan.nftAuctionContracts:{}", nftAuctionContracts);
+        log.debug("nftAuctionScan.nftAuctionContracts:{}", nftAuctionContracts);
        // String nftAuctionContracts = "0x9b38f6fa3943c24f4998d73d178fb1e2899a1365";
         int chainId = blockData.getChainId();
         List<Transaction> txList = buildTransactionList(blockData, chainId);
-        log.info("nftAuctionScan.txList.size:{}", txList.size());
+        log.debug("nftAuctionScan.txList.size:{}", txList.size());
         // 事件监听 解析;
         for (Transaction transaction : txList) {
             String transactionHash = transaction.getTransactionHash();
@@ -133,7 +133,7 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
             this.parseTxStatus(transaction, receipt);
 
             String transactionStatus = transaction.getStatus();
-            log.info("nftAuctionScan.transaction.toAddr:{}, status:{}, transactionHash:{}", toAddr, transactionStatus, transactionHash);
+            log.debug("nftAuctionScan.transaction.toAddr:{}, status:{}, transactionHash:{}", toAddr, transactionStatus, transactionHash);
             if (StringUtils.isBlank(transactionStatus)) {
                 continue;
             }
@@ -143,20 +143,20 @@ public class NFTAuctionServiceImpl implements NFTAuctionService {
             if (StringUtils.isNotBlank(toAddr) && txSatte == 1) {
            // if (StringUtils.isNotBlank(toAddr) ) {
                 String input = transaction.getInput();
-                log.info("nftAuctionScan.开始处理拍卖，txHash:{}，toAddr:{}", transactionHash, toAddr);
+                log.debug("nftAuctionScan.开始处理拍卖，txHash:{}，toAddr:{}", transactionHash, toAddr);
                 if (StringUtils.isNotBlank(input) && input.length() > 10) {
                     List<String> params = DecodUtils.getParams2List(input);
                     String       method = params.get(0);
-                    log.info("nftAuctionScan.transaction.method:{}, params:{}", method, params);
+                    log.debug("nftAuctionScan.transaction.method:{}, params:{}", method, params);
                     //监控NFT 拍卖创建交易
                     ErcTypeNftEnum.Method nftMethod = ErcTypeNftEnum.getMethod(method);
-                    log.info("nftAuctionScan.nftMethod:{}", nftMethod);
+                    log.debug("nftAuctionScan.nftMethod:{}", nftMethod);
                     if(nftMethod == null){
                         continue;
                     }
                     ErcNftService ercNftService = ErcNftFactory.getInstance(nftMethod.isErc1155() ? ErcTypeNftEnum.ERC1155 : ErcTypeNftEnum.DEFAULT);
                     if(!ercNftService.isScan()){
-                        log.info("监控NFT 拍卖hash:{}被过滤！", transactionHash);
+                        log.debug("监控NFT 拍卖hash:{}被过滤！", transactionHash);
                         continue;
                     }
                     if (params.size() > 2 && nftMethod.isCreate()) {
