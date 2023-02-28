@@ -20,14 +20,10 @@ package ai.everylink.chainscan.watcher.plugin.service.impl;
 import ai.everylink.chainscan.watcher.core.config.DataSourceEnum;
 import ai.everylink.chainscan.watcher.core.config.TargetDataSource;
 import ai.everylink.chainscan.watcher.core.rocketmq.SlackUtils;
-import ai.everylink.chainscan.watcher.core.util.DecodUtils;
-import ai.everylink.chainscan.watcher.core.util.EvmTransactionUtils;
-import ai.everylink.chainscan.watcher.core.util.OkHttpUtil;
-import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
+import ai.everylink.chainscan.watcher.core.util.*;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.dao.WalletTranactionHistoryDao;
 import ai.everylink.chainscan.watcher.entity.Transaction;
-import ai.everylink.chainscan.watcher.entity.TransactionLog;
 import ai.everylink.chainscan.watcher.entity.WalletTransactionHistory;
 import ai.everylink.chainscan.watcher.plugin.service.BridgeHistoryService;
 import ai.everylink.chainscan.watcher.plugin.service.ConvertHistoryService;
@@ -69,8 +65,11 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
 
     private Web3j web3j;
 
-    public final static String COMPOUND = "Supply,Borrow,Repay,Withdraw,Burnt,Mint";
+    public final static List<String> COMPOUND = List.of("Supply","Borrow","Repay","Withdraw","Burnt","Mint");
 
+    public final static List<String> NFT_COMPOUND = List.of("Mint", "Product Listing", "Purchase", "Product Delisting", "Send");
+
+    public final static List<String> ALL_COMPOUND = ListUtil.merge(NFT_COMPOUND, COMPOUND);
 
     @Autowired
     private BridgeHistoryService bridgeHistoryService;
@@ -183,7 +182,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             //监听指定合约:
             log.info("bridge transaction scan toAddr is [{}],bridgeContracts is [{}],input is [{}]",toAddr.toLowerCase(),bridgeContracts.toLowerCase(),transaction.getInput());
 
-            if (StringUtils.isNotBlank(toAddr) && bridgeContracts.toLowerCase().equals(toAddr.toLowerCase())) {
+            if (StringUtils.isNotBlank(toAddr) && bridgeContracts.equalsIgnoreCase(toAddr)) {
                 String input = transaction.getInput();
                 List<Log> logs ;
                 if(!selectTransaction){
@@ -220,7 +219,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
             }
 
 
-            if (StringUtils.isNotBlank(toAddr) && StringUtils.isNotBlank(l2Contract) && l2Contract.toLowerCase().equals(toAddr.toLowerCase())) {
+            if (StringUtils.isNotBlank(toAddr) && StringUtils.isNotBlank(l2Contract) && l2Contract.equalsIgnoreCase(toAddr)) {
                 String input = transaction.getInput();
                 if (StringUtils.isNotBlank(input) && input.length() > 10) {
                     List<String> params = DecodUtils.getParams2List(input);
@@ -338,7 +337,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                             log.info("设置状态L1 Depositing  ,tx is [{}]",txHistory);
                             wTxHistoryDao.updateTxHistory(txHistory);
                         }
-                    }else if (COMPOUND.contains(type)  && chainId.intValue() == txHistory.getFromChainId()){
+                    }else if (ALL_COMPOUND.contains(type)  && chainId.intValue() == txHistory.getFromChainId()){
                         // lending
                         if(submitBlock.compareTo(currentBlockNumber) <= 0){
                             if(number.longValue() < maxBlock){
@@ -349,8 +348,6 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                             }
                             wTxHistoryDao.updateTxHistory(txHistory);
                         }
-
-
                     }
 //                }
 
