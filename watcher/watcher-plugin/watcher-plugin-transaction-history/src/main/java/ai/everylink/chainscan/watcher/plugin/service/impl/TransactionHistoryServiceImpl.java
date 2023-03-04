@@ -258,7 +258,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
     @Override
     @TargetDataSource(value = DataSourceEnum.wallet)
     public void updateConfirmBlock(EvmData blockData) {
-        BigInteger                     chainId     = new BigInteger(blockData.getChainId() + "");
+        BigInteger                     chainIdBig     = new BigInteger(blockData.getChainId() + "");
         BigInteger                     currentBlockNumber = blockData.getBlock().getNumber();
         long    startTime     = System.currentTimeMillis();
         List<WalletTransactionHistory> txHistorys  = wTxHistoryDao.findConfirmBlock();
@@ -286,72 +286,72 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 Integer confirmBlock = Integer.valueOf(environment.getProperty("watcher.confirm.block"));
 
                 int maxBlock = confirmBlock + 1;
+                int chainId = chainIdBig.intValue();
+                Integer fromChainId = txHistory.getFromChainId();
+                log.info("type:{}, number:{}, confirmBlock:{}, id:{}, chainId:{}, fromChainId:{}, fromTxHash:{}", type, number, confirmBlock, txHistory.getId(), chainId, fromChainId, txHistory.getFromTxHash());
                 if (type.equals("Bridge")){
-                        //bridge
-                        if(number.longValue() < maxBlock){
-                            if(chainId.intValue() == txHistory.getFromChainId()){
-                                if(txHistory.getTxState().indexOf("From Chain Processing") >= 0){
-                                    //from
-                                    log.info("设置状态 228 From Chain Processing ,tx is [{}]",txHistory);
+                    //bridge
+                    if(number.longValue() < maxBlock){
+                        if(chainId == fromChainId){
+                            if(txHistory.getTxState().indexOf("From Chain Processing") >= 0){
+                                //from
+                                log.info("设置状态 228 From Chain Processing ,tx is [{}]",txHistory);
 
-                                    txHistory.setConfirmBlock(txHistoryConfirmBlock);
+                                txHistory.setConfirmBlock(txHistoryConfirmBlock);
 
-                                    txHistory.setTxState("From Chain Processing (" + number + "/"+confirmBlock+")");
-                                    log.info("设置状态 From Chain Processing ,tx is [{}]",txHistory);
-                                    wTxHistoryDao.updateTxHistory(txHistory);
-
-
-                                }
-                            }else if(chainId.intValue() == txHistory.getToChainId()){
-                                if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 ){
-                                    log.info("设置状态239 To Chain Processing ,tx is [{}]",txHistory);
-
-                                    txHistory.setConfirmBlock(txHistoryConfirmBlock);
-                                    txHistory.setTxState("To Chain Processing (" + number + "/"+confirmBlock+")");
-                                    log.info("设置状态 To Chain Processing ,tx is [{}]",txHistory);
-                                    wTxHistoryDao.updateTxHistory(txHistory);
-
-                                }
-                            }
-                        }else{
-                            txHistory.setConfirmBlock(new BigInteger(confirmBlock.toString()));
-                            if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 && chainId.intValue() == txHistory.getToChainId()){
-                                txHistory.setTxState("Finalized");
-                                log.info("设置状态 Finalized ,tx is [{}]",txHistory);
+                                txHistory.setTxState("From Chain Processing (" + number + "/"+confirmBlock+")");
+                                log.info("设置状态 From Chain Processing ,tx is [{}]",txHistory);
                                 wTxHistoryDao.updateTxHistory(txHistory);
 
 
-                            }else if(txHistory.getTxState().indexOf("From Chain Processing ") >=0 && chainId.intValue() == txHistory.getFromChainId()){
+                            }
+                        }else if(chainId == txHistory.getToChainId()){
+                            if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 ){
+                                log.info("设置状态239 To Chain Processing ,tx is [{}]",txHistory);
+
                                 txHistory.setConfirmBlock(txHistoryConfirmBlock);
-                                txHistory.setTxState("In Consensus Processing");
-                                log.info("设置状态 In Consensus Processing ,tx is [{}]",txHistory);
+                                txHistory.setTxState("To Chain Processing (" + number + "/"+confirmBlock+")");
+                                log.info("设置状态 To Chain Processing ,tx is [{}]",txHistory);
                                 wTxHistoryDao.updateTxHistory(txHistory);
 
                             }
                         }
-                    }else if (type.equals("Deposit") && chainId.intValue() == txHistory.getFromChainId()){
-                        // deposit
-                        txHistory.setConfirmBlock(txHistoryConfirmBlock);
-                        if(number.longValue() < maxBlock && txHistory.getTxState().indexOf("L1 Depositing") >= 0){
-                            txHistory.setTxState("L1 Depositing (" + number + "/"+confirmBlock+")");
-                            log.info("设置状态L1 Depositing  ,tx is [{}]",txHistory);
+                    }else{
+                        txHistory.setConfirmBlock(new BigInteger(confirmBlock.toString()));
+                        if(txHistory.getTxState().indexOf("To Chain Processing") >= 0 && chainId == txHistory.getToChainId()){
+                            txHistory.setTxState("Finalized");
+                            log.info("设置状态 Finalized ,tx is [{}]",txHistory);
                             wTxHistoryDao.updateTxHistory(txHistory);
-                        }
-                    }else if (ALL_COMPOUND.contains(type)  && chainId.intValue() == txHistory.getFromChainId()){
-                        // lending
-                        if(submitBlock.compareTo(currentBlockNumber) <= 0){
-                            if(number.longValue() < maxBlock){
-                                txHistory.setConfirmBlock(txHistoryConfirmBlock);
-                            }else{
-                                txHistory.setConfirmBlock(new BigInteger(confirmBlock.toString()));
-                                txHistory.setTxState("Finalized");
-                            }
+
+
+                        }else if(txHistory.getTxState().indexOf("From Chain Processing ") >=0 && chainId == fromChainId){
+                            txHistory.setConfirmBlock(txHistoryConfirmBlock);
+                            txHistory.setTxState("In Consensus Processing");
+                            log.info("设置状态 In Consensus Processing ,tx is [{}]",txHistory);
                             wTxHistoryDao.updateTxHistory(txHistory);
+
                         }
                     }
-//                }
-
-                //}
+                }else if (type.equals("Deposit") && chainId == fromChainId){
+                    // deposit
+                    txHistory.setConfirmBlock(txHistoryConfirmBlock);
+                    if(number.longValue() < maxBlock && txHistory.getTxState().indexOf("L1 Depositing") >= 0){
+                        txHistory.setTxState("L1 Depositing (" + number + "/"+confirmBlock+")");
+                        log.info("设置状态L1 Depositing  ,tx is [{}]",txHistory);
+                        wTxHistoryDao.updateTxHistory(txHistory);
+                    }
+                }else if (ALL_COMPOUND.contains(type)  && chainId == fromChainId){
+                    // lending
+                    if(submitBlock.compareTo(currentBlockNumber) <= 0){
+                        if(number.longValue() < maxBlock){
+                            txHistory.setConfirmBlock(txHistoryConfirmBlock);
+                        }else{
+                            txHistory.setConfirmBlock(new BigInteger(confirmBlock.toString()));
+                            txHistory.setTxState("Finalized");
+                        }
+                        wTxHistoryDao.updateTxHistory(txHistory);
+                    }
+                }
             } catch (Exception e) {
                 log.info("update txlog error [{}]",e);
             }
