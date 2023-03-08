@@ -45,6 +45,11 @@ public interface WalletTranactionHistoryDao extends JpaRepository<WalletTransact
     @Transactional
     void updateTxHistory(@Param("txHistory") WalletTransactionHistory txHistory);
 
+    @Query(value = "update  wallet_transaction_history set submit_block =:#{#txHistory.submitBlock},update_time = NOW()  where id =:#{#txHistory.id}", nativeQuery = true)
+    @Modifying
+    @Transactional
+    void updateTxHistorySubmitBlock(@Param("txHistory") WalletTransactionHistory txHistory);
+
     /**
      * 查询指定交易
      * @param chainID
@@ -76,8 +81,8 @@ public interface WalletTranactionHistoryDao extends JpaRepository<WalletTransact
      * 查询需要更新区块信息的数据;
      * @return
      */
-    @Query(value = "select * from wallet_transaction_history where   tx_state != 'Failure'  and tx_state != 'Finalized' and tx_state != 'L1 Depositing (12/12)' ", nativeQuery = true)
-    List<WalletTransactionHistory> findConfirmBlock();
+    @Query(value = "select * from wallet_transaction_history where   tx_state != 'Failure'  and tx_state != 'Finalized' and tx_state != :txState", nativeQuery = true)
+    List<WalletTransactionHistory> findConfirmBlock(String txState);
 
 
     @Query(value = "select * from wallet_transaction_history where  from_chain_id = :chainId and type = 'Deposit' and  submit_block < :blockHeight and l2_executed = 0 ", nativeQuery = true)

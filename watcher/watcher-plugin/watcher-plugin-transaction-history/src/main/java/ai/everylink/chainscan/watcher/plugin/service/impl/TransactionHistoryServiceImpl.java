@@ -261,7 +261,9 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         BigInteger                     chainIdBig     = new BigInteger(blockData.getChainId() + "");
         BigInteger                     currentBlockNumber = blockData.getBlock().getNumber();
         long    startTime     = System.currentTimeMillis();
-        List<WalletTransactionHistory> txHistorys  = wTxHistoryDao.findConfirmBlock();
+        Integer confirmBlock = Integer.valueOf(environment.getProperty("watcher.confirm.block"));
+        String txState = "L1 Depositing ("+confirmBlock+"/"+confirmBlock+")";
+        List<WalletTransactionHistory> txHistorys  = wTxHistoryDao.findConfirmBlock(txState);
         log.info("TxHistory-findConfirmBlock-consum:" + (System.currentTimeMillis() - startTime));
 
         long    startTime2     = System.currentTimeMillis();
@@ -275,15 +277,16 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                     txHistoryConfirmBlock = BigInteger.ZERO;
                 }
                 txHistoryConfirmBlock = txHistoryConfirmBlock.add(BigInteger.ONE);
+                boolean submitBlockIsNull = false;
                 if(submitBlock == null || submitBlock.compareTo(BigInteger.ZERO) == 0){
                     long       block     = web3j.ethBlockNumber().send().getBlockNumber().longValue();
                     newNumber = BigInteger.valueOf(block);
                     submitBlock = newNumber;
                     txHistory.setSubmitBlock(newNumber);
+                    submitBlockIsNull = true;
                 }
 //                if(submitBlock.compareTo(confirmBlock) <= 0){
-                    BigInteger number = txHistoryConfirmBlock;
-                Integer confirmBlock = Integer.valueOf(environment.getProperty("watcher.confirm.block"));
+                BigInteger number = txHistoryConfirmBlock;
 
                 int maxBlock = confirmBlock + 1;
                 int chainId = chainIdBig.intValue();
@@ -350,6 +353,9 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                             txHistory.setTxState("Finalized");
                         }
                         wTxHistoryDao.updateTxHistory(txHistory);
+                    }else if(submitBlockIsNull){
+                        //submitBlock为空，必须更新，否则永远submitBlock 大于 currentBlockNumber（因为上面代码如果为空submitBlock为当前最新块高度）
+                        wTxHistoryDao.updateTxHistorySubmitBlock(txHistory);
                     }
                 }
             } catch (Exception e) {
