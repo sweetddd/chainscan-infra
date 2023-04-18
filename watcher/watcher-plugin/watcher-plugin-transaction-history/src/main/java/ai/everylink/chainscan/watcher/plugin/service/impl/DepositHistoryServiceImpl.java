@@ -61,10 +61,10 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
             wTxHistoryDao.updateTxHistory(txHistory);
         }else {
             retryCount = retryCount + 1;
-            if(retryCount <= 5) {
+            if(retryCount <= 7) {
                 log.error("txhistory-plugin(depositERC20HistoryScan):There is no such data, 重试第" + retryCount + "次:" + transactionHash);
                 try {
-                    TimeUnit.SECONDS.sleep(2L);
+                    TimeUnit.SECONDS.sleep(1L);
                 } catch (Exception ignored){}
                 depositERC20HistoryScanRetry(transaction, retryCount);
             }
