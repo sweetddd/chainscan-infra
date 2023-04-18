@@ -344,7 +344,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                         wTxHistoryDao.updateTxHistory(txHistory);
                     }
                 }else if (ALL_COMPOUND.contains(type)  && chainId == fromChainId){
-                    // lending
+                    // lending：当前块大于历史交易记录的块
                     if(submitBlock.compareTo(currentBlockNumber) <= 0){
                         if(number.longValue() < maxBlock){
                             txHistory.setConfirmBlock(txHistoryConfirmBlock);

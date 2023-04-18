@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
 import java.sql.Timestamp;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author brett
@@ -34,7 +35,11 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
 
     @Override
     @TargetDataSource(value = DataSourceEnum.wallet)
-    public void depositERC20HistoryScan(Transaction transaction) {
+    public void depositERC20HistoryScan(Transaction transaction){
+        depositERC20HistoryScanRetry(transaction, 0);
+    }
+
+    public void depositERC20HistoryScanRetry(Transaction transaction, int retryCount) {
         String  transactionHash = transaction.getTransactionHash();
         int txSatte = Integer.parseInt(transaction.getStatus().replace("0x", ""), 16);
         WalletTransactionHistory txHistory  = wTxHistoryDao.findByAddTxHash(transaction.getFromAddr(), transactionHash);
@@ -55,7 +60,14 @@ public class DepositHistoryServiceImpl implements DepositHistoryService {
             log.error("扫描到deposit 二层的记录，状态是[{}]",txHistory);
             wTxHistoryDao.updateTxHistory(txHistory);
         }else {
-            log.error("txhistory-plugin(depositERC20HistoryScan):There is no such data:" + transactionHash);
+            retryCount = retryCount + 1;
+            if(retryCount <= 5) {
+                log.error("txhistory-plugin(depositERC20HistoryScan):There is no such data, 重试第" + retryCount + "次:" + transactionHash);
+                try {
+                    TimeUnit.SECONDS.sleep(2L);
+                } catch (Exception ignored){}
+                depositERC20HistoryScanRetry(transaction, retryCount);
+            }
         }
     }
 
