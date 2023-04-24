@@ -49,6 +49,8 @@ pipeline {
                               sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/node-goerli/service.yaml | kubectl apply -f -'
                               sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/node-polygon/deployment.yaml | kubectl apply -f -'
                               sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/node-polygon/service.yaml | kubectl apply -f -'
+                              sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/node-zkevm/deployment.yaml | kubectl apply -f -'
+                              sh 'envsubst < watcher/watcher-bootstrap/deploy/sandbox/node-zkevm/service.yaml | kubectl apply -f -'
                           }
                      }
       }
