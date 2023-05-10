@@ -57,7 +57,7 @@ pipeline {
     }
     stage('deploy to production') {
        steps {
-         input(message: 'Waiting for audit @eric  ', submitter: 'eric,admin')
+          input(message: 'Waiting for admin approve ', submitter: 'eric,admin,alex.zhou')
           container ('maven-jdk11') {
                                    withCredentials([
                                        kubeconfigFile(
@@ -80,7 +80,7 @@ pipeline {
 
      stage('deploy to mainnet') {
         steps {
-          input(message: 'Waiting for audit @eric  ', submitter: 'eric,admin')
+           input(message: 'Waiting for admin approve ', submitter: 'eric,admin,alex.zhou')
            container ('maven-jdk11') {
                                              withCredentials([
                                                  kubeconfigFile(
