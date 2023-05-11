@@ -516,17 +516,19 @@ public class VM30Utils {
             log.info("VM30Utils.replayTx.start.txHash:{}", txHash);
             //指定一个交易哈希，返回一个交易的收据。需要指出的是，处于pending状态的交易，收据是不可用的。
             EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(txHash).send();
-            if (receipt.getResult() == null) {
+            TransactionReceipt result = receipt.getResult();
+            if (result == null) {
                 log.info("VM30Utils.[EvmWatcher]tx receipt not found. blockNum={}, tx={}", blockNumber, txHash);
                 return ;
             }
-            log.info("VM30Utils.replayTx.end.txHash:{}，receipt.getResult():{}", txHash, receipt.getResult().toString());
+            String resultToString = result.toString();
+            log.info("VM30Utils.replayTx.end.txHash:{}，receipt.getResult():{}", txHash, resultToString.length() > 200 ? resultToString.substring(0, 200) : resultToString);
             //txList
-            data.getTxList().put(txHash, receipt.getResult());
+            data.getTxList().put(txHash, result);
             // 获取Logs
-            if (!CollectionUtils.isEmpty(receipt.getResult().getLogs())) {
+            if (!CollectionUtils.isEmpty(result.getLogs())) {
                 //LogMap
-                data.getTransactionLogMap().put(txHash, receipt.getResult().getLogs());
+                data.getTransactionLogMap().put(txHash, result.getLogs());
             }
             log.info("VM30Utils.replayTx.txHash:{}，data.getTransactionLogMap():{}", txHash, data.getTransactionLogMap().size());
         } catch (Exception e) {

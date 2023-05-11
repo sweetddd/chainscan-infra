@@ -39,10 +39,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
-import org.web3j.protocol.core.methods.response.EthBlock;
-import org.web3j.protocol.core.methods.response.EthBlockNumber;
-import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
-import org.web3j.protocol.core.methods.response.Transaction;
+import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
 
 import java.util.*;
@@ -345,16 +342,18 @@ public class EvmWatcher implements IWatcher {
             logger.info("replayTx.start.txHash:{}", txHash);
             //指定一个交易哈希，返回一个交易的收据。需要指出的是，处于pending状态的交易，收据是不可用的。
             EthGetTransactionReceipt receipt = web3j.ethGetTransactionReceipt(txHash).send();
-            if (receipt.getResult() == null) {
+            TransactionReceipt result = receipt.getResult();
+            if (result == null) {
                 logger.info("replayTx.end.txHash:{}，receipt.getResult() is null!", txHash);
                 logger.info("[EvmWatcher]tx receipt not found. blockNum={}, tx={}", blockNumber, txHash);
                 return ;
             }
-            logger.info("replayTx.end.txHash:{}，receipt.getResult():{}", txHash, receipt.getResult().toString());
-            data.getTxList().put(txHash, receipt.getResult());
+            String resultToString = result.toString();
+            logger.info("replayTx.end.txHash:{}，receipt.getResult():{}", txHash, resultToString.length() > 200 ? resultToString.substring(0, 200) : resultToString);
+            data.getTxList().put(txHash, result);
             // 获取Logs
-            if (!CollectionUtils.isEmpty(receipt.getResult().getLogs())) {
-                data.getTransactionLogMap().put(txHash, receipt.getResult().getLogs());
+            if (!CollectionUtils.isEmpty(result.getLogs())) {
+                data.getTransactionLogMap().put(txHash, result.getLogs());
             }
             logger.info("replayTx.txHash:{}，data.getTransactionLogMap():{}", txHash, data.getTransactionLogMap().size());
         } catch (Exception e) {
