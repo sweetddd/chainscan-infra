@@ -180,7 +180,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 continue;
             }
             //监听指定合约:
-            log.info("bridge transaction scan toAddr is [{}],bridgeContracts is [{}],input is [{}]",toAddr.toLowerCase(),bridgeContracts.toLowerCase(),transaction.getInput());
+            log.info("bridge transaction scan toAddr is [{}],bridgeContracts is [{}]",toAddr.toLowerCase(),bridgeContracts.toLowerCase());
 
             if (StringUtils.isNotBlank(toAddr) && bridgeContracts.equalsIgnoreCase(toAddr)) {
                 String input = transaction.getInput();
