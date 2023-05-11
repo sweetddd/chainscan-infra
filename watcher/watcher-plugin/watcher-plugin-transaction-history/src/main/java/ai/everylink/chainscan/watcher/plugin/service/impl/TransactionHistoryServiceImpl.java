@@ -236,7 +236,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                             }
                             transaction.setStatus(transactionReceipt.getStatus());
                         }
-                        log.info("transactionHistoryScan:method" + "0xe17376b5");
+                        log.info("transactionHistoryScan:method" + "0xe17376b5"); //deposit走这里
                         depositHistoryService.depositERC20HistoryScan(transaction);
                     }
                     // depositNativeToken :0x79031410a6b2e95b5cc4e954c236e45c9dab96ad22ea80b26c2611097819b001
