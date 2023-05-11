@@ -30,6 +30,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.ServiceLoader;
 
@@ -44,7 +45,6 @@ import java.util.ServiceLoader;
 @EnableJpaRepositories(basePackages = "ai.everylink.chainscan.watcher")
 @EntityScan(basePackages = "ai.everylink.chainscan.watcher")
 @ConfigurationProperties
-
 public class WatcherBootstrapApplication {
 
     /**
@@ -53,6 +53,7 @@ public class WatcherBootstrapApplication {
      * @param args startup arguments
      */
     public static void main(final String[] args) {
+        log.info("启动时间：{}", new Date());
         SpringApplication.run(WatcherBootstrapApplication.class, args);
         loopScan();
     }
