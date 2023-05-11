@@ -187,6 +187,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 List<Log> logs ;
                 if(!selectTransaction){
                     TransactionReceipt transactionReceipt = EvmTransactionUtils.replayTx(transaction.getTransactionHash(), web3j);
+                    log.info("selectTransaction is false, transactionReceipt.getTransactionHash:{}", transactionReceipt!=null?transactionReceipt.getTransactionHash():null);
                     if(null == transactionReceipt){
                         return;
                     }
@@ -344,6 +345,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                         wTxHistoryDao.updateTxHistory(txHistory);
                     }
                 }else if (ALL_COMPOUND.contains(type)  && chainId == fromChainId){
+                    log.info("历史记录改变状态：type:{}, chainId:{}, submitBlock:{}, currentBlockNumber:{}, number:{}, maxBlock:{},txHistory.fromTxHash:{}", type, chainId, submitBlock, currentBlockNumber, newNumber, maxBlock, txHistory.getFromTxHash());
                     // lending：当前块大于历史交易记录的块
                     if(submitBlock.compareTo(currentBlockNumber) <= 0){
                         if(number.longValue() < maxBlock){
