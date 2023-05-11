@@ -157,8 +157,8 @@ public class ChainMonitorWatcher implements IWatcher {
                 return;
             }
             String chainName = (chainId == 4) ? "Rinkeby": "DTX";
-            SlackUtils.sendSlackNotify(channelId, chainName + "链告警",
-                    "链长时间未出块，请关注！最后出块于(\"" + diff / 1000 / 60 + "\")分钟前");
+            logger.info(channelId, chainName + "链告警\", \"链长时间未出块，请关注！最后出块于(\\\"\" + diff / 1000 / 60 + \"\\\")分钟前\"");
+            SlackUtils.sendSlackNotify(channelId, chainName + "链告警", "链长时间未出块，请关注！最后出块于(\"" + diff / 1000 / 60 + "\")分钟前");
         } catch (Exception e) {
             logger.error("[MonitorThread]error:" + e.getMessage(), e);
         }
