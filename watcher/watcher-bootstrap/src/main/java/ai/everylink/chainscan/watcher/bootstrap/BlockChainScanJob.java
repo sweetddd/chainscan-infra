@@ -54,7 +54,8 @@ public class BlockChainScanJob implements Job {
         long totalStart = System.currentTimeMillis();
         long start = System.currentTimeMillis();
         String watcherId = watcher.getClass().getSimpleName();
-        log.info("[{}]Execute start. nextFireTime=[{}]]", watcherId, DateUtil.format_yyyy_MM_dd_HH_mm_ss(ctx.getTrigger().getNextFireTime()));
+        int processors = Runtime.getRuntime().availableProcessors();
+        log.info("[{}]Execute start. nextFireTime=[{}]], processors:{}", watcherId, DateUtil.format_yyyy_MM_dd_HH_mm_ss(ctx.getTrigger().getNextFireTime()), processors);
 
         try {
             // 1.扫块
@@ -140,7 +141,7 @@ public class BlockChainScanJob implements Job {
         return false;
     }
 
-    private static final ThreadPoolExecutor blockProcessPool = new ThreadPoolExecutor(300, 400, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(20000), new RejectedExecutionHandler() {
+    private static final ThreadPoolExecutor blockProcessPool = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors() + 1, Runtime.getRuntime().availableProcessors() + 1, 30, TimeUnit.MINUTES, new ArrayBlockingQueue<>(20000), new RejectedExecutionHandler() {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             log.error("blockProcessPool queue is full");

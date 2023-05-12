@@ -259,11 +259,13 @@ public class EvmWatcher implements IWatcher {
                 if (!CollectionUtils.isEmpty(transactions)) {
                     if(insertTransaction){
                         CountDownLatch txLatch = new CountDownLatch(transactions.size());
+                        List<String> txList = Lists.newArrayListWithCapacity(transactions.size());
                         for (EthBlock.TransactionResult transactionResult : transactions) {
                             Transaction tx = ((EthBlock.TransactionObject) transactionResult).get();
-                            logger.info("tx.getHash():{}", tx.getHash());
+                            txList.add(tx.getHash());
                             scanTxPool.submit(new ReplayTransactionThread(txLatch, data, tx.getHash()));
                         }
+                        logger.info("insertTransaction.tx.getHash():{}", txList);
                         txLatch.await(3, TimeUnit.MINUTES);
                     }
 
