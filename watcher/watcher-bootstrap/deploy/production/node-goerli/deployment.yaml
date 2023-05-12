@@ -33,7 +33,7 @@ spec:
             cpu: 0.1
             memory: 2Gi
           limits:
-            cpu: 0.5
+            cpu: 1
             memory: 4Gi
         volumeMounts:
         - name: host-time
@@ -126,7 +126,7 @@ spec:
           - name: "watcher.scan.switch"
             value: 'false'
           - name: "watcher.process.concurrent.switch"
-            value: 'false'
+            value: 'true'
           - name: "watcher.process.only.evmplugin"
             value: 'false'
           - name: "watcher.transaction.bridge.group"

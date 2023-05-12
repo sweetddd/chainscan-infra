@@ -33,7 +33,7 @@ spec:
             cpu: 0.1
             memory: 2Gi
           limits:
-            cpu: 0.5
+            cpu: 1
             memory: 8Gi
         volumeMounts:
         - name: host-time
@@ -104,7 +104,7 @@ spec:
           - name: "watcher.chain.monitor"
             value: "true"
           - name: "watcher.process.concurrent.switch"
-            value: "false"
+            value: "true"
           - name: "watcher.insert.transaction.log"
             value: "false"
           - name: "watcher.select.transaction.log"

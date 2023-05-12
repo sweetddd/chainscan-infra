@@ -18,6 +18,7 @@
 package ai.everylink.chainscan.watcher.plugin;
 
 import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
+import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
 import ai.everylink.chainscan.watcher.core.util.ExecutorsUtil;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
@@ -52,14 +53,10 @@ public class TransactionHistorySpiPlugin implements IEvmWatcherPlugin {
         if (transaction != null) {
             transactionHistoryService.transactionHistoryTxScan(transaction);
         }else {
-            Callable<Void> callable = () -> {
-                EvmData blockData = (EvmData) block;
-                transactionHistoryService.transactionHistoryScan(blockData);
-                transactionHistoryService.updateConfirmBlock(blockData);
-                transactionHistoryService.checkL2Status(blockData);
-                return null;
-            };
-            ExecutorsUtil.executor.submit(callable);
+            EvmData blockData = (EvmData) block;
+            transactionHistoryService.transactionHistoryScan(blockData);
+            transactionHistoryService.updateConfirmBlock(blockData);
+            transactionHistoryService.checkL2Status(blockData);
         }
         log.info("TxHistory-end:" + System.currentTimeMillis());
         return true;
