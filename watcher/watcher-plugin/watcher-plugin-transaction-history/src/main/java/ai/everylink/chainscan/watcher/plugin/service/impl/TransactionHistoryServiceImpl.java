@@ -292,7 +292,7 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
                 int maxBlock = confirmBlock + 1;
                 int chainId = chainIdBig.intValue();
                 Integer fromChainId = txHistory.getFromChainId();
-                log.info("type:{}, number:{}, confirmBlock:{}, id:{}, chainId:{}, fromChainId:{}, fromTxHash:{}", type, number, confirmBlock, txHistory.getId(), chainId, fromChainId, txHistory.getFromTxHash());
+                log.info("updateConfirmBlock.type:{}, number:{}, confirmBlock:{}, id:{}, chainId:{}, fromChainId:{}, fromTxHash:{}", type, number, confirmBlock, txHistory.getId(), chainId, fromChainId, txHistory.getFromTxHash());
                 if (type.equals("Bridge")){
                     //bridge
                     if(number.longValue() < maxBlock){

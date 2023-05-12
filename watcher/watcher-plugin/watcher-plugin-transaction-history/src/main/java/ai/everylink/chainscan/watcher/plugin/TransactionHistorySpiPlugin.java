@@ -18,12 +18,14 @@
 package ai.everylink.chainscan.watcher.plugin;
 
 import ai.everylink.chainscan.watcher.core.IEvmWatcherPlugin;
-import ai.everylink.chainscan.watcher.core.WatcherExecutionException;
+import ai.everylink.chainscan.watcher.core.util.ExecutorsUtil;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.core.vo.EvmData;
 import ai.everylink.chainscan.watcher.entity.Transaction;
 import ai.everylink.chainscan.watcher.plugin.service.TransactionHistoryService;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.Callable;
 
 /**
  * @author brett
@@ -50,11 +52,14 @@ public class TransactionHistorySpiPlugin implements IEvmWatcherPlugin {
         if (transaction != null) {
             transactionHistoryService.transactionHistoryTxScan(transaction);
         }else {
-            EvmData blockData = (EvmData) block;
-            transactionHistoryService.transactionHistoryScan(blockData);
-            transactionHistoryService.updateConfirmBlock(blockData);
-            transactionHistoryService.checkL2Status(blockData);
-
+            Callable<Void> callable = () -> {
+                EvmData blockData = (EvmData) block;
+                transactionHistoryService.transactionHistoryScan(blockData);
+                transactionHistoryService.updateConfirmBlock(blockData);
+                transactionHistoryService.checkL2Status(blockData);
+                return null;
+            };
+            ExecutorsUtil.executor.submit(callable);
         }
         log.info("TxHistory-end:" + System.currentTimeMillis());
         return true;
