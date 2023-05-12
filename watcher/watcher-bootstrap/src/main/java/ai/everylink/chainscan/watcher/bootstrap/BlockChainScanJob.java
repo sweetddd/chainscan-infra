@@ -27,6 +27,7 @@ import org.quartz.*;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -41,6 +42,7 @@ import java.util.concurrent.*;
 public class BlockChainScanJob implements Job {
 
     private IWatcher watcher;
+    Date date = new Date();
 
     /**
      * 扫块和处理块数据
@@ -55,7 +57,7 @@ public class BlockChainScanJob implements Job {
         long start = System.currentTimeMillis();
         String watcherId = watcher.getClass().getSimpleName();
         int processors = Runtime.getRuntime().availableProcessors();
-        log.info("[{}]Execute start. nextFireTime=[{}]], processors:{}", watcherId, DateUtil.format_yyyy_MM_dd_HH_mm_ss(ctx.getTrigger().getNextFireTime()), processors);
+        log.info("[{}]Execute start. nextFireTime=[{}]], processors:{}, date:{}", watcherId, DateUtil.format_yyyy_MM_dd_HH_mm_ss(ctx.getTrigger().getNextFireTime()), processors, date = new Date());
 
         try {
             // 1.扫块
