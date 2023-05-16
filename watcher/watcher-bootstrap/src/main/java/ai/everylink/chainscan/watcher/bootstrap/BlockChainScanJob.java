@@ -42,7 +42,6 @@ import java.util.concurrent.*;
 public class BlockChainScanJob implements Job {
 
     private IWatcher watcher;
-    Date date = new Date();
 
     /**
      * 扫块和处理块数据
@@ -56,8 +55,7 @@ public class BlockChainScanJob implements Job {
         long totalStart = System.currentTimeMillis();
         long start = System.currentTimeMillis();
         String watcherId = watcher.getClass().getSimpleName();
-        int processors = Runtime.getRuntime().availableProcessors();
-        log.info("[{}]Execute start. nextFireTime=[{}]], processors:{}, date:{}", watcherId, DateUtil.format_yyyy_MM_dd_HH_mm_ss(ctx.getTrigger().getNextFireTime()), processors, date = new Date());
+        log.info("[{}]Execute start. nextFireTime=[{}]], processors:{}, date:{}", watcherId, DateUtil.format_yyyy_MM_dd_HH_mm_ss(ctx.getTrigger().getNextFireTime()));
 
         try {
             // 1.扫块

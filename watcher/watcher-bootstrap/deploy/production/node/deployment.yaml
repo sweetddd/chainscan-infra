@@ -160,7 +160,7 @@ spec:
           - name: "watcher.scan.switch"
             value: 'false'
           - name: "watcher.process.concurrent.switch"
-            value: 'true'
+            value: 'false'
           - name: "watcher.insert.transaction.log"
             value: 'true'
           - name: "watcher.select.transaction.log"

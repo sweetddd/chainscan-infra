@@ -7,6 +7,6 @@ import java.util.concurrent.Executors;
 
 public class ExecutorsUtil {
 
-    public static final ExecutorService executor = TtlExecutors.getTtlExecutorService(Executors.newFixedThreadPool(30));
+    public static final ExecutorService executor = TtlExecutors.getTtlExecutorService(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1));
 
 }

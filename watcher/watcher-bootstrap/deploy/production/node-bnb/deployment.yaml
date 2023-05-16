@@ -131,7 +131,7 @@ spec:
           - name: "watcher.scan.switch"
             value: 'false'
           - name: "watcher.process.concurrent.switch"
-            value: 'true'
+            value: 'false'
           - name: "watcher.process.only.evmplugin"
             value: 'false'
           - name: "watcher.transaction.bridge.group"

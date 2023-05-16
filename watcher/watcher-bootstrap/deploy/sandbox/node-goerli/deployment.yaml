@@ -104,7 +104,7 @@ spec:
           - name: "watcher.chain.monitor"
             value: "true"
           - name: "watcher.process.concurrent.switch"
-            value: "true"
+            value: "false"
           - name: "watcher.insert.transaction.log"
             value: "false"
           - name: "watcher.select.transaction.log"
