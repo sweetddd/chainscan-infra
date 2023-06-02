@@ -189,7 +189,7 @@ public class EvmWatcher implements IWatcher {
 
     @Override
     public String getCron() {
-        return "*/2 * * * * ?";
+        return "*/1 * * * * ?";
     }
 
     private List<EvmData> currentReplayBlock(long start, long end) {

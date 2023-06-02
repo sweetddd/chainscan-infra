@@ -81,8 +81,8 @@ public interface WalletTranactionHistoryDao extends JpaRepository<WalletTransact
      * 查询需要更新区块信息的数据;
      * @return
      */
-    @Query(value = "select * from wallet_transaction_history where   tx_state != 'Failure'  and tx_state != 'Finalized' and tx_state != :txState", nativeQuery = true)
-    List<WalletTransactionHistory> findConfirmBlock(String txState);
+    @Query(value = "select * from wallet_transaction_history where   tx_state != 'Failure'  and tx_state != 'Finalized' and tx_state != :txState and create_time BETWEEN :createStartTime AND :createEndTime", nativeQuery = true)
+    List<WalletTransactionHistory> findConfirmBlock(String txState, String createStartTime, String createEndTime);
 
 
     @Query(value = "select * from wallet_transaction_history where  from_chain_id = :chainId and type = 'Deposit' and  submit_block < :blockHeight and l2_executed = 0 ", nativeQuery = true)

@@ -29,6 +29,8 @@ import ai.everylink.chainscan.watcher.plugin.service.BridgeHistoryService;
 import ai.everylink.chainscan.watcher.plugin.service.ConvertHistoryService;
 import ai.everylink.chainscan.watcher.plugin.service.DepositHistoryService;
 import ai.everylink.chainscan.watcher.plugin.service.TransactionHistoryService;
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -264,7 +266,10 @@ public class TransactionHistoryServiceImpl implements TransactionHistoryService 
         long    startTime     = System.currentTimeMillis();
         Integer confirmBlock = Integer.valueOf(environment.getProperty("watcher.confirm.block"));
         String txState = "L1 Depositing ("+confirmBlock+"/"+confirmBlock+")";
-        List<WalletTransactionHistory> txHistorys  = wTxHistoryDao.findConfirmBlock(txState);
+        Date date = new Date();
+        String startDateTime = DateUtil.format(DateUtil.offsetDay(date, -1), DatePattern.NORM_DATETIME_FORMAT);
+        String endDateTime = DateUtil.format(date, DatePattern.NORM_DATETIME_FORMAT);
+        List<WalletTransactionHistory> txHistorys  = wTxHistoryDao.findConfirmBlock(txState, startDateTime, endDateTime);
         log.info("TxHistory-findConfirmBlock-consum:" + (System.currentTimeMillis() - startTime));
 
         long    startTime2     = System.currentTimeMillis();
