@@ -28,13 +28,13 @@ import java.util.Map;
 @Slf4j
 public class DataSourceConfig {
 
-    @Value("${spring.datasource.hikari.maximum-pool-size}")
+    @Value("${spring.datasource.hikari.maximum-pool-size:5}")
     private int maximumPoolSize;
-    @Value("${spring.datasource.hikari.minimum-idle}")
+    @Value("${spring.datasource.hikari.minimum-idle:2}")
     private int minimumIdle;
-    @Value("${spring.datasource.hikari.max-lifetime}")
+    @Value("${spring.datasource.hikari.max-lifetime:59000}")
     private long maxLifetime;
-    @Value("${spring.datasource.hikari.idle-timeout}")
+    @Value("${spring.datasource.hikari.idle-timeout:59000}")
     private long idleTimeout;
 
     @Bean(name = "chainscanDataSource")
