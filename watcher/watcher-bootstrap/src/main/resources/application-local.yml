@@ -45,17 +45,38 @@ watcher:
   L2Url: http://xapi.powx.io/l2-server-api/api/v0.2/
   rinkebyUrl: https://eth-rinkeby.alchemyapi.io/v2/Wh0cFuopX8Z3xC_hMpE9vgQVwDbOrFS2
   #rinkebyUrl: http://rinkeby.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
-  vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
+  #vmChainUrl: http://vmtest.infra.powx.io/v1/72f3a83ea86b41b191264bd16cbac2bf
+  #vmChainUrl: https://matic-mumbai.chainstacklabs.com
+  #vmChainUrl: https://dtxtestnet.chainfra.io/v1/df8371a1d8cbc835147df382bb1144a9
+  vmChainUrl: https://bnbtestnet.powx.io
   bridge:
     contract:
       address: "0x221d6d8a097497b044c9a7d930f65c995073bb76"
+  token:
+    not:
+      scan:
+        erc20: true
+  chain:
+    chainId: 80001
+  nft:
+    transfer:
+      address: "0x061cA0C1C44Ed55DC37Ce050Cd0fDbEAa1124B13"
+  monitor:
+    select:
+      transaction:
+        log: true
 
 ai.everylink.chainscan.watcher.plugin:
-  EvmWatcher: 4,97
-#  ChainMonitorWatcher: 4.97
-#  NFTAuctionSpiPlugin: 97
-#  TokenSpiPlugin: 97
-#  TokenWatcher: 97
-#  TransactionHistorySpiPlugin: 4,97
-#  LendingHistorySpiPlugin: 4,97
+  EvmWatcher: 5,186,97,80001
+  #ChainMonitorWatcher: 186,80001
+  #NFTAuctionSpiPlugin: 186
+  #TokenSpiPlugin: 5,186,80001
+  #TokenWatcher: 186
+  #TransactionHistorySpiPlugin: 5,186,97,80001
+  TransactionHistorySpiPlugin: 97
+
+  #LendingHistorySpiPlugin: 186
+
+
+
 

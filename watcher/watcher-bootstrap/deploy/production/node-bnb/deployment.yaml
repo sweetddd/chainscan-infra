@@ -86,6 +86,26 @@ spec:
               secretKeyRef:
                 name: database-wallet
                 key: wallet-password
+          - name: "spring.datasource.hikari.maximum-pool-size"
+            valueFrom:
+              configMapKeyRef:
+                name: admin-datasource-hikari
+                key: maximum-pool-size
+          - name: "spring.datasource.hikari.minimum-idle"
+            valueFrom:
+              configMapKeyRef:
+                name: admin-datasource-hikari
+                key: minimum-idle
+          - name: "spring.datasource.hikari.max-lifetime"
+            valueFrom:
+              configMapKeyRef:
+                name: admin-datasource-hikari
+                key: max-lifetime
+          - name: "spring.datasource.hikari.idle-timeout"
+            valueFrom:
+              configMapKeyRef:
+                name: admin-datasource-hikari
+                key: idle-timeout
           - name: "watcher.rocketmq.server.addr"
             valueFrom:
               configMapKeyRef:
