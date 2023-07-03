@@ -33,7 +33,8 @@ management:
       enabled: false
 
 watcher.plugin:
-  batchSwitch: false
+  batchSwitch: true
+  coordinatorRpcUrl: http://127.0.0.1:8547
 
 
 logging:

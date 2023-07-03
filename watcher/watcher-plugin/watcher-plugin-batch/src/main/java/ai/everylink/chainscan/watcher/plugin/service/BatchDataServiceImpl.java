@@ -16,11 +16,12 @@
  */
 
 package ai.everylink.chainscan.watcher.plugin.service;
+import ai.everylink.chainscan.watcher.core.config.BatchConfig;
 import ai.everylink.chainscan.watcher.core.config.DataSourceEnum;
 import ai.everylink.chainscan.watcher.core.config.TargetDataSource;
+import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import ai.everylink.chainscan.watcher.dao.BatchDao;
 import ai.everylink.chainscan.watcher.entity.Batch;
-import ai.everylink.chainscan.watcher.entity.Status;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.*;
 import lombok.extern.slf4j.Slf4j;
@@ -60,9 +61,7 @@ public class BatchDataServiceImpl implements BatchDataService {
     @TargetDataSource(value = DataSourceEnum.chainscan)
     public Long getLatestPendingBatchNum() {
 
-        String url = environment.getProperty("COORDINATOR_L2_RPC_URL");
-
-//        String url = "http://127.0.0.1:8547";
+        String coordinatorRpcUrl = SpringApplicationUtils.getBean(BatchConfig.class).getCoordinatorRpcUrl();
 
         // 设置请求头
         HttpHeaders headers = new HttpHeaders();
@@ -82,12 +81,9 @@ public class BatchDataServiceImpl implements BatchDataService {
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
 
         try {
-            JSONObject response = restTemplate.postForObject(url + "/rpc", requestEntity, JSONObject.class);
-
+            JSONObject response = restTemplate.postForObject(coordinatorRpcUrl + "/rpc", requestEntity, JSONObject.class);
             String num=response.getString("result");
-
             long num_long = Long.parseLong(num.substring(2), 16);
-
             return num_long;
         } catch (Exception e) {
             log.error("[BatchWatcher] getLatestPendingBatchNum error:", e);
@@ -99,9 +95,7 @@ public class BatchDataServiceImpl implements BatchDataService {
     @TargetDataSource(value = DataSourceEnum.chainscan)
     public Long getLatestSubmittedBatchNum() {
 
-//        String url = environment.getProperty("COORDINATOR_L2_RPC_URL");
-
-        String url = "http://127.0.0.1:8547";
+        String coordinatorRpcUrl = SpringApplicationUtils.getBean(BatchConfig.class).getCoordinatorRpcUrl();
 
         // 设置请求头
         HttpHeaders headers = new HttpHeaders();
@@ -116,7 +110,7 @@ public class BatchDataServiceImpl implements BatchDataService {
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
 
         try {
-            JSONObject response = restTemplate.postForObject(url + "/rpc", requestEntity, JSONObject.class);
+            JSONObject response = restTemplate.postForObject(coordinatorRpcUrl + "/rpc", requestEntity, JSONObject.class);
 
             String num=response.getString("result");
 
@@ -134,9 +128,7 @@ public class BatchDataServiceImpl implements BatchDataService {
     @TargetDataSource(value = DataSourceEnum.chainscan)
     public Long getLatestFinalizedBatchNum() {
 
-//        String url = environment.getProperty("COORDINATOR_L2_RPC_URL");
-
-        String url = "http://127.0.0.1:8547";
+        String coordinatorRpcUrl = SpringApplicationUtils.getBean(BatchConfig.class).getCoordinatorRpcUrl();
 
         // 设置请求头
         HttpHeaders headers = new HttpHeaders();
@@ -151,7 +143,7 @@ public class BatchDataServiceImpl implements BatchDataService {
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
 
         try {
-            JSONObject response = restTemplate.postForObject(url + "/rpc", requestEntity, JSONObject.class);
+            JSONObject response = restTemplate.postForObject(coordinatorRpcUrl + "/rpc", requestEntity, JSONObject.class);
 
             String num=response.getString("result");
 
@@ -168,9 +160,7 @@ public class BatchDataServiceImpl implements BatchDataService {
     @Override
     @TargetDataSource(value = DataSourceEnum.chainscan)
     public List<Batch> getBatchList() {
-//        String url = environment.getProperty("COORDINATOR_L2_RPC_URL");
-        String url = "http://127.0.0.1:8547";
-
+        String coordinatorRpcUrl = SpringApplicationUtils.getBean(BatchConfig.class).getCoordinatorRpcUrl();
 
         // 设置请求头
         HttpHeaders headers = new HttpHeaders();
@@ -185,7 +175,7 @@ public class BatchDataServiceImpl implements BatchDataService {
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
 
         try {
-            JSONObject response = restTemplate.postForObject(url + "/rpc", requestEntity, JSONObject.class);
+            JSONObject response = restTemplate.postForObject(coordinatorRpcUrl + "/rpc", requestEntity, JSONObject.class);
 
             // 解析响应并转换为自定义类型 Batch 的数组 List<Batch>
             JSONArray batchArray = response.getJSONArray("result");
@@ -226,9 +216,7 @@ public class BatchDataServiceImpl implements BatchDataService {
     @TargetDataSource(value = DataSourceEnum.chainscan)
     @Override
     public Batch getBatchByNum(Long num) {
-//      String url = environment.getProperty("coordinator.l2.rpc.url");
-
-        String url = "http://127.0.0.1:8547";
+        String coordinatorRpcUrl = SpringApplicationUtils.getBean(BatchConfig.class).getCoordinatorRpcUrl();
 
         // 设置请求头
         HttpHeaders headers = new HttpHeaders();
@@ -246,7 +234,7 @@ public class BatchDataServiceImpl implements BatchDataService {
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
 
         try {
-            JSONObject response = restTemplate.postForObject(url + "/rpc", requestEntity, JSONObject.class);
+            JSONObject response = restTemplate.postForObject(coordinatorRpcUrl + "/rpc", requestEntity, JSONObject.class);
 
             JSONObject batch_json_object=response.getJSONObject("result");
 
@@ -316,9 +304,4 @@ public class BatchDataServiceImpl implements BatchDataService {
         batchDao.syncBatchStatus(id,status);
 
     }
-
-
-
-
-
 }

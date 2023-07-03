@@ -59,9 +59,9 @@ public class BatchWatcher implements IWatcher {
     private BatchDataService batchDataService;
 
 
-    private Long dbSubmitttedBatchNum;
+    private Long dbSubmitttedBatchNum=1L;
 
-    private Long dbFinalizedBatchNum;
+    private Long dbFinalizedBatchNum=1L;
 
 
     @Override
@@ -80,12 +80,6 @@ public class BatchWatcher implements IWatcher {
      */
     @Override
     public List<EvmData> scanBlock() {
-
-        String batchWatcher = System.getenv("watcher.plugin.batch.switch");
-        if (!StringUtils.isEmpty(batchWatcher) && Boolean.parseBoolean(batchWatcher)) {
-            return null;
-        }
-
         init();
 
         List<EvmData> defaultList = Lists.newArrayList();
@@ -124,8 +118,6 @@ public class BatchWatcher implements IWatcher {
     private void init() {
         initService();
 
-        dbSubmitttedBatchNum=1L;
-        dbFinalizedBatchNum=1L;
     }
 
     private void initService() {

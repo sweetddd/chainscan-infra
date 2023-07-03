@@ -8,8 +8,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "watcher.plugin")
 @Data
-public class PluginSwitch {
+public class BatchConfig {
 
     private Boolean batchSwitch;
+    private String coordinatorRpcUrl;
 
 }

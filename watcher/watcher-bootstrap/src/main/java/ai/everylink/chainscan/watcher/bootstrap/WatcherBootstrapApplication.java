@@ -18,7 +18,7 @@
 package ai.everylink.chainscan.watcher.bootstrap;
 
 import ai.everylink.chainscan.watcher.core.IWatcher;
-import ai.everylink.chainscan.watcher.core.config.PluginSwitch;
+import ai.everylink.chainscan.watcher.core.config.BatchConfig;
 import ai.everylink.chainscan.watcher.core.util.SpringApplicationUtils;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -108,7 +108,7 @@ public class WatcherBootstrapApplication {
         }
 
 
-        Boolean batchSwitch = SpringApplicationUtils.getBean(PluginSwitch.class).getBatchSwitch();
+        Boolean batchSwitch = SpringApplicationUtils.getBean(BatchConfig.class).getBatchSwitch();
         if (batchSwitch==null || !batchSwitch) {
             ArrayList<IWatcher> bWatchers = new ArrayList<>();
             for (IWatcher iWatcher : watcherList) {
