@@ -31,8 +31,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
 import java.util.*;
 
 /**
@@ -112,6 +110,7 @@ public class BatchWatcher implements IWatcher {
         }
 
         logger.info("[WatcherScan]end to scan. start={},end={},size={},consume={}ms", start, latestPendingBatchNum, latestPendingBatchNum-start+1, (System.currentTimeMillis() - startTime));
+        finalizedBlockStatus();
         return Lists.newArrayList();
     }
 
@@ -132,7 +131,7 @@ public class BatchWatcher implements IWatcher {
     @Override
     public void finalizedBlockStatus() {
 
-        if (WatcherUtils.isFinalizedStatus()) {
+//        if (WatcherUtils.isFinalizedStatus()) {
             logger.info("finalizedBatchStatus executed");
 
             Long latestSubmittedBatchNum=batchDataService.getLatestSubmittedBatchNum();
@@ -147,6 +146,5 @@ public class BatchWatcher implements IWatcher {
             }
             dbSubmitttedBatchNum=latestSubmittedBatchNum+1;
             dbFinalizedBatchNum=latestFinalizedBatchNum+1;
-        }
     }
 }

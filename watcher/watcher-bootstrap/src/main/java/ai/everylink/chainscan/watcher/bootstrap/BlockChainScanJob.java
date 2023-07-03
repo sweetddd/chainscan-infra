@@ -21,6 +21,7 @@ import ai.everylink.chainscan.watcher.core.IWatcher;
 import ai.everylink.chainscan.watcher.core.IWatcherPlugin;
 import ai.everylink.chainscan.watcher.core.util.DateUtil;
 import ai.everylink.chainscan.watcher.core.util.WatcherUtils;
+import ai.everylink.chainscan.watcher.plugin.BatchWatcher;
 import ai.everylink.chainscan.watcher.plugin.EvmPlugin;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
