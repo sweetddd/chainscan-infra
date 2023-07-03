@@ -32,6 +32,10 @@ management:
     defaults:
       enabled: false
 
+watcher.plugin:
+  batchSwitch: false
+
+
 logging:
     level:
         root: info

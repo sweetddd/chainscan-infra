@@ -35,6 +35,7 @@
         <module>watcher-plugin-transaction-history</module>
         <module>watcher-plugin-token</module>
         <module>watcher-plugin-lending-history</module>
+        <module>watcher-plugin-batch</module>
     </modules>
 
 </project>
